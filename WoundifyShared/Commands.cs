@@ -496,7 +496,7 @@ namespace WoundifyShared
                         throw new ApplicationException("Speak: Unknown file extension:" + fileName);
                     }
                 }
-                else if (char.IsDigit(text[0]))
+                else if (char.IsDigit(text[0])) // todo: deprecate seconds of speech arg?
                 {
                     double speechTime;
                     if (double.TryParse(text, out speechTime))

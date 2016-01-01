@@ -70,21 +70,25 @@ Woundify tries to first load WoundifyDefaultSettings.json file, followed by Woun
 | ----------------- | ------------------- | ------------------- |  ------------------ | ------------------- | ------------------- |
 | END               |                     |                     |                     |                     |                     |
 | HELP              |                     |                     |                     |                     |                     |
-| INTENT            | Pop, send text to Houndify | Pop, send audio to Houndify| Send text to Houndify| Send text file to Houndify | Send audio file to Houndify |
-| LISTEN            |                     |                     |                     |                     |                     |
+| INTENT            | Pop, send text      | Pop, send audio     | Send text           | Send text           | Send audio          |
+| LISTEN            |                     |                     | TTS, push audio file | TTS, push audio file | Push audio file   |
 | LOOP              |                     |                     |                     |                     |                     |
-| PAUSE             |                     |                     |                     |                     |                     |
-| PRONOUNCE         |                     |                     |                     |                     |                     |
+| PAUSE             |                     |                     | Seconds to pause    |                     |                     |
+| PRONOUNCE         | Pop, push pronounce | Pop, STT, push pronounce | Push pronounce | Push pronounce      | STT, push pronounce |
 | QUIT              |                     |                     |                     |                     |                     |
-| REPLAY            |                     |                     |                     |                     |                     |
-| RESPONSE          |                     |                     |                     |                     |                     |
-| SETTINGS          |                     |                     |                     |                     |                     |
-| SHOW              |                     |                     |                     |                     |                     |
-| SPEAK             |                     |                     |                     |                     |                     |
-| SPEECH            |                     |                     |                     |                     |                     |
-| TEXT              |                     |                     |                     |                     |                     |
-| WAKEUP            |                     |                     |                     |                     |                     |
+| REPLAY            | Display TOS text    | Play TOS audio      |                     |                     |                     |
+| RESPONSE          | Push text response  | Push text response  |                     |                     |                     |
+| SETTINGS          |                     |                     | Convert JSON to object and override | Convert JSON to object and override |                     |
+| SHOW              | Display TOS text    | Play TOS audio      |                     |                     |                     |
+| SPEAK             | Pop, TTS, play audio | Pop, play audio    | TTS, play audio     | TTS, play audio     | Play audio          |
+| SPEECH            | Pop, TTS, push audio | no change          | TTS, push audio     | TTS, push audio     | Push audio          |
+| TEXT              | Push text           | Pop, STT, push text | Push text           | STT, push text      | STT, push text      |
+| WAKEUP            |                     |                     | Use as wakeup words | Use as wakeup words |                     |
 
 Table Notes:
+* Blank cells means no change
+* TOS means Top Of Stack
+* TTS means converts Text-To-Speech
+* STT means converts Speech-To-Text
 * Listen pushes a wave file (audio) whereas WakeUp first converts to text before pushing. This is because WakeUp needs to convert to text to understand the wakeup word.
 
