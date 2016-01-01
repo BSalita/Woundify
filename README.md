@@ -65,22 +65,24 @@ Woundify tries to first load WoundifyDefaultSettings.json file, followed by Woun
 * Make sure Houndify ClientKey and ClientSecret are entered into WoundifySettings.json or WoundifyDefaultSettings.json.
 
 ## Description of commands
-END
-HELP
-INTENT
-LISTEN
-LOOP
-PAUSE
-PRONOUNCE
-QUIT
-REPLAY
-RESPONSE
-SETTINGS
-SHOW
-SPEAK
-SPEECH
-TEXT
-WAKEUP
+| Command           | Description |
+| ----------------- | ---------------------------------------------------------------------------------------------------------- |
+| END |
+| HELP |
+| INTENT |
+| LISTEN |
+| LOOP |
+| PAUSE |
+| PRONOUNCE |
+| QUIT |
+| REPLAY |
+| RESPONSE |
+| SETTINGS |
+| SHOW |
+| SPEAK |
+| SPEECH |
+| TEXT |
+| WAKEUP |
 
 ## Chart of Command Actions Based on Arguments
 
