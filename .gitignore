@@ -10,3 +10,6 @@
 /WoundifyUWP/obj/x86/Debug
 /WoundifyWpf
 /WoundifyUWP
+/.vs/config
+/packages/NAudio.1.7.3
+/packages/Newtonsoft.Json.8.0.1
