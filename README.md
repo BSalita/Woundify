@@ -85,4 +85,4 @@ Woundify tries to first load WoundifyDefaultSettings.json file, followed by Woun
 
 Table Notes:
 * Listen pushes a wave file (audio) whereas WakeUp first converts to text before pushing. This is because WakeUp needs to convert to text to understand the wakeup word.
-* 
+
