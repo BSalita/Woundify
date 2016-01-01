@@ -20,6 +20,8 @@ Examples:
   
 > woundify wakeup intent speak loop<br>Listens for wakeup word(s) (default "computer") and whatever follows, sends to Houndify, speaks response and loops back to wakeup. This is similar behavior to Houndify's mobile app or Amazon Echo.
 
+## Installation
+
 ## Development
 Developers can use woundify as a standalone tool, as a tool for larger projects, or use its class libraries to create their own project. This repos contains the entire source code.
 
