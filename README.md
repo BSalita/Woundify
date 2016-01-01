@@ -6,7 +6,7 @@ The woundify.exe is a console app tool for scripting audio, text and Houndify op
 
 > Usage: woundify.exe [command]*
 
-woundify.exe accepts zero or more commands. See the chart below for an explanation of commands. Each command has zero or one argument. An argument may be text (e.g. "Hello World"), or @<filename.ext> (e.g. @HelloWorld.txt or @HelloWorld.wav). Files must be either text (.txt) or wave audio recording (.wav). Commands are usually chained together for greatest effect. The command processor is stack oriented; some commands push results on to the stack, others consume the stack. Executing woundify.exe without any argument will cause woundify to enter command mode.
+woundify.exe accepts zero or more commands. See the chart below for an explanation of commands. Each command has zero or one argument. An argument may be text (e.g. "Hello World"), or @filename.ext (e.g. @HelloWorld.txt or @HelloWorld.wav). Files must be either text (.txt) or wave audio recording (.wav). Commands are usually chained together for greatest effect. The command processor is stack oriented; some commands push results on to the stack, others consume the stack. Executing woundify.exe without any argument will cause woundify to enter command mode.
 
 Examples:
   woundify text "What's the weather in Paris?" intent speak
@@ -16,7 +16,7 @@ Examples:
   Listens to the microphone (default timeout) and speaks the response.
   
   woundify text @WeatherInParis.txt intent show
-  Send the contents of file HelloWord.txt to Houndify and shows the stack.
+  Send the contents of file WeatherInParis.txt to Houndify and shows the stack.
   
   woundify speech @WeatherInParis.wav intent show
   Sends the wave file to Houndify and shows the stack.
