@@ -66,24 +66,22 @@ Woundify tries to first load WoundifyDefaultSettings.json file, followed by Woun
 
 | Command           | No args TOS is .txt | No args TOS is .wav | Text arg            | @File.txt arg       | @File.wav Argument  |
 | ----------------- | ------------------- | ------------------- |  ------------------ | ------------------- | ------------------- |
-| Content Cell      | Content Cell        | Content Cell        | Content Cell        | Content Cell        | Content Cell        |
-| Content Cell      | Content Cell        | Content Cell        | Content Cell        | Content Cell        | Content Cell        |
-| Content Cell      | Content Cell        | Content Cell        | Content Cell        | Content Cell        | Content Cell        |
-| Content Cell      | Content Cell        | Content Cell        | Content Cell        | Content Cell        | Content Cell        |
-| Content Cell      | Content Cell        | Content Cell        | Content Cell        | Content Cell        | Content Cell        |
-| Content Cell      | Content Cell        | Content Cell        | Content Cell        | Content Cell        | Content Cell        |
-| Content Cell      | Content Cell        | Content Cell        | Content Cell        | Content Cell        | Content Cell        |
-| Content Cell      | Content Cell        | Content Cell        | Content Cell        | Content Cell        | Content Cell        |
-| Content Cell      | Content Cell        | Content Cell        | Content Cell        | Content Cell        | Content Cell        |
-| Content Cell      | Content Cell        | Content Cell        | Content Cell        | Content Cell        | Content Cell        |
-| Content Cell      | Content Cell        | Content Cell        | Content Cell        | Content Cell        | Content Cell        |
-| Content Cell      | Content Cell        | Content Cell        | Content Cell        | Content Cell        | Content Cell        |
-| Content Cell      | Content Cell        | Content Cell        | Content Cell        | Content Cell        | Content Cell        |
-| Content Cell      | Content Cell        | Content Cell        | Content Cell        | Content Cell        | Content Cell        |
-| Content Cell      | Content Cell        | Content Cell        | Content Cell        | Content Cell        | Content Cell        |
-| Content Cell      | Content Cell        | Content Cell        | Content Cell        | Content Cell        | Content Cell        |
-| Content Cell      | Content Cell        | Content Cell        | Content Cell        | Content Cell        | Content Cell        |
-| Content Cell      | Content Cell        | Content Cell        | Content Cell        | Content Cell        | Content Cell        |
+| END               |                     |                     |                     |                     |                     |
+| HELP              |                     |                     |                     |                     |                     |
+| INTENT            |                     |                     |                     |                     |                     |
+| LISTEN            |                     |                     |                     |                     |                     |
+| LOOP              |                     |                     |                     |                     |                     |
+| PAUSE             |                     |                     |                     |                     |                     |
+| PRONOUNCE         |                     |                     |                     |                     |                     |
+| QUIT              |                     |                     |                     |                     |                     |
+| REPLAY            |                     |                     |                     |                     |                     |
+| RESPONSE          |                     |                     |                     |                     |                     |
+| SETTINGS          |                     |                     |                     |                     |                     |
+| SHOW              |                     |                     |                     |                     |                     |
+| SPEAK             |                     |                     |                     |                     |                     |
+| SPEECH            |                     |                     |                     |                     |                     |
+| TEXT              |                     |                     |                     |                     |                     |
+| WAKEUP            |                     |                     |                     |                     |                     |
 
 Table Notes:
 * Listen pushes a wave file (audio) whereas WakeUp first converts to text before pushing. This is because WakeUp needs to convert to text to understand the wakeup word.
