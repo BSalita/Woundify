@@ -70,7 +70,7 @@ Woundify tries to first load WoundifyDefaultSettings.json file, followed by Woun
 | ----------------- | ------------------- | ------------------- |  ------------------ | ------------------- | ------------------- |
 | END               |                     |                     |                     |                     |                     |
 | HELP              |                     |                     |                     |                     |                     |
-| INTENT            |                     |                     |                     |                     |                     |
+| INTENT            | Pop, send text to Houndify | Pop, send audio to Houndify| Send text to Houndify| Send text file to Houndify | Send audio file to Houndify |
 | LISTEN            |                     |                     |                     |                     |                     |
 | LOOP              |                     |                     |                     |                     |                     |
 | PAUSE             |                     |                     |                     |                     |                     |
