@@ -1,0 +1,12 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/WoundifyConsole/.vs backup
+/.vs/Woundify/v14
+/WoundifyConsole/obj/Debug
+/WoundifyConsole/bin/Debug
+/WoundifyUWP/.vs
+/WoundifyUWP/obj/x86/Debug
+/WoundifyWpf
+/WoundifyUWP
