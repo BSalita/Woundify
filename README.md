@@ -78,7 +78,7 @@ Woundify tries to first load WoundifyDefaultSettings.json file, followed by Woun
 | QUIT              |                     |                     |                     |                     |                     |
 | REPLAY            | Display TOS text    | Play TOS audio      |                     |                     |                     |
 | RESPONSE          | Push text response  | Push text response  |                     |                     |                     |
-| SETTINGS          |                     |                     | Convert JSON to object and override | Convert JSON to object and override |                     |
+| SETTINGS          |                     |                     | JSON override       | JSON override       |                     |
 | SHOW              | Display TOS text    | Play TOS audio      |                     |                     |                     |
 | SPEAK             | Pop, TTS, play audio | Pop, play audio    | TTS, play audio     | TTS, play audio     | Play audio          |
 | SPEECH            | Pop, TTS, push audio | no change          | TTS, push audio     | TTS, push audio     | Push audio          |
