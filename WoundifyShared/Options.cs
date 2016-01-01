@@ -58,7 +58,7 @@ namespace WoundifyShared
 #if WINDOWS_UWP
                 options.tempFolderPath = Windows.Storage.ApplicationData.Current.LocalFolder.Path; // otherwise Windows.Storage.KnownFolders.MusicLibrary.Path
 #else
-                options.tempFolderPath = System.Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + System.IO.Path.DirectorySeparatorChar + "Houndify"; // alternatively Windows.Storage.KnownFolders.MusicLibrary.Path
+                options.tempFolderPath = System.Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + System.IO.Path.DirectorySeparatorChar + "Woundify"; // alternatively Windows.Storage.KnownFolders.MusicLibrary.Path
 #endif
                 if (!options.tempFolderPath.EndsWith(System.IO.Path.DirectorySeparatorChar.ToString()))
                     options.tempFolderPath += System.IO.Path.DirectorySeparatorChar;

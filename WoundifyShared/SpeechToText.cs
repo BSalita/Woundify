@@ -135,10 +135,18 @@ namespace WoundifyShared
                 {
                     RecognitionEngine.SetInputToDefaultAudioDevice();
 
-                    System.Speech.Recognition.Grammar g;
-                    System.Speech.Recognition.GrammarBuilder builder = new System.Speech.Recognition.GrammarBuilder();
-                    builder.Append(new System.Speech.Recognition.Choices(WakeUpWords));
-                    g = new System.Speech.Recognition.Grammar(builder);
+                    // build wakeup word grammar
+                    System.Speech.Recognition.GrammarBuilder wakeUpWordBuilder = new System.Speech.Recognition.GrammarBuilder();
+                    wakeUpWordBuilder.Append(new System.Speech.Recognition.Choices(WakeUpWords));
+
+                    // build words-after-wakeup word grammar
+                    System.Speech.Recognition.GrammarBuilder wordsAfterWakeUpWordBuilder = new System.Speech.Recognition.GrammarBuilder();
+                    wordsAfterWakeUpWordBuilder.AppendWildcard();
+                    System.Speech.Recognition.SemanticResultKey wordsAfterWakeUpWordKey = new System.Speech.Recognition.SemanticResultKey("wordsAfterWakeUpWordKey", wordsAfterWakeUpWordBuilder);
+                    wakeUpWordBuilder.Append(new System.Speech.Recognition.SemanticResultKey("wordsAfterWakeUpWordKey", wordsAfterWakeUpWordBuilder));
+
+                    // initialize recognizer, wait for result, save result to file
+                    System.Speech.Recognition.Grammar g = new System.Speech.Recognition.Grammar(wakeUpWordBuilder);
                     RecognitionEngine.LoadGrammar(g);
                     if (Options.options.wakeup.initialSilenceTimeout == -1)
                         RecognitionEngine.InitialSilenceTimeout = TimeSpan.FromTicks(Int32.MaxValue); // never timeout
