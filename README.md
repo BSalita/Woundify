@@ -25,6 +25,21 @@ Examples:
   Listens for wakeup word(s) (default "computer") and whatever follows, sends to Houndify, speaks response and loops back to wakeup. This is similar behavior to Houndify's mobile app or Amazon Echo.
 
 ## Development
+Developers can use woundify as a standalone tool, as a tool for larger projects, or use its class libraries to create their own project. This repos contains the entire source code.
+
+The source code for woundify is in C#. The classes contain a wealth of information. In particular, most operations are coded for both WIN32 and UWP.
+* How to authenticate to Bing, Google, Houndify services.
+* Invoke Houndify intent API.
+* Invoke speech-to-text APIs from Bing, Google, Houndify.
+* Parse JSON responses.
+* Record audio from microphone to file.
+* Play audio to speaker or file.
+* Transcode audio.
+* Build audio graphs.
+* Listen for wakup words.
+* JSON handling.
+* Geolocation
+
 Dependencies:
 * Windows 7+ for Console and WPF. Windows 10+ for UWP.
 * Visual Studio 2015. Compatible with the free community edition.
