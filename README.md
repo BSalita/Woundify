@@ -77,7 +77,7 @@ Woundify tries to first load WoundifyDefaultSettings.json file, followed by Woun
 | PRONOUNCE         | Pop, push pronounce | Pop, STT, push pronounce | Push pronounce | Push pronounce      | STT, push pronounce |
 | QUIT              |                     |                     |                     |                     |                     |
 | REPLAY            | Display TOS text    | Play TOS audio      |                     |                     |                     |
-| RESPONSE          | Push text response  | Push text response  |                     |                     |                     |
+| RESPONSE          | Push text response  |                     |                     |                     |                     |
 | SETTINGS          |                     |                     | JSON override       | JSON override       |                     |
 | SHOW              | Display TOS text    | Play TOS audio      |                     |                     |                     |
 | SPEAK             | Pop, TTS, play audio | Pop, play audio    | TTS, play audio     | TTS, play audio     | Play audio          |
