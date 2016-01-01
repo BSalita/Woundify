@@ -71,7 +71,7 @@ Woundify tries to first load WoundifyDefaultSettings.json file, followed by Woun
 | END               |                     |                     |                     |                     |                     |
 | HELP              |                     |                     |                     |                     |                     |
 | INTENT            | Pop, send text      | Pop, send audio     | Send text           | Send text           | Send audio          |
-| LISTEN            |                     |                     | TTS, push audio     | TTS, push audio     | Push audio file     |
+| LISTEN            |                     |                     | TTS, push audio     | TTS, push audio     | Push audio          |
 | LOOP              |                     |                     |                     |                     |                     |
 | PAUSE             |                     |                     | Seconds to pause    |                     |                     |
 | PRONOUNCE         | Pop, push pronounce | Pop, STT, push pronounce | Push pronounce | Push pronounce      | STT, push pronounce |
