@@ -30,11 +30,11 @@ The source code for woundify is in C#. The classes contain a wealth of informati
 * Parse JSON responses.
 * Record audio from microphone to file.
 * Play audio to speaker or file.
-* Transcode audio.
-* Build audio graphs.
+* Transcode audio (UWP only).
+* Build audio graphs. (UWP only).
 * Listen for wakup words.
 * JSON handling.
-* Geolocation
+* Geolocation (UWP only).
 
 Dependencies:
 * Windows 7+ for Console and WPF. Windows 10+ for UWP.
