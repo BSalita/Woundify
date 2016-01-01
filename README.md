@@ -64,7 +64,25 @@ Woundify tries to first load WoundifyDefaultSettings.json file, followed by Woun
 ## Troubleshooting:
 * Make sure Houndify ClientKey and ClientSecret are entered into WoundifySettings.json or WoundifyDefaultSettings.json.
 
-## Chart of commands
+## Description of commands
+END
+HELP
+INTENT
+LISTEN
+LOOP
+PAUSE
+PRONOUNCE
+QUIT
+REPLAY
+RESPONSE
+SETTINGS
+SHOW
+SPEAK
+SPEECH
+TEXT
+WAKEUP
+
+## Chart of Command Actions Based on Arguments
 
 | Command           | No args TOS is .txt | No args TOS is .wav | Text arg            | @File.txt arg       | @File.wav Argument  |
 | ----------------- | ------------------- | ------------------- |  ------------------ | ------------------- | ------------------- |
