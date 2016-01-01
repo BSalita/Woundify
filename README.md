@@ -2,10 +2,27 @@
 Woundify is a Windows client for Houndify. Woundify is written in C# and is compatible with Console, WPF and UWP systems.
 
 ## Console Application
-The woundify.exe is a console app for scripting audio, text and Houndify. There are commands for making combinations of audio recordings, text-to-speech (TTS), speech-to-text (STT), making Houndify requests, and working with Houndify responses.
+The woundify.exe is a console app tool for scripting audio, text and Houndify operations. There are commands for recording audio, converting text-to-speech (TTS), converting speech-to-text (STT), and invoking Houndify intent services.
 
 > Usage: woundify.exe [command]*
-> woundify.exe accepts zero or more commands. See the chart below commands and their syntax. Each command has zero or one argument. An argument may be text (e.g. "Hello World"), or @<filename> (e.g. @HelloWorld.txt or @HelloWorld.wav). Files must be either text (.txt) or wave audio recording (.wav). commands are usually chained together. The command processor is stack oriented. Some commands push results on to the stack while others consume the stack.
+
+woundify.exe accepts zero or more commands. See the chart below for an explanation of commands. Each command has zero or one argument. An argument may be text (e.g. "Hello World"), or @<filename.ext> (e.g. @HelloWorld.txt or @HelloWorld.wav). Files must be either text (.txt) or wave audio recording (.wav). Commands are usually chained together for greatest effect. The command processor is stack oriented; some commands push results on to the stack, others consume the stack. Executing woundify.exe without any argument will cause woundify to enter command mode.
+
+Examples:
+  woundify text "What's the weather in Paris?" intent speak
+  Sends the text to Houndify and speaks the response.
+  
+  woundify listen intent speak
+  Listens to the microphone (default timeout) and speaks the response.
+  
+  woundify text @WeatherInParis.txt intent show
+  Send the contents of file HelloWord.txt to Houndify and shows the stack.
+  
+  woundify speech @WeatherInParis.wav intent show
+  Sends the wave file to Houndify and shows the stack.
+  
+  woundify wakeup intent speak loop
+  Listens for wakeup word(s) (default "computer") and whatever follows, sends to Houndify, speaks response and loops back to wakeup. This is similar behavior to Houndify's mobile app or Amazon Echo.
 
 ## Development
 Dependencies:
