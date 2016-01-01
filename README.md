@@ -25,18 +25,18 @@ Examples:
 ## Development
 Developers can use woundify as a standalone tool, as a tool for larger projects, or use its class libraries to create their own project. This repos contains the entire source code.
 
-The source code for woundify is in C#. The classes contain a wealth of information. In particular, most operations are coded for both WIN32 and UWP.
+The source code for woundify is in C#. The classes contain a wealth of information. In particular, most operations are coded for both WIN32 and WinRT (Windows Runtime).
 * How to authenticate to Bing, Google, Houndify services.
 * Invoke Houndify intent API.
 * Invoke speech-to-text APIs from Bing, Google, Houndify.
 * Parse JSON responses.
 * Record audio from microphone to file.
 * Play audio to speaker or file.
-* Transcode audio (UWP only).
-* Build audio graphs. (UWP only).
+* Transcode audio (WinRT only).
+* Build audio graphs. (WinRT only).
 * Listen for wakup words.
 * JSON handling.
-* Geolocation (UWP only).
+* Geolocation (WinRT only).
 
 Dependencies:
 * Windows 7+ for Console and WPF. Windows 10+ for UWP.
