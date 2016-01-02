@@ -78,20 +78,20 @@ Woundify first tries to load WoundifyDefaultSettings.json file, followed by Woun
 | ----------------- | ---------------------------------------------------------------------------------------------------------- |
 | END | End program. Same as QUIT.
 | HELP | Show help.
-| INTENT | Pop stack passing to intent service, push response.
-| LISTEN | Listen and push utterance.
-| LOOP | Loop to first command and repeat.
-| PAUSE | Pause for specified seconds.
+| INTENT | Pops stack and sends audio/text to Houndify's intent service. The response is pushed onto the stack.
+| LISTEN | Record audio and push utterance onto stack.
+| LOOP | Loop back to first command and continue execution.
+| PAUSE | Pause for seconds specified in argument (or uses default).
 | PRONOUNCE | Convert text at top of stack into spelled pronounciations.
 | QUIT | Quit program. Same as END.
-| REPLAY | Replay top of stack.
-| RESPONSE | Push last intent response.
-| SETTINGS | Show or update settings.
-| SHOW | Show stack.
-| SPEAK | Pop stack (text or speech) and speak.
-| SPEECH | Push argument as speech.
-| TEXT | Push argument as text.
-| WAKEUP | Wait for wakeup, convert to text, push remaining words onto stack.
+| REPLAY | Replay TOS. If TOS is text, display text. If audio, it plays the audio.
+| RESPONSE | Push the last intent's response, always text, onto the stack.
+| SETTINGS | Show or update settings. Use this command to verify settings such as defaults or authentication info.
+| SHOW | Shows everything on the stack.
+| SPEAK | Pops stack and speaks it.
+| SPEECH | Push audio onto stack.
+| TEXT | Push text onto stack.
+| WAKEUP | Wait for wakeup word(s), convert rest of audio to text, push as text onto stack.
 
 ## Chart of Command Actions Based on Arguments
 
