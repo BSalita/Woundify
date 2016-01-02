@@ -32,7 +32,7 @@ There is no binary executable file available. You can create one from this repos
 ## Development
 Developers can use Woundify as a standalone tool, as a tool for integrating into projects, or make use of its class libraries to create a custom project. This repos contains the entire source code of Woundify.
 
-The source code for woundify is in C#. The classes contain a wealth of information. In particular, most operations are coded for both WIN32 and WinRT (Windows Runtime). The source code demonstrates the following:
+The source code for woundify is in C#. The classes contain a wealth of information. In particular, most operations are coded twice for maximum Windows support; WINT32 vs WinRT, System.Speech vs Windows.Media, System.IO vs Windows.Storage, System.Net.HTTP vs Windows.Web, Console and WPF vs UWP. The source code contains the following capabilities:
 * Authenticating to Bing, Google, Houndify services.
 * Invoking Houndify intent API.
 * Invoking speech-to-text APIs from Bing (Project Oxford), Google, Houndify.
