@@ -23,7 +23,7 @@ namespace WoundifyShared
         public static System.Collections.Generic.Dictionary<string, verbAction> verbActionsAsync =
             new System.Collections.Generic.Dictionary<string, verbAction>()
             {
-                { "END", new verbAction() { actionFunc = verbEndAsync, stackChange = 0, helpTip = "End processing." } },
+                { "END", new verbAction() { actionFunc = verbEndAsync, stackChange = 0, helpTip = "End program. Same as QUIT." } },
                 { "HELP", new verbAction() { actionFunc = verbHelpAsync, stackChange = 0, helpTip = "Show help." } },
                 { "INTENT", new verbAction() { actionFunc = verbIntentAsync, stackChange = 0, helpTip = "Pop stack passing to intent service, push response." } },
                 { "LISTEN",new verbAction() { actionFunc = verbListenAsync, stackChange = +1, helpTip = "Listen and push utterance." } },

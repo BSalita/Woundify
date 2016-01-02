@@ -67,22 +67,22 @@ Woundify tries to first load WoundifyDefaultSettings.json file, followed by Woun
 ## Description of commands
 | Command           | Description |
 | ----------------- | ---------------------------------------------------------------------------------------------------------- |
-| END |
-| HELP |
-| INTENT |
-| LISTEN |
-| LOOP |
-| PAUSE |
-| PRONOUNCE |
-| QUIT |
-| REPLAY |
-| RESPONSE |
-| SETTINGS |
-| SHOW |
-| SPEAK |
-| SPEECH |
-| TEXT |
-| WAKEUP |
+| END | End program. Same as QUIT.
+| HELP | Show help.
+| INTENT | Pop stack passing to intent service, push response.
+| LISTEN | Listen and push utterance.
+| LOOP | Loop to first command and repeat.
+| PAUSE | Pause for specified seconds.
+| PRONOUNCE | Convert text at top of stack into spelled pronounciations.
+| QUIT | Quit program. Same as END.
+| REPLAY | Replay top of stack.
+| RESPONSE | Push last intent response.
+| SETTINGS | Show or update settings.
+| SHOW | Show stack.
+| SPEAK | Pop stack (text or speech) and speak.
+| SPEECH | Push argument as speech.
+| TEXT | Push argument as text.
+| WAKEUP | Wait for wakeup, convert to text, push remaining words onto stack.
 
 ## Chart of Command Actions Based on Arguments
 
