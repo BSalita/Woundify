@@ -1,5 +1,5 @@
 # Woundify
-Woundify is a Windows client for Houndify. Woundify is written in C# and is compatible with Console, WPF and UWP systems.
+Woundify is a Windows client for the Houndify intent service. Woundify is written in C# and is compatible with Console, WPF and UWP systems.
 
 ## Console Application
 The woundify.exe is a console app tool for scripting audio, text and Houndify operations. There are commands for recording audio, converting text-to-speech (TTS), converting speech-to-text (STT), and invoking Houndify intent services.
@@ -21,48 +21,57 @@ Examples:
 > woundify wakeup intent speak loop<br>Listens for wakeup word(s) (default "computer") and whatever follows, sends to Houndify, speaks response and loops back to wakeup. This is similar behavior to Houndify's mobile app or Amazon Echo.
 
 ## Installation
+There is no binary executable file available. You can create one from this repos using Visual Studio 2015 Community Edition (free).
+
+## Terminology
+* TOS means Top Of Stack. Woundify command processing is stack oriented.
+* TTS means converts Text-To-Speech
+* STT means converts Speech-To-Text
+* UWP refers to Microsoft's Universal Windows Platform. See https://en.wikipedia.org/wiki/Universal_Windows_Platform
 
 ## Development
-Developers can use woundify as a standalone tool, as a tool for larger projects, or use its class libraries to create their own project. This repos contains the entire source code.
+Developers can use Woundify as a standalone tool, as a tool for integrating into projects, or make use of its class libraries to create a custom project. This repos contains the entire source code of Woundify.
 
-The source code for woundify is in C#. The classes contain a wealth of information. In particular, most operations are coded for both WIN32 and WinRT (Windows Runtime).
-* How to authenticate to Bing, Google, Houndify services.
-* Invoke Houndify intent API.
-* Invoke speech-to-text APIs from Bing, Google, Houndify.
-* Parse JSON responses.
-* Record audio from microphone to file.
-* Play audio to speaker or file.
-* Transcode audio (WinRT only).
-* Build audio graphs. (WinRT only).
-* Listen for wakup words.
-* JSON handling.
-* Geolocation (WinRT only).
+The source code for woundify is in C#. The classes contain a wealth of information. In particular, most operations are coded for both WIN32 and WinRT (Windows Runtime). The source code demonstrates the following:
+* Authenticating to Bing, Google, Houndify services.
+* Invoking Houndify intent API.
+* Invoking speech-to-text APIs from Bing (Project Oxford), Google, Houndify.
+* Parsing JSON responses from intent and STT services.
+* Recording audio from microphone and writing to a stream or file.
+* Playing audio from stream or file.
+* Transcoding audio (WinRT only but can be done with NAudio too).
+* Building audio graphs. (WinRT only).
+* Listening for wakup words.
+* Using JSON for requests, responses, objects, settings.
+* Geolocating (WinRT only).
+* Async/Await programming style for Console, WPF and UWP systems.
 
 Dependencies:
 * Windows 7+ for Console and WPF. Windows 10+ for UWP.
-* Visual Studio 2015. Compatible with the free community edition.
+* Visual Studio 2015. Compatible with the free community edition. Needed for development only.
 * Newtonsoft JSON available from Nuget.
 * NAudio available from Nuget (only used for Console and WPF).
 
 Development Notes:
-* UWP: Go to Package.appxmanifest->Capabilities and enable the following: Internet (Client), Location, Microphone
+* WoundifyUWP (UWP version only) needs a few app capabilities to be granted. Go to Package.appxmanifest->Capabilities and enable the following: Internet (Client), Location, Microphone
 * Microsoft.Speech doesn't offer a grammar for dictation input, that's why System.Speech is used.
-* It is safe to ignore Visual Studio warning CS1998 "This async method lacks 'await' operators and will run synchronously. Consider using the 'await' operator to await non-blocking API calls, or 'await Task.Run(...)' to do CPU-bound work on a background thread."
+* When compiling source code, it is safe to ignore the Visual Studio warning CS1998 "This async method lacks 'await' operators and will run synchronously. Consider using the 'await' operator to await non-blocking API calls, or 'await Task.Run(...)' to do CPU-bound work on a background thread."
 
-Usage Notes:
-* Geolocation is available only in UWP, and not implmented in Console and WPF app. To create a default location, enter your location into the settings file.
-* Recommended to add authorizations for Google into the settings file. Goolge providers the fastest and best STT.
-* Sign up at http://www.projectoxford.ai to get a subscription key. Use the subscription key as ClientSecret in settings file.
+Recommended Settings File Customization:
+* It's best to create a WoundifySettings.json file to contain your customizations. The file will override any settings obtained from the WoundifyDefaultSettings.json file. Use the SETTINGS command to verify that your settings are correct.
+* Geolocation is only implemented in UWP, and not implmented in Console and WPF app. To create a default geolocation, enter your location into the WoundifySettings.json file.
+* Recommended to add authorizations for Google into the SpeechToText Google section of the settings file. Google provides the fastest and arguably the best STT. See http://stackoverflow.com/questions/23608863/google-speech-recognition-api
+* Sign up at http://www.projectoxford.ai to get a subscription key. Use the subscription key, called Primary Key, as the ClientSecret in SpeechToText Bing section of the settings file.
 
 Program Usage:
-Woundify tries to first load WoundifyDefaultSettings.json file, followed by WoundifySettings.json. Settings files can be either in the same directory as the executable or the local directory. The first settings file loaded will initialize and subsequent loadings will override existing values. 
+Woundify first tries to load WoundifyDefaultSettings.json file, followed by WoundifySettings.json. Settings files can be either in the same directory as the executable or the local directory. The first settings file loaded will initialize setting values. Subbsequent loading of settings files will override existing values. 
 
 ## Limitations
-* Microsoft's System.Speech APIs do a pretty bad job of speech-to-text (STT), thus Woundify tries to use Google's STT instead.
+* Microsoft's System.Speech APIs, their legacy STT APIs, do a pretty bad job of speech-to-text (STT), thus Woundify tries to use Google's STT instead. Microsoft seems to be on the verge of updating their STT engine so something better should be available in 2016. It may be in the form of local machine software or it may only work over the Internet.
 * Services all work with audio files in wave format (.wav), and mono (one channel), bit depth of 16, and sample rate of 16000.
 
 ## Troubleshooting:
-* Make sure Houndify ClientKey and ClientSecret are entered into WoundifySettings.json or WoundifyDefaultSettings.json.
+* Make sure Houndify ClientKey and ClientSecret are entered into a customized WoundifySettings.json file (best) or just modify the WoundifyDefaultSettings.json file.
 
 ## Description of commands
 | Command           | Description |
