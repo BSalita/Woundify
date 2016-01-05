@@ -45,6 +45,7 @@ The source code for woundify is in C#. The classes contain a wealth of informati
 * Using JSON for requests, responses, objects, settings.
 * Geolocating (WinRT only).
 * Async/Await programming style for Console, WPF and UWP systems.
+* Using a Shared project type to share code between Console, WPF and UWP projects.
 
 Dependencies:
 * Windows 7+ for Console and WPF. Windows 10+ for UWP.
