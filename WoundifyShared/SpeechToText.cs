@@ -6,7 +6,7 @@ namespace WoundifyShared
     class SpeechToText
     {
         private static System.Collections.Generic.List<ISpeechToTextService> PreferredISpeechToTextServices = new System.Collections.Generic.List<ISpeechToTextService>();
-        static SpeechToText()
+        static SpeechToText() // static constructor
         {
             // We need to create a list of ISpeechToTextService objects ordered by user's preference settings.
             // Using reflection to get list of classes implementing ISpeechToTextService
@@ -76,7 +76,6 @@ namespace WoundifyShared
 
         public static async System.Threading.Tasks.Task<string> MicrophoneToTextAsync()
         {
-            GoogleServices google = new GoogleServices();
             WindowsServices windows = new WindowsServices();
             System.Globalization.CultureInfo ci = new System.Globalization.CultureInfo(Options.options.locale.language);
             using (System.Speech.Recognition.SpeechRecognitionEngine RecognitionEngine = new System.Speech.Recognition.SpeechRecognitionEngine(ci))
@@ -124,7 +123,6 @@ namespace WoundifyShared
         public static async System.Threading.Tasks.Task<string[]> WaitForWakeUpWordThenRecognizeRemainingSpeechAsync(string[] WakeUpWords)
         {
             Console.WriteLine("Say the wakeup word (" + string.Join(" ", WakeUpWords) + ") followed by the request ...");
-            GoogleServices google = new GoogleServices();
             WindowsServices windows = new WindowsServices();
             System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
             stopWatch.Start(); // continues until return

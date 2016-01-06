@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace WoundifyShared
 {
@@ -9,6 +8,7 @@ namespace WoundifyShared
         public static BingServices bing;
         public static GoogleServices google;
         public static HoundifyServices houndify;
+        public static WindowsServices windows;
         public static GeoLocation geoLocation;
 
         private static void SearchForSettings(string[] settingsJsonSearchPaths)
@@ -74,6 +74,7 @@ namespace WoundifyShared
             bing = new BingServices();
             google = new GoogleServices();
             houndify = new HoundifyServices();
+            windows = new WindowsServices();
             geoLocation = new GeoLocation();
         }
     }
@@ -133,7 +134,7 @@ namespace WoundifyShared
             public double initialSilenceTimeout { get; set; }
             public double listenTimeOut { get; set; }
             public bool preferLoopUntilWakeUpWordFound { get; set; }
-            public List<string> words { get; set; }
+            public System.Collections.Generic.List<string> words { get; set; }
         }
 
         public class BingSpeechToText
@@ -167,7 +168,7 @@ namespace WoundifyShared
         public class SpeechToText
         {
             public string missingResponse { get; set; }
-            public List<string> preferredSpeechToTextServices { get; set; }
+            public System.Collections.Generic.List<string> preferredSpeechToTextServices { get; set; }
             public BingSpeechToText BingSpeechToText { get; set; }
             public GoogleSpeechToText GoogleSpeechToText { get; set; }
             public HoundifySpeechToText HoundifySpeechToText { get; set; }
@@ -208,7 +209,7 @@ namespace WoundifyShared
             public string logFilePath { get; set; }
             public double pauseSecondsDefault { get; set; }
             public Audio audio { get; set; }
-            public List<Command> commands { get; set; }
+            public System.Collections.Generic.List<Command> commands { get; set; }
             public Geolocaton geolocaton { get; set; }
             public IntentServices intentServices { get; set; }
             public Locale locale { get; set; }

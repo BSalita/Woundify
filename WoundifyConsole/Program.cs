@@ -21,7 +21,9 @@ namespace WoundifyConsole
                 }
                 while ((ex = ex.InnerException) != null);
             }
+#if false // don't exit until async SpeechToText finishes. wait by prompting user to hit a key.
             if (System.Diagnostics.Debugger.IsAttached) // holds window open when in debugger
+#endif
             {
                 Console.WriteLine("Done. Hit any key to exit.");
                 Console.ReadKey();

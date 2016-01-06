@@ -31,8 +31,9 @@ namespace WoundifyShared
             AccessTokenInfo token;
             string headerValue;
 
-            // Note: Sign up at http://www.projectoxford.ai to get a subscription key.  Search for Speech APIs from Azure Marketplace.  
-            // Use the subscription key as Client secret below.
+            // Note: Sign up at http://www.projectoxford.ai to get a subscription key.
+            // Use the subscription key, called Primary Key, as the Client secret below.
+            // todo: looks like I've implemented an old method of calling, albeit it seems to work. Should I update to: https://onedrive.live.com/prev?id=9a8c02c3b59e575!115&cid=09A8C02C3B59E575&parId=root&authkey=!AOE9yiNn9bOskFE&v=TextFileEditor
             Authentication auth = new Authentication();
             string ClientID = settings.ClientID;
             string clientSecret = settings.clientSecret;

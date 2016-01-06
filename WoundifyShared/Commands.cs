@@ -241,6 +241,15 @@ namespace WoundifyShared
                         throw new ApplicationException("Listen: Unknown file extension:" + fileName);
                     }
                 }
+                else if (char.IsDigit(text[0])) // todo: deprecate seconds of listening arg?
+                {
+                    double listenTimeOut;
+                    if (double.TryParse(text, out listenTimeOut))
+                        operatorStack.Pop();
+                    else
+                        listenTimeOut = Options.options.wakeup.listenTimeOut;
+                    await Audio.MicrophoneToFileAsync(stackFileName, TimeSpan.FromSeconds(listenTimeOut));
+                }
                 else
                 {
                     await TextToSpeech.SynSpeechWriteToFileAsync(text, stackFileName);
@@ -498,12 +507,12 @@ namespace WoundifyShared
                 }
                 else if (char.IsDigit(text[0])) // todo: deprecate seconds of speech arg?
                 {
-                    double speechTime;
-                    if (double.TryParse(text, out speechTime))
+                    double listenTimeOut;
+                    if (double.TryParse(text, out listenTimeOut))
                         operatorStack.Pop();
                     else
-                        speechTime = Options.options.wakeup.listenTimeOut;
-                    await Audio.MicrophoneToFileAsync(fileName, TimeSpan.FromSeconds(speechTime));
+                        listenTimeOut = Options.options.wakeup.listenTimeOut;
+                    await Audio.MicrophoneToFileAsync(fileName, TimeSpan.FromSeconds(listenTimeOut));
                 }
                 else
                     await TextToSpeech.SynSpeechWriteToFileAsync(text, stackFileName);
@@ -571,7 +580,7 @@ namespace WoundifyShared
                 }
                 else if (fileName.EndsWith(".wav"))
                 {
-                    bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // todo: implement local file scheme (non-tempFolder directory)
+                    bytes = await Helpers.ReadBytesFromFileAsync(fileName); // todo: implement local file scheme (non-tempFolder directory)
                     text = await SpeechToText.SpeechToTextAsync(bytes);
                 }
                 else

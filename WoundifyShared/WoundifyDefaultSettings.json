@@ -48,7 +48,7 @@
     "confidence": 0.80,
     "endSilenceTimeout": 3.0,
     "initialSilenceTimeout": -1,
-    "listenTimeOut": 5.0,
+    "listenTimeOut": 8.0,
     "preferLoopUntilWakeUpWordFound": false,
     "words": [
       "computer"
