@@ -244,10 +244,11 @@ namespace WoundifyShared
                 else if (char.IsDigit(text[0])) // todo: deprecate seconds of listening arg?
                 {
                     double listenTimeOut;
-                    if (double.TryParse(text, out listenTimeOut))
-                        operatorStack.Pop();
-                    else
+                    if (!double.TryParse(text, out listenTimeOut))
+                    {
+                        Console.WriteLine("Invalid number. Defaulting to settings file.");
                         listenTimeOut = Options.options.wakeup.listenTimeOut;
+                    }
                     await Audio.MicrophoneToFileAsync(stackFileName, TimeSpan.FromSeconds(listenTimeOut));
                 }
                 else
@@ -508,11 +509,12 @@ namespace WoundifyShared
                 else if (char.IsDigit(text[0])) // todo: deprecate seconds of speech arg?
                 {
                     double listenTimeOut;
-                    if (double.TryParse(text, out listenTimeOut))
-                        operatorStack.Pop();
-                    else
+                    if (!double.TryParse(text, out listenTimeOut))
+                    {
+                        Console.WriteLine("Invalid number. Defaulting to settings file.");
                         listenTimeOut = Options.options.wakeup.listenTimeOut;
-                    await Audio.MicrophoneToFileAsync(fileName, TimeSpan.FromSeconds(listenTimeOut));
+                    }
+                    await Audio.MicrophoneToFileAsync(stackFileName, TimeSpan.FromSeconds(listenTimeOut));
                 }
                 else
                     await TextToSpeech.SynSpeechWriteToFileAsync(text, stackFileName);
