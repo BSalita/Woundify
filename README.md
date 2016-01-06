@@ -6,7 +6,7 @@ The woundify.exe is a console app tool for scripting audio, text and Houndify op
 
 > `Usage: woundify.exe [command]*`
 
-woundify.exe accepts zero or more commands. See the chart below for an explanation of commands. Each command has zero or one argument. An argument may be text (e.g. "Hello World"), or @filename.ext (e.g. @HelloWorld.txt or @HelloWorld.wav). Files must be either text (.txt) or wave audio recording (.wav). Commands are usually chained together for greatest effect. The command processor is stack oriented; some commands push results on to the stack, others consume the stack. Executing woundify.exe without any argument will cause woundify to enter command mode.
+woundify.exe accepts zero or more commands. See the chart below for an explanation of commands. Each command has zero or one argument. An argument may be text (e.g. "Hello World"), or @filename.ext (e.g. @HelloWorld.txt or @HelloWorld.wav). Files must be either text (.txt) or wave audio recording (.wav). Commands are usually chained together for greatest effect. The command processor is stack oriented; some commands push results on to the stack, others consume the stack. Executing woundify.exe without any argument will cause woundify to enter an internal command mode.
 
 Examples:
 
@@ -18,10 +18,10 @@ Examples:
   
 > `woundify speech @WeatherInParis.wav intent show`<br>Sends the wave file to Houndify and shows the stack.
   
-> `woundify wakeup intent speak loop`<br>Listens for wakeup word(s) (default "computer") and whatever follows, sends to Houndify, speaks response and loops back to wakeup. This is similar behavior to Houndify's mobile app or Amazon Echo.
+> `woundify wakeup intent speak loop`<br>Listens for wakeup word(s) (default "computer") and whatever follows, sends to Houndify, speaks response and loops back to wakeup. This is similar to the behavior of Houndify's mobile app or Amazon Echo.
 
 ## Installation
-There is no binary executable file available. You can create one from this repos using Visual Studio 2015 Community Edition (free).
+There is no binary executable file available on this repos. You can create an executable using this repos with Visual Studio 2015 Community Edition (free).
 
 ## Terminology
 * TOS means Top Of Stack. Woundify command processing is stack oriented.
@@ -32,8 +32,8 @@ There is no binary executable file available. You can create one from this repos
 ## Development
 Developers can use Woundify as a standalone tool, as a tool for integrating into projects, or make use of its class libraries to create a custom project. This repos contains the entire source code of Woundify.
 
-The source code for woundify is in C#. The classes contain a wealth of information. In particular, most operations are coded twice for maximum Windows support; WINT32 vs WinRT, System.Speech vs Windows.Media, System.IO vs Windows.Storage, System.Net.HTTP vs Windows.Web, System.Security.Cryptography vs Windows.Security.Cryptography, Console and WPF vs UWP. The source code contains the following capabilities:
-* Authenticating to Bing, Google, Houndify services.
+The source code for woundify is in C#. The classes contain a wealth of information. In particular, most operations are coded twice for maximum Windows support; Win32 vs WinRT, System.Speech vs Windows.Media, System.IO vs Windows.Storage, System.Net.HTTP vs Windows.Web, System.Security.Cryptography vs Windows.Security.Cryptography, Console and WPF vs UWP. The source code contains the following capabilities:
+* Authenticating to Bing (OAuth 2), Google (OAuth 2), Houndify services (propriatary).
 * Invoking Houndify intent API.
 * Invoking speech-to-text APIs from Bing (Project Oxford), Google, Houndify.
 * Parsing JSON responses from intent and STT services.
@@ -45,7 +45,8 @@ The source code for woundify is in C#. The classes contain a wealth of informati
 * Using JSON for requests, responses, objects, settings.
 * Geolocating (WinRT only).
 * Async/Await programming style for Console, WPF and UWP systems.
-* Using a Shared project type to share code between Console, WPF and UWP projects.
+* Using reflection to obtain a list of classes implementing a specific interface.
+* Specifying a preferred ordering of API calls via a JSON settings file.
 
 Dependencies:
 * Windows 7+ for Console and WPF. Windows 10+ for UWP.
