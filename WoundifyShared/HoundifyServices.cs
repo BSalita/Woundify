@@ -242,7 +242,7 @@ namespace WoundifyShared
                 UserID = UserID,
                 ClientID = ClientID,
                 // audio specific
-                PartialTranscriptsDesired = true,
+                PartialTranscriptsDesired = Options.options.Services.APIs.Intent.HoundifyIntent.PartialTranscriptsDesired
             });
 
             if (IntentConversationState != null)

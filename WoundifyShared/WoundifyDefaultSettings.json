@@ -92,7 +92,7 @@
           "ClientID": "",
           "ClientKey": "",
           "UserID": "",
-          "PartialTranscriptsDesired": true
+          "PartialTranscriptsDesired": false
         }
       }
     }

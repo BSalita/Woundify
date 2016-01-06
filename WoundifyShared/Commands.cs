@@ -383,9 +383,9 @@ namespace WoundifyShared
 
         private static async System.Threading.Tasks.Task<int> verbSettingsAsync(string[] args, System.Collections.Generic.Stack<string> operatorStack, System.Collections.Generic.Stack<string> operandStack)
         {
-            string text = operatorStack.Peek();
-            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(text.ToUpper()))
+            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek().ToUpper()))
             {
+                string text = operatorStack.Pop();
                 if (text.First() == '@')
                 {
                     string fn = text.Substring(1);
