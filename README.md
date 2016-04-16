@@ -20,7 +20,7 @@ Examples:
   
 > `woundify wakeup intent speak loop`<br>Listens for wakeup word(s) (default "computer") and whatever follows, sends to Houndify, speaks response and loops back to wakeup. This is similar to the behavior of Houndify's mobile app or Amazon Echo.
 
-> `woundify text "What hath God wrought?" parse <br>Parse into grammatical units.
+> `woundify text "What hath God wrought?" parse` <br>Parse into grammatical units.
 ## Installation
 There is no binary executable file available on this repos. You can create an executable using this repos with Visual Studio 2015 Community Edition (free).
 
