@@ -20,6 +20,7 @@ Examples:
   
 > `woundify wakeup intent speak loop`<br>Listens for wakeup word(s) (default "computer") and whatever follows, sends to Houndify, speaks response and loops back to wakeup. This is similar to the behavior of Houndify's mobile app or Amazon Echo.
 
+> `woundify text "What hath God wrought?" parse <br>Parse into grammatical units.
 ## Installation
 There is no binary executable file available on this repos. You can create an executable using this repos with Visual Studio 2015 Community Edition (free).
 
@@ -47,6 +48,7 @@ The source code for woundify is in C#. The classes contain a wealth of informati
 * Async/Await programming style for Console, WPF and UWP systems.
 * Using reflection to obtain a list of classes implementing a specific interface.
 * Specifying a preferred ordering of API calls via a JSON settings file.
+* Parse text into Penn Treebank using Linguistic API from Microsoft Cognitive Services
 
 Dependencies:
 * Windows 7+ for Console and WPF. Windows 10+ for UWP.
@@ -104,6 +106,7 @@ Woundify first tries to load WoundifyDefaultSettings.json file, followed by Woun
 | INTENT            | Pop, send text      | Pop, send audio     | Send text           | Send text           | Send audio          |
 | LISTEN            |                     |                     | TTS, push audio     | TTS, push audio     | Push audio          |
 | LOOP              |                     |                     |                     |                     |                     |
+| PARSE             | Pop, send text      | Pop, STT, send Text | Send text           | Send text           | STT, send text      |
 | PAUSE             |                     |                     | Seconds to pause    |                     |                     |
 | PRONOUNCE         | Pop, push pronounce | Pop, STT, push pronounce | Push pronounce | Push pronounce      | STT, push pronounce |
 | QUIT              |                     |                     |                     |                     |                     |
