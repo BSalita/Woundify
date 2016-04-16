@@ -18,10 +18,13 @@
     <Compile Include="$(MSBuildThisFileDirectory)HelpCommands.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HoundifyServices.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IntentService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Log.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Options.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ParseService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SpeechToText.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SpeechToTextService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TextToSpeech.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WindowsServices.cs" />
   </ItemGroup>

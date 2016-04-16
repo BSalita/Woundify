@@ -11,18 +11,19 @@ namespace WoundifyConsole
         {
             try
             {
+                WoundifyShared.Options.OptionsInit().Wait();
                 WoundifyShared.Commands.ProcessArgsAsync(args).Wait(); // Must use .Wait(), otherwise some await will cause Main to unexpectedly exit.
             }
             catch(Exception ex)
             {
                 do
                 {
-                    Console.WriteLine("Exception:" + ex.Message);
+                    Console.WriteLine("WoundifyConsole: Exception:" + ex.Message);
                 }
                 while ((ex = ex.InnerException) != null);
             }
 #if false // don't exit until async SpeechToText finishes. wait by prompting user to hit a key.
-            // create collection of async tasks (as in SpeechToTasks.ShowAllPreferredSpeechToTextServices). don't exit until all have completed.
+            // create collection of async tasks (as in SpeechToTasks.RunAllPreferredSpeechToTextServices). don't exit until all have completed.
             if (System.Diagnostics.Debugger.IsAttached) // holds window open when in debugger
 #endif
             {

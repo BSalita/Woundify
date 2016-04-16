@@ -36,20 +36,42 @@ namespace WoundifyShared
     }
     class Log
     {
+#if WINDOWS_UWP
+        public static Windows.Storage.Streams.DataWriter logFile;
+        public static async System.Threading.Tasks.Task LogFileInitAsync()
+        {
+            Windows.Storage.StorageFolder tempFolder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(Options.options.tempFolderPath);
+            Windows.Storage.StorageFile sampleFile = await tempFolder.CreateFileAsync("log.txt", Windows.Storage.CreationCollisionOption.ReplaceExisting);
+            Windows.Storage.Streams.IRandomAccessStream logStream = await sampleFile.OpenAsync(Windows.Storage.FileAccessMode.ReadWrite);
+            logFile = new Windows.Storage.Streams.DataWriter(logStream.GetOutputStreamAt(0));
+        }
+#else
         public static System.IO.StreamWriter logFile;
+        public static async System.Threading.Tasks.Task LogFileInitAsync()
+        {
+        }
+#endif
         public static void Write(string message, [CallerFilePath] string sourceFilePath = "", [CallerMemberName] string memberName = "", [CallerLineNumber] int sourceLineNum = 0)
         {
             string messageFormatted = string.Format("{0}.{1}({2}):{3}", System.IO.Path.GetFileNameWithoutExtension(sourceFilePath), memberName, sourceLineNum, message);
             Trace.Write(messageFormatted);
             if (logFile != null)
+#if WINDOWS_UWP
+                logFile.WriteString(messageFormatted);
+#else
                 logFile.Write(messageFormatted);
+#endif
         }
         public static void WriteLine(string message, [CallerFilePath] string sourceFilePath = "", [CallerMemberName] string memberName = "", [CallerLineNumber] int sourceLineNum = 0)
         {
             string messageFormatted = string.Format("{0}.{1}({2}):{3}", System.IO.Path.GetFileNameWithoutExtension(sourceFilePath), memberName, sourceLineNum, message);
             Trace.WriteLine(messageFormatted);
             if (logFile != null)
+#if WINDOWS_UWP
+                logFile.WriteString(messageFormatted + Environment.NewLine);
+#else
                 logFile.WriteLine(messageFormatted);
+#endif
         }
     }
     class Trace

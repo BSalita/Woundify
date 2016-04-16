@@ -1,21 +1,17 @@
 ﻿using System;
 
 using System.Runtime.InteropServices.WindowsRuntime; // AsBuffer()
+using System.Threading.Tasks;
 
 namespace WoundifyShared
 {
-    class GoogleServices : ISpeechToTextService
+    class GoogleServices : WoundifyServices
     {
         private System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
-        public override string ResponseResult { get; set; }
-        public override string ResponseJson { get; set; }
-        public override string ResponseJsonFormatted { get; set; }
-        public override long TotalElapsedMilliseconds { get; set; }
-        public override long RequestElapsedMilliseconds { get; set; }
-        public override int StatusCode { get; set; }
 
-        public override async System.Threading.Tasks.Task SpeechToTextAsync(byte[] audioBytes, int sampleRate)
+        public override async System.Threading.Tasks.Task<ISpeechToTextServiceResponse> SpeechToTextAsync(byte[] audioBytes, int sampleRate)
         {
+            ISpeechToTextServiceResponse response = new ISpeechToTextServiceResponse();
             Log.WriteLine("audio file length:" + audioBytes.Length + " sampleRate:" + sampleRate);
 
             stopWatch.Start();
@@ -31,24 +27,22 @@ namespace WoundifyShared
             Log.WriteLine("after key" + ub.Query);
 #if WINDOWS_UWP
             if (Options.options.Services.APIs.PreferSystemNet)
-                await PostAsyncSystemNet(ub.Uri, audioBytes, sampleRate);
+               response.sr = await PostAsyncSystemNet(ub.Uri, audioBytes, sampleRate);
             else
-                await PostAsyncWindowsWeb(ub.Uri, audioBytes, sampleRate);
+                response.sr = await PostAsyncWindowsWeb(ub.Uri, audioBytes, sampleRate);
 #else
-            await PostAsyncSystemNet(ub.Uri, audioBytes, sampleRate);
+            response.sr = await PostAsyncSystemNet(ub.Uri, audioBytes, sampleRate);
 #endif
             stopWatch.Stop();
-            TotalElapsedMilliseconds = stopWatch.ElapsedMilliseconds;
+            response.sr.TotalElapsedMilliseconds = stopWatch.ElapsedMilliseconds;
             Log.WriteLine("Total: Elapsed milliseconds:" + stopWatch.ElapsedMilliseconds);
+            return response;
         }
 
 #if WINDOWS_UWP
-        public async System.Threading.Tasks.Task PostAsyncWindowsWeb(Uri uri, byte[] audioBytes, int sampleRate)
+        public async System.Threading.Tasks.Task<IServiceResponse> PostAsyncWindowsWeb(Uri uri, byte[] audioBytes, int sampleRate)
         {
-            ResponseResult = null;
-            ResponseJson = null;
-            ResponseJsonFormatted = null;
-            StatusCode = 0;
+        IServiceResponse response = new IServiceResponse();
             try
             {
                 // Using HttpClient to grab chunked encoding (partial) responses.
@@ -64,6 +58,7 @@ namespace WoundifyShared
                         // using chunked transfer requests
                         Log.WriteLine("Using chunked encoding");
                         Windows.Storage.Streams.InMemoryRandomAccessStream contentStream = new Windows.Storage.Streams.InMemoryRandomAccessStream();
+                        // todo: obsolete to use DataWriter? use await Windows.Storage.FileIO.Write..(file);
                         Windows.Storage.Streams.DataWriter dw = new Windows.Storage.Streams.DataWriter(contentStream);
                         dw.WriteBytes(audioBytes);
                         await dw.StoreAsync();
@@ -77,42 +72,42 @@ namespace WoundifyShared
                     requestContent.Headers.Add("Content-Type", "audio/l16; rate=" + sampleRate.ToString()); // must add header AFTER contents are initialized
 
                     Log.WriteLine("Before Post: Elapsed milliseconds:" + stopWatch.ElapsedMilliseconds);
-                    RequestElapsedMilliseconds = stopWatch.ElapsedMilliseconds;
-                    using (Windows.Web.Http.HttpResponseMessage response = await httpClient.PostAsync(uri, requestContent))
+                    response.RequestElapsedMilliseconds = stopWatch.ElapsedMilliseconds;
+                    using (Windows.Web.Http.HttpResponseMessage hrm = await httpClient.PostAsync(uri, requestContent))
                     {
-                        RequestElapsedMilliseconds = stopWatch.ElapsedMilliseconds - RequestElapsedMilliseconds;
-                        StatusCode = (int)response.StatusCode;
-                        Log.WriteLine("After Post: StatusCode:" + StatusCode + " Total milliseconds:" + stopWatch.ElapsedMilliseconds + " Request milliseconds:" + RequestElapsedMilliseconds);
-                        if (response.StatusCode == Windows.Web.Http.HttpStatusCode.Ok)
+                        response.RequestElapsedMilliseconds = stopWatch.ElapsedMilliseconds - response.RequestElapsedMilliseconds;
+                        response.StatusCode = (int)hrm.StatusCode;
+                        Log.WriteLine("After Post: StatusCode:" + response.StatusCode + " Total milliseconds:" + stopWatch.ElapsedMilliseconds + " Request milliseconds:" + response.RequestElapsedMilliseconds);
+                        if (hrm.StatusCode == Windows.Web.Http.HttpStatusCode.Ok)
                         {
-                            string responseContents = await response.Content.ReadAsStringAsync();
+                            string responseContents = await hrm.Content.ReadAsStringAsync();
                             string[] responseJsons = responseContents.Split("\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
                             foreach (string rj in responseJsons)
                             {
-                                ResponseJson = rj;
-                                Newtonsoft.Json.Linq.JToken ResponseBodyToken = Newtonsoft.Json.Linq.JObject.Parse(ResponseJson);
-                                ResponseJsonFormatted = Newtonsoft.Json.JsonConvert.SerializeObject(ResponseBodyToken, new Newtonsoft.Json.JsonSerializerSettings() { Formatting = Newtonsoft.Json.Formatting.Indented });
+                                response.ResponseJson = rj;
+                                Newtonsoft.Json.Linq.JToken ResponseBodyToken = Newtonsoft.Json.Linq.JObject.Parse(response.ResponseJson);
+                                response.ResponseJsonFormatted = Newtonsoft.Json.JsonConvert.SerializeObject(ResponseBodyToken, new Newtonsoft.Json.JsonSerializerSettings() { Formatting = Newtonsoft.Json.Formatting.Indented });
                                 if (Options.options.debugLevel >= 4)
-                                    Log.WriteLine(ResponseJsonFormatted);
+                                    Log.WriteLine(response.ResponseJsonFormatted);
                                 Newtonsoft.Json.Linq.JToken tokResult = ProcessResponse(ResponseBodyToken);
                                 if (tokResult == null || string.IsNullOrEmpty(tokResult.ToString()))
                                 {
-                                    ResponseResult = Options.options.Services.APIs.SpeechToText.missingResponse;
+                                    response.ResponseResult = Options.options.Services.APIs.SpeechToText.missingResponse;
                                     if (Options.options.debugLevel >= 3)
-                                        Log.WriteLine("ResponseResult:" + ResponseResult);
+                                        Log.WriteLine("ResponseResult:" + response.ResponseResult);
                                 }
                                 else
                                 {
-                                    ResponseResult = tokResult.ToString();
+                                    response.ResponseResult = tokResult.ToString();
                                     if (Options.options.debugLevel >= 3)
-                                        Log.WriteLine("ResponseResult:" + tokResult.Path + ": " + ResponseResult);
+                                        Log.WriteLine("ResponseResult:" + tokResult.Path + ": " + response.ResponseResult);
                                 }
                             }
                         }
                         else
                         {
-                            ResponseResult = response.ReasonPhrase;
-                            Log.WriteLine("PostAsync Failed: StatusCode:" + response.ReasonPhrase + "(" + response.StatusCode.ToString() + ")");
+                            response.ResponseResult = hrm.ReasonPhrase;
+                            Log.WriteLine("PostAsync Failed: StatusCode:" + hrm.ReasonPhrase + "(" + response.StatusCode.ToString() + ")");
                         }
                     }
                 }
@@ -123,15 +118,13 @@ namespace WoundifyShared
                 if (ex.InnerException != null)
                     Log.WriteLine("InnerException:" + ex.InnerException);
             }
+        return response;
         }
 #endif
 
-        public async System.Threading.Tasks.Task PostAsyncSystemNet(Uri uri, byte[] audioBytes, int sampleRate)
+        public async System.Threading.Tasks.Task<IServiceResponse> PostAsyncSystemNet(Uri uri, byte[] audioBytes, int sampleRate)
         {
-            ResponseResult = null;
-            ResponseJson = null;
-            ResponseJsonFormatted = null;
-            StatusCode = 0;
+            IServiceResponse response = new IServiceResponse();
             try
             {
                 // Using HttpClient to grab chunked encoding (partial) responses.
@@ -149,15 +142,15 @@ namespace WoundifyShared
                             requestContent.Headers.ContentLength = 0;
                     }
                     Log.WriteLine("Before post: Elapsed milliseconds:" + stopWatch.ElapsedMilliseconds);
-                    RequestElapsedMilliseconds = stopWatch.ElapsedMilliseconds;
-                    using (System.Net.Http.HttpResponseMessage response = await httpClient.PostAsync(uri, requestContent))
+                    response.RequestElapsedMilliseconds = stopWatch.ElapsedMilliseconds;
+                    using (System.Net.Http.HttpResponseMessage rm = await httpClient.PostAsync(uri, requestContent))
                     {
-                        RequestElapsedMilliseconds = stopWatch.ElapsedMilliseconds - RequestElapsedMilliseconds;
-                        StatusCode = (int)response.StatusCode;
-                        Log.WriteLine("After Post: StatusCode:" + StatusCode + " Total milliseconds:" + stopWatch.ElapsedMilliseconds + " Request milliseconds:" + RequestElapsedMilliseconds);
-                        if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                        response.RequestElapsedMilliseconds = stopWatch.ElapsedMilliseconds - response.RequestElapsedMilliseconds;
+                        response.StatusCode = (int)rm.StatusCode;
+                        Log.WriteLine("After Post: StatusCode:" + response.StatusCode + " Total milliseconds:" + stopWatch.ElapsedMilliseconds + " Request milliseconds:" + response.RequestElapsedMilliseconds);
+                        if (rm.StatusCode == System.Net.HttpStatusCode.OK)
                         {
-                            using (System.IO.Stream rr = await response.Content.ReadAsStreamAsync())
+                            using (System.IO.Stream rr = await rm.Content.ReadAsStreamAsync())
                             {
                                 using (System.IO.StreamReader r = new System.IO.StreamReader(rr)) // if needed, there is a constructor which will leave the stream open
                                 {
@@ -182,22 +175,22 @@ namespace WoundifyShared
                                                 ResponseBodyString = ResponseBodyBlob.Substring(0, ex.LinePosition);
                                                 ResponseBodyToken = Newtonsoft.Json.Linq.JObject.Parse(ResponseBodyString);
                                             }
-                                            ResponseJson = ResponseBodyBlob = ResponseBodyBlob.Substring(ResponseBodyString.Length);
-                                            ResponseJsonFormatted = Newtonsoft.Json.JsonConvert.SerializeObject(ResponseBodyToken, new Newtonsoft.Json.JsonSerializerSettings() { Formatting = Newtonsoft.Json.Formatting.Indented });
+                                            response.ResponseJson = ResponseBodyBlob = ResponseBodyBlob.Substring(ResponseBodyString.Length);
+                                            response.ResponseJsonFormatted = Newtonsoft.Json.JsonConvert.SerializeObject(ResponseBodyToken, new Newtonsoft.Json.JsonSerializerSettings() { Formatting = Newtonsoft.Json.Formatting.Indented });
                                             if (Options.options.debugLevel >= 4)
-                                                Log.WriteLine(ResponseJsonFormatted);
+                                                Log.WriteLine(response.ResponseJsonFormatted);
                                             Newtonsoft.Json.Linq.JToken tokResult = ProcessResponse(ResponseBodyToken);
                                             if (tokResult == null || string.IsNullOrEmpty(tokResult.ToString()))
                                             {
-                                                ResponseResult = Options.options.Services.APIs.SpeechToText.missingResponse;
+                                                response.ResponseResult = Options.options.Services.APIs.SpeechToText.missingResponse;
                                                 if (Options.options.debugLevel >= 3)
-                                                    Log.WriteLine(ResponseResult);
+                                                    Log.WriteLine(response.ResponseResult);
                                             }
                                             else
                                             {
-                                                ResponseResult = tokResult.ToString();
+                                                response.ResponseResult = tokResult.ToString();
                                                 if (Options.options.debugLevel >= 3)
-                                                    Log.WriteLine(tokResult.Path + ": " + ResponseResult);
+                                                    Log.WriteLine(tokResult.Path + ": " + response.ResponseResult);
                                             }
                                         }
                                     }
@@ -206,8 +199,8 @@ namespace WoundifyShared
                         }
                         else
                         {
-                            ResponseResult = response.ReasonPhrase;
-                            Log.WriteLine("PostAsync Failed: StatusCode:" + response.ReasonPhrase + "(" + response.StatusCode.ToString() + ")");
+                            response.ResponseResult = rm.ReasonPhrase;
+                            Log.WriteLine("PostAsync Failed: StatusCode:" + rm.ReasonPhrase + "(" + response.StatusCode.ToString() + ")");
                         }
                     }
                 }
@@ -218,6 +211,7 @@ namespace WoundifyShared
                 if (ex.InnerException != null)
                     Log.WriteLine("InnerException:" + ex.InnerException);
             }
+            return response;
         }
 
         private static Newtonsoft.Json.Linq.JToken ProcessResponse(Newtonsoft.Json.Linq.JToken response)
@@ -245,6 +239,5 @@ namespace WoundifyShared
             }
             return tok;
         }
-
     }
 }

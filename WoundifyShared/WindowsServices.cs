@@ -1,27 +1,23 @@
 ﻿using System;
 
-namespace WoundifyShared
+namespace WoundifyShared 
 {
-    class WindowsServices : ISpeechToTextService
+    class WindowsServices : WoundifyServices
     {
         private static System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
-        public override string ResponseResult { get; set; }
-        public override string ResponseJson { get; set; }
-        public override string ResponseJsonFormatted { get; set; }
-        public override long TotalElapsedMilliseconds { get; set; }
-        public override long RequestElapsedMilliseconds { get; set; }
-        public override int StatusCode { get; set; }
 
-        public override async System.Threading.Tasks.Task SpeechToTextAsync(byte[] audioBytes, int sampleRate)
+        public override async System.Threading.Tasks.Task<ISpeechToTextServiceResponse> SpeechToTextAsync(byte[] audioBytes, int sampleRate)
         {
+            ISpeechToTextServiceResponse response = new ISpeechToTextServiceResponse();
             Log.WriteLine("audio file length:" + audioBytes.Length + " sampleRate:" + sampleRate);
-
             stopWatch.Start();
-            ResponseResult = await SpeechToText.SpeechToTextAsync(audioBytes);
-            StatusCode = 200;
+            response.sr = new IServiceResponse();
+            response.sr.ResponseResult = await SpeechToText.SpeechToTextAsync(audioBytes);
+            response.sr.StatusCode = 200;
             stopWatch.Stop();
-            TotalElapsedMilliseconds = RequestElapsedMilliseconds = stopWatch.ElapsedMilliseconds;
+            response.sr.TotalElapsedMilliseconds = response.sr.RequestElapsedMilliseconds = stopWatch.ElapsedMilliseconds;
             Log.WriteLine("Total: Elapsed milliseconds:" + stopWatch.ElapsedMilliseconds);
+            return response;
         }
     }
 }

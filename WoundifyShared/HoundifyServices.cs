@@ -8,57 +8,53 @@ using Newtonsoft.Json.Linq;
 
 namespace WoundifyShared
 {
-    class HoundifyServices : IntentService
+    class HoundifyServices : WoundifyServices
     {
         // save IntentConversationState (info about request and requestor) obtained from Houndify's ResultInfo for passing on to next Houndify request.
         private static JToken IntentConversationState = null;
         private System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
 
-        public override string ResponseResult { get; set; }
-        public override string ResponseJson { get; set; }
-        public override string ResponseJsonFormatted { get; set; }
-        public override long TotalElapsedMilliseconds { get; set; }
-        public override long RequestElapsedMilliseconds { get; set; }
-        public override int StatusCode { get; set; }
-
-        public override async System.Threading.Tasks.Task IntentAsync(string text)
+        public override async System.Threading.Tasks.Task<IIntentServiceResponse> IntentServiceAsync(string text)
         {
+            IIntentServiceResponse response = new IIntentServiceResponse();
             dynamic settings = Options.options.Services.APIs.Intent.HoundifyIntent;
             UriBuilder ub = new UriBuilder();
             ub.Scheme = "https";
             ub.Host = "api.houndify.com";
             ub.Path = "v1/text";
             ub.Query = "query=" + System.Uri.EscapeDataString(text.Trim());
-            await PostAsync(ub, new byte[0], settings);
+            response.sr = await PostAsync(ub, new byte[0], settings);
+            return response;
         }
 
-        public override async System.Threading.Tasks.Task IntentAsync(byte[] audioBytes, int sampleRate)
+        public override async System.Threading.Tasks.Task<IIntentServiceResponse> IntentServiceAsync(byte[] audioBytes, int sampleRate)
         {
+            IIntentServiceResponse response = new IIntentServiceResponse();
             dynamic settings = Options.options.Services.APIs.Intent.HoundifyIntent;
             UriBuilder ub = new UriBuilder();
             ub.Scheme = "https";
             ub.Host = "api.houndify.com";
             ub.Path = "v1/audio";
-            await PostAsync(ub, audioBytes, settings, sampleRate);
+            response.sr = await PostAsync(ub, audioBytes, settings, sampleRate);
+            return response;
         }
 
-        public override async System.Threading.Tasks.Task SpeechToTextAsync(byte[] audioBytes, int sampleRate)
+        public override async System.Threading.Tasks.Task<ISpeechToTextServiceResponse> SpeechToTextAsync(byte[] audioBytes, int sampleRate)
         {
+            ISpeechToTextServiceResponse response = new ISpeechToTextServiceResponse();
             dynamic settings = Options.options.Services.APIs.SpeechToText.HoundifySpeechToText;
             UriBuilder ub = new UriBuilder();
             ub.Scheme = "https";
             ub.Host = "api.houndify.com";
             ub.Path = "v1/audio";
-            await PostAsync(ub, audioBytes, settings, sampleRate);
+            response.sr = await PostAsync(ub, audioBytes, settings, sampleRate);
+            return response;
         }
 
 #if WINDOWS_UWP
-        public async System.Threading.Tasks.Task PostAsyncWindowsWeb(Uri uri, string RequestBodyJson, byte[] RequestBodyBytes, string HoundRequestAuthentication, string HoundClientAuthentication)
+        public async System.Threading.Tasks.Task<IServiceResponse> PostAsyncWindowsWeb(Uri uri, string RequestBodyJson, byte[] RequestBodyBytes, string HoundRequestAuthentication, string HoundClientAuthentication)
         {
-            ResponseResult = null;
-            ResponseJson = null;
-            ResponseJsonFormatted = null;
-            StatusCode = 0;
+        IServiceResponse response = new IServiceResponse();
             try
             {
                 // Using HttpClient to grab chunked encoding (partial) responses.
@@ -74,6 +70,7 @@ namespace WoundifyShared
                         // using chunked transfer requests
                         Log.WriteLine("Using chunked encoding");
                         Windows.Storage.Streams.InMemoryRandomAccessStream contentStream = new Windows.Storage.Streams.InMemoryRandomAccessStream();
+                        // todo: obsolete to use DataWriter? use await Windows.Storage.FileIO.Write..(file);
                         Windows.Storage.Streams.DataWriter dw = new Windows.Storage.Streams.DataWriter(contentStream);
                         dw.WriteBytes(RequestBodyBytes);
                         await dw.StoreAsync();
@@ -87,35 +84,35 @@ namespace WoundifyShared
                     // houndify doesn't need Content-Type? // requestContent.Headers.Add("Content-Type", contentType);
 
                     Log.WriteLine("Before Post: Elapsed milliseconds:" + stopWatch.ElapsedMilliseconds);
-                    RequestElapsedMilliseconds = stopWatch.ElapsedMilliseconds;
-                    using(Windows.Web.Http.HttpResponseMessage response = await httpClient.PostAsync(uri, requestContent))
+                    response.RequestElapsedMilliseconds = stopWatch.ElapsedMilliseconds;
+                    using(Windows.Web.Http.HttpResponseMessage rm = await httpClient.PostAsync(uri, requestContent))
                     {
-                        RequestElapsedMilliseconds = stopWatch.ElapsedMilliseconds - RequestElapsedMilliseconds;
-                        StatusCode = (int)response.StatusCode;
-                        Log.WriteLine("After Post: StatusCode:" + StatusCode + " Total milliseconds:" + stopWatch.ElapsedMilliseconds + " Request milliseconds:" + RequestElapsedMilliseconds);
-                        if (response.StatusCode == Windows.Web.Http.HttpStatusCode.Ok)
+                        response.RequestElapsedMilliseconds = stopWatch.ElapsedMilliseconds - response.RequestElapsedMilliseconds;
+                        response.StatusCode = (int)rm.StatusCode;
+                        Log.WriteLine("After Post: StatusCode:" + response.StatusCode + " Total milliseconds:" + stopWatch.ElapsedMilliseconds + " Request milliseconds:" + response.RequestElapsedMilliseconds);
+                        if (rm.StatusCode == Windows.Web.Http.HttpStatusCode.Ok)
                         {
-                            string responseContents = await response.Content.ReadAsStringAsync();
+                            string responseContents = await rm.Content.ReadAsStringAsync();
                             string[] responseJsons = responseContents.Split("\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
                             foreach (string rj in responseJsons)
                             {
-                                ResponseJson = rj;
-                                JToken ResponseBodyToken = JObject.Parse(ResponseJson);
-                                ResponseJsonFormatted = JsonConvert.SerializeObject(ResponseBodyToken, new JsonSerializerSettings() { Formatting = Newtonsoft.Json.Formatting.Indented });
+                                response.ResponseJson = rj;
+                                JToken ResponseBodyToken = JObject.Parse(response.ResponseJson);
+                                response.ResponseJsonFormatted = JsonConvert.SerializeObject(ResponseBodyToken, new JsonSerializerSettings() { Formatting = Newtonsoft.Json.Formatting.Indented });
                                 if (Options.options.debugLevel >= 4)
-                                    Log.WriteLine(ResponseJsonFormatted);
+                                    Log.WriteLine(response.ResponseJsonFormatted);
                                 JToken tokResult = ProcessResponse(ResponseBodyToken);
                                 if (tokResult == null || string.IsNullOrEmpty(tokResult.ToString()))
                                 {
-                                    ResponseResult = Options.options.Services.APIs.SpeechToText.missingResponse;
+                                    response.ResponseResult = Options.options.Services.APIs.SpeechToText.missingResponse;
                                     if (Options.options.debugLevel >= 3)
-                                        Log.WriteLine("ResponseResult:" + ResponseResult);
+                                        Log.WriteLine("ResponseResult:" + response.ResponseResult);
                                 }
                                 else
                                 {
-                                    ResponseResult = tokResult.ToString();
+                                    response.ResponseResult = tokResult.ToString();
                                     if (Options.options.debugLevel >= 3)
-                                        Log.WriteLine("ResponseResult:" + tokResult.Path + ": " + ResponseResult);
+                                        Log.WriteLine("ResponseResult:" + tokResult.Path + ": " + response.ResponseResult);
                                 }
                             }
                         }
@@ -128,15 +125,13 @@ namespace WoundifyShared
                 if (ex.InnerException != null)
                     Log.WriteLine("InnerException:" + ex.InnerException);
             }
+        return response;
         }
 #endif
 
-        public async System.Threading.Tasks.Task PostAsyncSystemNet(Uri uri, string RequestBodyJson, byte[] RequestBodyBytes, string HoundRequestAuthentication, string HoundClientAuthentication)
+        public async System.Threading.Tasks.Task<IServiceResponse> PostAsyncSystemNet(Uri uri, string RequestBodyJson, byte[] RequestBodyBytes, string HoundRequestAuthentication, string HoundClientAuthentication)
         {
-            ResponseResult = null;
-            ResponseJson = null;
-            ResponseJsonFormatted = null;
-            StatusCode = 0;
+            IServiceResponse response = new IServiceResponse();
             try
             {
                 // Using HttpClient to grab chunked encoding (partial) responses.
@@ -152,15 +147,15 @@ namespace WoundifyShared
                         httpClient.DefaultRequestHeaders.Add("Transfer-Encoding", "chunked");
                     }
                     Log.WriteLine("Before Post: Elapsed milliseconds:" + stopWatch.ElapsedMilliseconds);
-                    RequestElapsedMilliseconds = stopWatch.ElapsedMilliseconds;
-                    using (System.Net.Http.HttpResponseMessage response = await httpClient.PostAsync(uri, new System.Net.Http.ByteArrayContent(RequestBodyBytes)))
+                    response.RequestElapsedMilliseconds = stopWatch.ElapsedMilliseconds;
+                    using (System.Net.Http.HttpResponseMessage rm = await httpClient.PostAsync(uri, new System.Net.Http.ByteArrayContent(RequestBodyBytes)))
                     {
-                        RequestElapsedMilliseconds = stopWatch.ElapsedMilliseconds - RequestElapsedMilliseconds;
-                        StatusCode = (int)response.StatusCode;
-                        Log.WriteLine("After Post: StatusCode:" + StatusCode + " Total milliseconds:" + stopWatch.ElapsedMilliseconds + " Request milliseconds:" + RequestElapsedMilliseconds);
-                        if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                        response.RequestElapsedMilliseconds = stopWatch.ElapsedMilliseconds - response.RequestElapsedMilliseconds;
+                        response.StatusCode = (int)rm.StatusCode;
+                        Log.WriteLine("After Post: StatusCode:" + response.StatusCode + " Total milliseconds:" + stopWatch.ElapsedMilliseconds + " Request milliseconds:" + response.RequestElapsedMilliseconds);
+                        if (rm.StatusCode == System.Net.HttpStatusCode.OK)
                         {
-                            using (System.IO.Stream rr = await response.Content.ReadAsStreamAsync())
+                            using (System.IO.Stream rr = await rm.Content.ReadAsStreamAsync())
                             {
                                 using (System.IO.StreamReader r = new System.IO.StreamReader(rr)) // if needed, there is a constructor which will leave the stream open
                                 {
@@ -185,22 +180,22 @@ namespace WoundifyShared
                                                 ResponseBodyString = ResponseBodyBlob.Substring(0, ex.LinePosition);
                                                 ResponseBodyToken = JObject.Parse(ResponseBodyString);
                                             }
-                                            ResponseJson = ResponseBodyBlob = ResponseBodyBlob.Substring(ResponseBodyString.Length);
-                                            ResponseJsonFormatted = JsonConvert.SerializeObject(ResponseBodyToken, new JsonSerializerSettings() { Formatting = Newtonsoft.Json.Formatting.Indented });
+                                            response.ResponseJson = ResponseBodyBlob = ResponseBodyBlob.Substring(ResponseBodyString.Length);
+                                            response.ResponseJsonFormatted = JsonConvert.SerializeObject(ResponseBodyToken, new JsonSerializerSettings() { Formatting = Newtonsoft.Json.Formatting.Indented });
                                             if (Options.options.debugLevel >= 4)
-                                                Log.WriteLine(ResponseJsonFormatted);
+                                                Log.WriteLine(response.ResponseJsonFormatted);
                                             JToken tokResult = ProcessResponse(ResponseBodyToken);
                                             if (tokResult == null || string.IsNullOrEmpty(tokResult.ToString()))
                                             {
-                                                ResponseResult = Options.options.Services.APIs.SpeechToText.missingResponse;
+                                                response.ResponseResult = Options.options.Services.APIs.SpeechToText.missingResponse;
                                                 if (Options.options.debugLevel >= 3)
-                                                    Log.WriteLine("ResponseResult:" + ResponseResult);
+                                                    Log.WriteLine("ResponseResult:" + response.ResponseResult);
                                             }
                                             else
                                             {
-                                                ResponseResult = tokResult.ToString();
+                                                response.ResponseResult = tokResult.ToString();
                                                 if (Options.options.debugLevel >= 3)
-                                                    Log.WriteLine(tokResult.Path + ": " + ResponseResult);
+                                                    Log.WriteLine(tokResult.Path + ": " + response.ResponseResult);
                                             }
                                         }
                                     }
@@ -209,8 +204,8 @@ namespace WoundifyShared
                         }
                         else
                         {
-                            ResponseJson = response.ReasonPhrase;
-                            Log.WriteLine("SendAsync Failed: StatusCode:" + response.ReasonPhrase + "(" + response.StatusCode.ToString() + ")");
+                            response.ResponseJson = rm.ReasonPhrase;
+                            Log.WriteLine("SendAsync Failed: StatusCode:" + rm.ReasonPhrase + "(" + response.StatusCode.ToString() + ")");
                         }
                     }
                 }
@@ -221,11 +216,12 @@ namespace WoundifyShared
                 if (ex.InnerException != null)
                     Log.WriteLine("InnerException:" + ex.InnerException);
             }
+            return response;
         }
 
-        public async System.Threading.Tasks.Task PostAsync(UriBuilder ub, byte[] RequestContentBytes, dynamic settings, int sampleRate = 0)
+        public async System.Threading.Tasks.Task<IServiceResponse> PostAsync(UriBuilder ub, byte[] RequestContentBytes, dynamic settings, int sampleRate = 0)
         {
-            ResponseJson = null;
+            IServiceResponse response = new IServiceResponse();
             Log.WriteLine("Content length:" + RequestContentBytes.Length);
             stopWatch.Start();
 
@@ -290,18 +286,22 @@ namespace WoundifyShared
                 Log.WriteLine("HoundRequestAuthentication:" + HoundRequestAuthentication);
                 Log.WriteLine("HoundClientAuthentication:" + HoundClientAuthentication);
             }
+#if true
+            Log.WriteLine("curl -X POST --data-binary @computer.wav --header \"Hound-Request-Authentication:" + HoundRequestAuthentication + "\" --header \"Hound-Client-Authentication:" + HoundClientAuthentication + "\" --header \"Hound-Request-Info:" + RequestBodyJson.Replace('"', '\'') + "\" " + ub.Uri);
+#endif
 
 #if WINDOWS_UWP
             if (Options.options.Services.APIs.PreferSystemNet)
-                await PostAsyncSystemNet(ub.Uri, RequestBodyJson, RequestBodyBytes, HoundRequestAuthentication, HoundClientAuthentication);
+                response = await PostAsyncSystemNet(ub.Uri, RequestBodyJson, RequestBodyBytes, HoundRequestAuthentication, HoundClientAuthentication);
             else
-                await PostAsyncWindowsWeb(ub.Uri, RequestBodyJson, RequestBodyBytes, HoundRequestAuthentication, HoundClientAuthentication);
+                response = await PostAsyncWindowsWeb(ub.Uri, RequestBodyJson, RequestBodyBytes, HoundRequestAuthentication, HoundClientAuthentication);
 #else
-            await PostAsyncSystemNet(ub.Uri, RequestBodyJson, RequestBodyBytes, HoundRequestAuthentication, HoundClientAuthentication);
+            response = await PostAsyncSystemNet(ub.Uri, RequestBodyJson, RequestBodyBytes, HoundRequestAuthentication, HoundClientAuthentication);
 #endif
             stopWatch.Stop();
-            TotalElapsedMilliseconds = stopWatch.ElapsedMilliseconds;
+            response.TotalElapsedMilliseconds = stopWatch.ElapsedMilliseconds;
             Log.WriteLine("Total: Elapsed milliseconds:" + stopWatch.ElapsedMilliseconds);
+            return response;
         }
 
         private JToken ProcessResponse(JToken response)

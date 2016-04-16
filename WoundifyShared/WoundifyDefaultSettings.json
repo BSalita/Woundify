@@ -38,9 +38,6 @@
     "country": "United States",
     "countryCode": "US"
   },
-  "intentServices": {
-    "preferredIntent": "HoundifyIntent"
-  },
   "locale": {
     "language": "en-US"
   },
@@ -58,6 +55,25 @@
     "APIs": {
       "preferSystemNet": false,
       "preferChunkedEncodedRequests": false,
+      "Intent": {
+        "preferredIntentServices": [
+          "HoundifyServices"
+        ],
+        "HoundifyIntent": {
+          "ClientID": "",
+          "ClientKey": "",
+          "UserID": "",
+          "PartialTranscriptsDesired": false
+        }
+      },
+      "Parse": {
+        "preferredParseServices": [
+          "BingServices"
+        ],
+        "BingParse": {
+          "OcpApimSubscriptionKey": ""
+        }
+      },
       "SpeechToText": {
         "preferredSpeechToTextServices": [
           "HoundifyServices",
@@ -85,14 +101,6 @@
           "callSpeechToText": true,
           "voiceAge": 0,
           "voiceGender": 0
-        }
-      },
-      "Intent": {
-        "HoundifyIntent": {
-          "ClientID": "",
-          "ClientKey": "",
-          "UserID": "",
-          "PartialTranscriptsDesired": false
         }
       }
     }

@@ -44,6 +44,7 @@ namespace WoundifyShared
             {
                 Windows.Storage.StorageFolder tempFolder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(Options.options.tempFolderPath);
                 Windows.Storage.StorageFile file = await tempFolder.GetFileAsync(fileName);
+                // todo: obsolete to use DataReader? use await Windows.Storage.FileIO.Read...(file);
                 using (Windows.Storage.Streams.IRandomAccessStream stream = await file.OpenReadAsync())
                 {
                     using (Windows.Storage.Streams.DataReader reader = new Windows.Storage.Streams.DataReader(stream.GetInputStreamAt(0)))

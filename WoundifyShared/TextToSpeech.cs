@@ -9,30 +9,40 @@ namespace WoundifyShared
         {
             using (Windows.Media.SpeechSynthesis.SpeechSynthesizer synth = new Windows.Media.SpeechSynthesis.SpeechSynthesizer())
             {
-                Windows.Media.SpeechSynthesis.SpeechSynthesisStream synthStream = await synth.SynthesizeTextToStreamAsync(text); // doesn't handle special characters such as quotes
-                using (Windows.Storage.Streams.DataReader reader = new Windows.Storage.Streams.DataReader(synthStream))
+                try
                 {
-                    await reader.LoadAsync((uint)synthStream.Size);
-                    Windows.Storage.Streams.IBuffer buffer = reader.ReadBuffer((uint)synthStream.Size);
-                    Windows.Storage.StorageFolder tempFolder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(Options.options.tempFolderPath);
-                    Windows.Storage.StorageFile srcFile = await tempFolder.CreateFileAsync(Options.options.audio.speechSynthesisFileName, Windows.Storage.CreationCollisionOption.ReplaceExisting);
-                    await Windows.Storage.FileIO.WriteBufferAsync(srcFile, buffer);
-                    Windows.Storage.FileProperties.MusicProperties musicProperties = await srcFile.Properties.GetMusicPropertiesAsync();
-                    Log.WriteLine("Bitrate:" + musicProperties.Bitrate);
-
-                    Windows.Media.MediaProperties.MediaEncodingProfile profile = Windows.Media.MediaProperties.MediaEncodingProfile.CreateWav(Windows.Media.MediaProperties.AudioEncodingQuality.Low);
-                    Windows.Media.Transcoding.MediaTranscoder transcoder = new Windows.Media.Transcoding.MediaTranscoder();
-                    Windows.Storage.StorageFile destFile = await tempFolder.CreateFileAsync(fileName, Windows.Storage.CreationCollisionOption.ReplaceExisting);
-
-                    Windows.Media.Transcoding.PrepareTranscodeResult result = await transcoder.PrepareFileTranscodeAsync(srcFile, destFile, profile);
-                    if (result.CanTranscode)
+                    using (Windows.Media.SpeechSynthesis.SpeechSynthesisStream synthStream = await synth.SynthesizeTextToStreamAsync(text)) // doesn't handle special characters such as quotes
                     {
-                        await result.TranscodeAsync();
+                        // todo: obsolete to use DataReader? use await Windows.Storage.FileIO.Read...(file);
+                        using (Windows.Storage.Streams.DataReader reader = new Windows.Storage.Streams.DataReader(synthStream))
+                        {
+                            await reader.LoadAsync((uint)synthStream.Size);
+                            Windows.Storage.Streams.IBuffer buffer = reader.ReadBuffer((uint)synthStream.Size);
+                            Windows.Storage.StorageFolder tempFolder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(Options.options.tempFolderPath);
+                            Windows.Storage.StorageFile srcFile = await tempFolder.CreateFileAsync(Options.options.audio.speechSynthesisFileName, Windows.Storage.CreationCollisionOption.ReplaceExisting);
+                            await Windows.Storage.FileIO.WriteBufferAsync(srcFile, buffer);
+                            Windows.Storage.FileProperties.MusicProperties musicProperties = await srcFile.Properties.GetMusicPropertiesAsync();
+                            Log.WriteLine("Bitrate:" + musicProperties.Bitrate);
+
+                            Windows.Media.MediaProperties.MediaEncodingProfile profile = Windows.Media.MediaProperties.MediaEncodingProfile.CreateWav(Windows.Media.MediaProperties.AudioEncodingQuality.Low);
+                            Windows.Media.Transcoding.MediaTranscoder transcoder = new Windows.Media.Transcoding.MediaTranscoder();
+                            Windows.Storage.StorageFile destFile = await tempFolder.CreateFileAsync(fileName, Windows.Storage.CreationCollisionOption.ReplaceExisting);
+
+                            Windows.Media.Transcoding.PrepareTranscodeResult result = await transcoder.PrepareFileTranscodeAsync(srcFile, destFile, profile);
+                            if (result.CanTranscode)
+                            {
+                                await result.TranscodeAsync();
+                            }
+                            else
+                            {
+                                Log.WriteLine("can't transcode file:" + result.FailureReason.ToString());
+                            }
+                        }
                     }
-                    else
-                    {
-                        Log.WriteLine("can't transcode file:" + result.FailureReason.ToString());
-                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
                 }
             }
             return 0;
@@ -48,7 +58,7 @@ namespace WoundifyShared
             return 0;
         }
         public static async System.Threading.Tasks.Task<string> TextToSpelledPronunciation(string text)
-        {   
+        {
             return text; // todo: implement
         }
 #else

@@ -21,24 +21,33 @@ namespace WoundifyShared
                 {
                     if (options == null)
                     {
-                        Console.WriteLine(". File found.");
+                        Console.WriteLine(". File found. Initializing settings.");
                         options = Newtonsoft.Json.JsonConvert.DeserializeObject<Settings.RootObject>(System.IO.File.ReadAllText(path));
-                        break;
                     }
                     else
                     {
-                        Console.WriteLine(". Overriding settings.");
+                        Console.WriteLine(". File found. Overriding settings.");
                         Newtonsoft.Json.JsonConvert.PopulateObject(System.IO.File.ReadAllText(path), options);
-                        break;
                     }
+                    break;
                 }
                 else
                     Console.WriteLine(". File not found.");
             }
         }
 
-        static Options()
+        public static async System.Threading.Tasks.Task OptionsInit()
         {
+#if WINDOWS_UWP
+            string[] defaultSettingsJsonSearchPaths = {
+                System.IO.Path.GetFullPath(System.IO.Path.Combine(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, @".\")) + "WoundifyDefaultSettings.json",
+               "WoundifyDefaultSettings.json"
+            };
+            string[] settingsJsonSearchPaths = {
+                System.IO.Path.GetFullPath(System.IO.Path.Combine(Windows.ApplicationModel.Package.Current.InstalledLocation.Path, @".\")) + "WoundifySettings.json",
+                "WoundifySettings.json"
+            };
+#else
             string[] defaultSettingsJsonSearchPaths = {
                 System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + System.IO.Path.DirectorySeparatorChar + "WoundifyDefaultSettings.json",
                 "WoundifyDefaultSettings.json"
@@ -47,6 +56,7 @@ namespace WoundifyShared
                 System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + System.IO.Path.DirectorySeparatorChar + "WoundifySettings.json",
                 "WoundifySettings.json"
             };
+#endif
             SearchForSettings(defaultSettingsJsonSearchPaths);
             SearchForSettings(settingsJsonSearchPaths);
             if (options == null)
@@ -68,9 +78,14 @@ namespace WoundifyShared
                 System.IO.Directory.CreateDirectory(options.tempFolderPath);
             if (string.IsNullOrEmpty(options.logFilePath))
                 options.logFilePath = options.tempFolderPath + "log.txt";
+            await Log.LogFileInitAsync();
             Console.WriteLine("Log file:" + options.logFilePath);
+#if WINDOWS_UWP
+#else
             Log.logFile = new System.IO.StreamWriter(options.logFilePath);
             Log.logFile.AutoFlush = true; // flush after every write
+#endif
+            // todo: obsolete? for initializing statics?
             bing = new BingServices();
             google = new GoogleServices();
             houndify = new HoundifyServices();
@@ -115,11 +130,6 @@ namespace WoundifyShared
             public string regionCode { get; set; }
             public string country { get; set; }
             public string countryCode { get; set; }
-        }
-
-        public class IntentServices
-        {
-            public string preferredIntent { get; set; }
         }
 
         public class Locale
@@ -185,15 +195,28 @@ namespace WoundifyShared
 
         public class Intent
         {
+            public System.Collections.Generic.List<string> preferredIntentServices { get; set; }
             public HoundifyIntent HoundifyIntent { get; set; }
+        }
+
+        public class BingParse
+        {
+            public string OcpApimSubscriptionKey { get; set; }
+        }
+
+        public class Parse
+        {
+            public System.Collections.Generic.List<string> preferredParseServices { get; set; }
+            public BingParse BingParse { get; set; }
         }
 
         public class APIs
         {
             public bool PreferSystemNet { get; set; }
             public bool PreferChunkedEncodedRequests { get; set; }
-            public SpeechToText SpeechToText { get; set; }
             public Intent Intent { get; set; }
+            public Parse Parse { get; set; }
+            public SpeechToText SpeechToText { get; set; }
         }
 
         public class Services
