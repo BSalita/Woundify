@@ -28,7 +28,7 @@ namespace WoundifyShared
                 { "INTENT", new verbAction() { actionFunc = verbIntentAsync, stackChange = 0, helpTip = "Pop stack passing to intent service, push response." } },
                 { "LISTEN",new verbAction() { actionFunc = verbListenAsync, stackChange = +1, helpTip = "Listen and push utterance." } },
                 { "LOOP", new verbAction() { actionFunc = verbLoopAsync, stackChange = 0, helpTip = "Loop to first command and repeat." } },
-                { "PARSE", new verbAction() { actionFunc = verbParseAsync, stackChange = 0, helpTip = "Parse into phrase types. Show constituency tree." } },
+                { "PARSE", new verbAction() { actionFunc = verbParseAsync, stackChange = 0, helpTip = "Parse into phrase types." } },
                 { "PAUSE", new verbAction() { actionFunc = verbPauseAsync, stackChange = 0, helpTip = "Pause for specified seconds." } },
                 { "PRONOUNCE", new verbAction() { actionFunc = verbPronounceAsync, stackChange = 0, helpTip = "Convert text at top of stack into spelled pronounciations." } },
                 { "QUIT", new verbAction() { actionFunc = verbQuitAsync, stackChange = 0, helpTip = "Quit processing." } },
@@ -282,6 +282,9 @@ namespace WoundifyShared
             return 0;
         }
 
+        // todo:
+        // 2. Return whole response or let each class determine the return value?
+        // 3. How to inherit interfaces for SST, intent, parse?
         private static async System.Threading.Tasks.Task<int> verbParseAsync(string[] args, System.Collections.Generic.Stack<string> operatorStack, System.Collections.Generic.Stack<string> operandStack)
         {
             string text;
@@ -354,20 +357,103 @@ namespace WoundifyShared
                     throw new Exception("Parse: Unknown file extension:" + fileName);
                 }
             }
-            Console.WriteLine("Parse result:\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
+            Console.WriteLine("Parse result (audio):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
             stackFileName = "stack" + (operandStack.Count + 1).ToString() + ".txt";
             await Helpers.WriteTextToFileAsync(stackFileName, r.sr.ResponseResult);
             operandStack.Push(stackFileName);
             lastServiceResponse = r.sr;
-            ConstituencyTreeNode root = ParseHelpers.ConstituencyTreeFromText(r.sr.ResponseResult);
-            text = ParseHelpers.TextFromConstituencyTree(root);
-            if (text != r.sr.ResponseResult)
-                throw new FormatException();
-            string words = ParseHelpers.WordsFromConstituencyTree(root);
-            string[] printLines = ParseHelpers.FormatConstituencyTree(root);
-            foreach (string p in printLines)
-                Console.WriteLine(p);
+            TreeNode root = new TreeNode("root");
+            CreateParseTree(r.sr.ResponseResult, root);
+            printlines = new string[20];
+            PrintParseTree(root, 0, 0);
+            for (int i = 0; i < printlines.Length; ++i)
+                if (printlines[i] != null)
+                    Console.WriteLine(printlines[i]);
             return 0;
+        }
+        private static string[] printlines;
+        private static void PrintParseTree(TreeNode node, int level, int col)
+        {
+            if (printlines[level] == null)
+                printlines[level] = "|";
+            if (col - printlines[level].Length - 1 > 0)
+                printlines[level] += string.Empty.PadRight(col - printlines[level].Length - 1, ' ') + "|";
+            foreach (TreeNode n in node.Children)
+            {
+                if (n.word == null)
+                {
+                    int previousLen = printlines[level].Length;
+                    PrintParseTree(n, level + 1, previousLen);
+                    int len = printlines[level + 1].Length - previousLen - n.GU.Length -1;
+                    int left = len / 2;
+                    int right = len - left;
+                    printlines[level] += string.Empty.PadRight(left, '-') + n.GU + string.Empty.PadRight(right, '-') + "|";
+                }
+                else
+                    printlines[level] += " " + n.GU + ":" + n.word + " |";
+            }
+        }
+        class TreeNode
+        {
+            public System.Collections.Generic.List<TreeNode> Children = new System.Collections.Generic.List<TreeNode>();
+
+            public string GU { get; set; }
+            public string word { get; set; }
+            public TreeNode parent { get; set; }
+
+            public TreeNode(string _GU)
+            {
+                GU = _GU;
+            }
+
+            public TreeNode(string _GU, string _word)
+            {
+                GU = _GU;
+                word = _word;
+            }
+
+            public TreeNode AddChild(TreeNode node, TreeNode parent)
+            {
+                node.parent = parent;
+                Children.Add(node);
+                return node;
+            }
+        }
+        private static string CreateParseTree(string parse, TreeNode node)
+        {
+            if (string.IsNullOrWhiteSpace(parse))
+                return null;
+            parse = parse.Replace(" (", "(");
+            while (parse[0] == '(')
+            {
+                int lastIndex = parse.IndexOfAny(" ()".ToCharArray(), 1);
+                char lastChar = parse[lastIndex];
+                string gu = parse.Substring(1, lastIndex - 1);
+                parse = parse.Substring(lastIndex).TrimStart();
+                TreeNode child;
+                switch (lastChar)
+                {
+                    case ' ':
+                        lastIndex = parse.IndexOfAny("()".ToCharArray());
+                        string wo = parse.Substring(0, lastIndex);
+                        child = node.AddChild(new TreeNode(gu, wo), node);
+                        parse = parse.Substring(lastIndex).TrimStart();
+                        if (parse[0] != ')')
+                            throw new FormatException();
+                        break;
+                    case '(':
+                        child = node.AddChild(new TreeNode(gu), node);
+                        parse = CreateParseTree(parse, child);
+                        parse = parse.Substring(1).TrimStart();
+                        break;
+                    case ')':
+                        parse = parse.Substring(lastIndex).TrimStart();
+                        break;
+                    default:
+                        throw new FormatException();
+                }
+            }
+            return parse;
         }
 
         private static async System.Threading.Tasks.Task<int> verbPauseAsync(string[] args, System.Collections.Generic.Stack<string> operatorStack, System.Collections.Generic.Stack<string> operandStack)

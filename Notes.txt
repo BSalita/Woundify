@@ -26,6 +26,7 @@
 // 20. Change bing code to use this example code: https://onedrive.live.com/prev?id=9a8c02c3b59e575!115&cid=09A8C02C3B59E575&parId=root&authkey=!AOE9yiNn9bOskFE&v=TextFileEditor
 // 31. dynamically transcode wav file recorded in non 16000/16/1 format.
 // 32. don't exit until async STT have completed
+// 33. Return API's entire response? Return just a portion of the response but how to let the user specify which part is desired?
 
 // Document
 // 1. Dependencies: Visual Studio 2015. Windows 7/8/8.1 compatible APIs; System.Net.Http, System Speech, NAudio (Nuget), Newtonsoft.Json (Nuget)
