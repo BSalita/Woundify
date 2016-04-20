@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace WoundifyShared
 {
-    class GoogleServices : WoundifyServices
+    class WitServices : WoundifyServices
     {
         private System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
 
@@ -16,15 +16,13 @@ namespace WoundifyShared
 
             stopWatch.Start();
 
-            dynamic settings = Options.options.Services.APIs.SpeechToText.GoogleSpeechToText;
+            dynamic settings = Options.options.Services.APIs.SpeechToText.WitSpeechToText;
 
             UriBuilder ub = new UriBuilder();
             ub.Scheme = "https";
-            ub.Host = "www.google.com";
-            ub.Path = "speech-api/v2/recognize";
-            Log.WriteLine("before key");
-            ub.Query = "output=json&lang=" + Options.options.locale.language + "&key=" + settings.key;
-            Log.WriteLine("after key" + ub.Query);
+            ub.Host = "api.wit.ai";
+            ub.Path = "speech";
+            ub.Query = "v=20141022";
 #if WINDOWS_UWP
             if (Options.options.Services.APIs.PreferSystemNet)
                response.sr = await PostAsyncSystemNet(ub.Uri, audioBytes, sampleRate);
@@ -131,11 +129,15 @@ namespace WoundifyShared
                 using (System.Net.Http.HttpClient httpClient = new System.Net.Http.HttpClient())
                 {
                     System.Net.Http.ByteArrayContent requestContent = new System.Net.Http.ByteArrayContent(audioBytes);
-#if true // not sure why first works but not second. Seems like the should be the same.
-                    requestContent.Headers.Add("Content-Type", "audio/l16; rate=" + sampleRate.ToString()); // must add header AFTER contents are initialized
+                    // todo: create variables for encoding and endian?
+                    // todo: make bits=16... work
+                    // todo: double check that other Services use same headers
+#if true // not sure why bits and rate don't work for either type.
+                    requestContent.Headers.Add("Content-Type", "audio/wav"); // ;bits=16;rate=" + sampleRate.ToString()); // must add header AFTER contents are initialized
 #else
-                    requestContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("audio/l16; rate=" + sampleRate.ToString()); // must add header AFTER contents are initialized
+                    requestContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("audio/wav"); //;bits=16;rate=" + sampleRate.ToString()); // must add header AFTER contents are initialized
 #endif
+                    httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", Options.options.Services.APIs.SpeechToText.WitSpeechToText.Bearer);
                     if (Options.options.Services.APIs.PreferChunkedEncodedRequests)
                     {
                         Log.WriteLine("Using chunked encoding");
@@ -159,44 +161,44 @@ namespace WoundifyShared
                                 using (System.IO.StreamReader r = new System.IO.StreamReader(rr)) // if needed, there is a constructor which will leave the stream open
                                 {
                                     // attempts to display individual partial responses. However, some lame assumptions needed to do so.
-                                    while (!r.EndOfStream)
+                                    string ResponseBodyBlob = string.Empty;
+                                    // Wit's partial results are incomplete json strings while Google's are complete json of initial results
+                                    while (!r.EndOfStream) // todo: is this best way of handling chunked? Seems too syncronous.
                                     {
-                                        string ResponseBodyBlob = r.ReadLine();
+                                        ResponseBodyBlob += r.ReadLine();
                                         if (Options.options.debugLevel >= 4)
                                             Log.WriteLine("ResponseBodyBlob:" + ResponseBodyBlob);
-                                        string ResponseBodyString = null;
-                                        Newtonsoft.Json.Linq.JToken ResponseBodyToken = null;
-                                        while (ResponseBodyBlob != "")
-                                        {
-                                            try
-                                            {
-                                                ResponseBodyToken = Newtonsoft.Json.Linq.JObject.Parse(ResponseBodyBlob);
-                                                ResponseBodyString = ResponseBodyBlob;
-                                            }
-                                            catch (Newtonsoft.Json.JsonReaderException ex) when (ex.HResult == -2146233088)
-                                            {
-                                                Log.WriteLine(ex.Message);
-                                                ResponseBodyString = ResponseBodyBlob.Substring(0, ex.LinePosition);
-                                                ResponseBodyToken = Newtonsoft.Json.Linq.JObject.Parse(ResponseBodyString);
-                                            }
-                                            response.ResponseJson = ResponseBodyBlob = ResponseBodyBlob.Substring(ResponseBodyString.Length);
-                                            response.ResponseJsonFormatted = Newtonsoft.Json.JsonConvert.SerializeObject(ResponseBodyToken, new Newtonsoft.Json.JsonSerializerSettings() { Formatting = Newtonsoft.Json.Formatting.Indented });
-                                            if (Options.options.debugLevel >= 4)
-                                                Log.WriteLine(response.ResponseJsonFormatted);
-                                            Newtonsoft.Json.Linq.JToken tokResult = ProcessResponse(ResponseBodyToken);
-                                            if (tokResult == null || string.IsNullOrEmpty(tokResult.ToString()))
-                                            {
-                                                response.ResponseResult = Options.options.Services.APIs.SpeechToText.missingResponse;
-                                                if (Options.options.debugLevel >= 3)
-                                                    Log.WriteLine(response.ResponseResult);
-                                            }
-                                            else
-                                            {
-                                                response.ResponseResult = tokResult.ToString();
-                                                if (Options.options.debugLevel >= 3)
-                                                    Log.WriteLine(tokResult.Path + ": " + response.ResponseResult);
-                                            }
-                                        }
+                                    }
+                                    string ResponseBodyString = string.Empty;
+                                    Newtonsoft.Json.Linq.JToken ResponseBodyToken = null;
+                                    try
+                                    {
+                                        ResponseBodyToken = Newtonsoft.Json.Linq.JObject.Parse(ResponseBodyBlob);
+                                        ResponseBodyString = ResponseBodyBlob;
+                                    }
+                                    // todo: obsolete?
+                                    catch (Newtonsoft.Json.JsonReaderException ex) when (ex.HResult == -2146233088)
+                                    {
+                                        Log.WriteLine(ex.Message);
+                                        ResponseBodyString = ResponseBodyBlob.Substring(0, ex.LinePosition);
+                                        ResponseBodyToken = Newtonsoft.Json.Linq.JObject.Parse(ResponseBodyString);
+                                    }
+                                    response.ResponseJson = ResponseBodyBlob = ResponseBodyBlob.Substring(ResponseBodyString.Length);
+                                    response.ResponseJsonFormatted = Newtonsoft.Json.JsonConvert.SerializeObject(ResponseBodyToken, new Newtonsoft.Json.JsonSerializerSettings() { Formatting = Newtonsoft.Json.Formatting.Indented });
+                                    if (Options.options.debugLevel >= 4)
+                                        Log.WriteLine(response.ResponseJsonFormatted);
+                                    Newtonsoft.Json.Linq.JToken tokResult = ProcessResponse(ResponseBodyToken);
+                                    if (tokResult == null || string.IsNullOrEmpty(tokResult.ToString()))
+                                    {
+                                        response.ResponseResult = Options.options.Services.APIs.SpeechToText.missingResponse;
+                                        if (Options.options.debugLevel >= 3)
+                                            Log.WriteLine(response.ResponseResult);
+                                    }
+                                    else
+                                    {
+                                        response.ResponseResult = tokResult.ToString();
+                                        if (Options.options.debugLevel >= 3)
+                                            Log.WriteLine(tokResult.Path + ": " + response.ResponseResult);
                                     }
                                 }
                             }
@@ -225,9 +227,11 @@ namespace WoundifyShared
                 Log.WriteLine("Fail! - Response is null");
             else
             {
-                if ((response.SelectToken("$.result")) == null)
+                if ((response.SelectToken("$._text")) == null) // todo: what property is best to use?
                     Log.WriteLine("Fail! - result is null");
                 else
+                    tok = response.SelectToken("._text");
+#if false
                 {
                     foreach (Newtonsoft.Json.Linq.JToken r in response.SelectToken("$.result"))
                     {
@@ -240,6 +244,7 @@ namespace WoundifyShared
                             break;
                     }
                 }
+#endif
             }
             return tok;
         }

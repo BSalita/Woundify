@@ -79,7 +79,8 @@
           "HoundifyServices",
           "GoogleServices",
           "BingServices",
-          "WindowsServices"
+          "WindowsServices",
+          "WitServices"
         ],
         "missingResponse": "whatever",
         "BingSpeechToText": {
@@ -101,7 +102,10 @@
           "callSpeechToText": true,
           "voiceAge": 0,
           "voiceGender": 0
-        }
+        },
+        "WitSpeechToText": {
+          "Bearer": ""
+        },
       }
     }
   }

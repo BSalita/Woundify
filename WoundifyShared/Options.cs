@@ -9,6 +9,7 @@ namespace WoundifyShared
         public static GoogleServices google;
         public static HoundifyServices houndify;
         public static WindowsServices windows;
+        public static WitServices wit;
         public static GeoLocation geoLocation;
 
         private static void SearchForSettings(string[] settingsJsonSearchPaths)
@@ -90,6 +91,7 @@ namespace WoundifyShared
             google = new GoogleServices();
             houndify = new HoundifyServices();
             windows = new WindowsServices();
+            wit = new WitServices();
             geoLocation = new GeoLocation();
         }
     }
@@ -175,6 +177,11 @@ namespace WoundifyShared
             public int voiceGender { get; set; }
         }
 
+        public class WitSpeechToText
+        {
+            public string Bearer { get; set; }
+        }
+
         public class SpeechToText
         {
             public string missingResponse { get; set; }
@@ -183,6 +190,7 @@ namespace WoundifyShared
             public GoogleSpeechToText GoogleSpeechToText { get; set; }
             public HoundifySpeechToText HoundifySpeechToText { get; set; }
             public WindowsSpeechToText WindowsSpeechToText { get; set; }
+            public WitSpeechToText WitSpeechToText { get; set; }
         }
 
         public class HoundifyIntent

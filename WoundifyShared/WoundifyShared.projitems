@@ -28,6 +28,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)SpeechToTextService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TextToSpeech.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WindowsServices.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WitServices.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)WoundifyDefaultSettings.json">
