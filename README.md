@@ -1,5 +1,5 @@
 # Woundify
-Woundify is a Windows client for the Houndify intent service. Woundify is written in C# and is compatible with Console, WPF and UWP systems.
+Woundify is primarily a Windows client for the Houndify intent service, a cognitive comparision tool, a cognitive service scripting tool. Woundify is written in C# and is compatible with Console, WPF and UWP systems.
 
 ## Console Application
 The woundify.exe is a console app tool for scripting audio, text and Houndify operations. There are commands for recording audio, converting text-to-speech (TTS), converting speech-to-text (STT), and invoking Houndify intent services.
@@ -34,9 +34,9 @@ There is no binary executable file available on this repos. You can create an ex
 Developers can use Woundify as a standalone tool, as a tool for integrating into projects, or make use of its class libraries to create a custom project. This repos contains the entire source code of Woundify.
 
 The source code for woundify is in C#. The classes contain a wealth of information. In particular, most operations are coded twice for maximum Windows support; Win32 vs WinRT, System.Speech vs Windows.Media, System.IO vs Windows.Storage, System.Net.HTTP vs Windows.Web, System.Security.Cryptography vs Windows.Security.Cryptography, Console and WPF vs UWP. The source code contains the following capabilities:
-* Authenticating to Bing (OAuth 2), Google (OAuth 2), Houndify services (propriatary).
+* Authenticating to Bing (OAuth 2), Google (OAuth 2), Houndify services (propriatary), Wit (OAuth 2).
 * Invoking Houndify intent API.
-* Invoking speech-to-text APIs from Bing (Project Oxford), Google, Houndify.
+* Invoking speech-to-text APIs from Bing (Project Oxford), Google, Houndify, Wit.
 * Parsing JSON responses from intent and STT services.
 * Recording audio from microphone and writing to a stream or file.
 * Playing audio from stream or file.
