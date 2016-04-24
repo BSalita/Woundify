@@ -15,7 +15,8 @@ namespace WoundifyShared
         private static string[] lineArgs;
         private static System.Collections.Generic.Stack<string> operatorStack; // must reverse order for proper conversion to stack
         private static System.Collections.Generic.Stack<string> operandStack;
-        private static IServiceResponse lastServiceResponse;
+        private static ServiceResponse PreferredServiceResponse;
+        private static System.Collections.Generic.IEnumerable<ServiceResponse> AllServiceResponses;
 
         // set properties: Build Action = None, Copy to Output Directory = Copy Always
 
@@ -155,8 +156,9 @@ namespace WoundifyShared
             string fileName;
             string stackFileName;
             byte[] bytes;
-            IIntentService houndify = Options.houndify;
-            IIntentServiceResponse r;
+            IntentServiceResponse r;
+            System.Collections.Generic.IEnumerable<IntentServiceResponse> AllIntentServiceResponses;
+            System.Collections.Generic.IEnumerable<SpeechToTextServiceResponse> AllSpeechToTextServiceResponses;
 
             if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek().ToUpper()))
             {
@@ -167,7 +169,7 @@ namespace WoundifyShared
                     {
                         text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
                         if (Options.options.debugLevel >= 4)
-                            await IntentServices.RunAllPreferredIntentServices(text);
+                            AllServiceResponses = (AllIntentServiceResponses = await IntentServices.RunAllPreferredIntentServices(text)).Select(sr => sr.sr);
                         r = await IntentServices.PreferredOrderIntentServices[0].IntentServiceAsync(text);
                     }
                     else if (fileName.EndsWith(".wav"))
@@ -175,9 +177,9 @@ namespace WoundifyShared
                         bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // todo: implement local file scheme (non-tempFolder directory)
                         int sampleRate = await Audio.GetSampleRateAsync(fileName.Substring(1));
                         if (Options.options.debugLevel >= 4)
-                            await SpeechToTextServices.RunAllPreferredSpeechToTextServices(bytes, sampleRate);
+                            AllServiceResponses = (AllSpeechToTextServiceResponses = await SpeechToTextServices.RunAllPreferredSpeechToTextServices(bytes, sampleRate)).Select(sr => sr.sr);
                         if (Options.options.debugLevel >= 4)
-                            await IntentServices.RunAllPreferredIntentServices(bytes, sampleRate);
+                            AllServiceResponses = (AllIntentServiceResponses = await IntentServices.RunAllPreferredIntentServices(bytes, sampleRate)).Select(sr => sr.sr);
                         r = await IntentServices.PreferredOrderIntentServices[0].IntentServiceAsync(bytes, sampleRate);
                         Console.WriteLine("Intent result (from audio):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
                     }
@@ -188,6 +190,8 @@ namespace WoundifyShared
                 }
                 else
                 {
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllIntentServiceResponses = await IntentServices.RunAllPreferredIntentServices(text)).Select(sr => sr.sr);
                     r = await IntentServices.PreferredOrderIntentServices[0].IntentServiceAsync(text);
                 }
             }
@@ -197,6 +201,8 @@ namespace WoundifyShared
                 if (fileName.EndsWith(".txt"))
                 {
                     text = await Helpers.ReadTextFromFileAsync(fileName);
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllIntentServiceResponses = await IntentServices.RunAllPreferredIntentServices(text)).Select(sr => sr.sr);
                     r = await IntentServices.PreferredOrderIntentServices[0].IntentServiceAsync(text);
                     Console.WriteLine("Intent result (text):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
                 }
@@ -205,9 +211,9 @@ namespace WoundifyShared
                     bytes = await Helpers.ReadBytesFromFileAsync(fileName);
                     int sampleRate = await Audio.GetSampleRateAsync(Options.options.tempFolderPath + fileName);
                     if (Options.options.debugLevel >= 4)
-                        await SpeechToTextServices.RunAllPreferredSpeechToTextServices(bytes, sampleRate);
+                        AllServiceResponses = (AllSpeechToTextServiceResponses = await SpeechToTextServices.RunAllPreferredSpeechToTextServices(bytes, sampleRate)).Select(sr => sr.sr);
                     if (Options.options.debugLevel >= 4)
-                        await IntentServices.RunAllPreferredIntentServices(bytes, sampleRate);
+                        AllServiceResponses = (AllIntentServiceResponses = await IntentServices.RunAllPreferredIntentServices(bytes, sampleRate)).Select(sr => sr.sr);
                     r = await IntentServices.PreferredOrderIntentServices[0].IntentServiceAsync(bytes, sampleRate);
                     Console.WriteLine("Intent result (audio):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
                 }
@@ -219,7 +225,7 @@ namespace WoundifyShared
             stackFileName = "stack" + (operandStack.Count + 1).ToString() + ".txt";
             await Helpers.WriteTextToFileAsync(stackFileName, r.sr.ResponseResult);
             operandStack.Push(stackFileName);
-            lastServiceResponse = r.sr;
+            PreferredServiceResponse = r.sr;
             return 0;
         }
 
@@ -288,8 +294,9 @@ namespace WoundifyShared
             string fileName;
             string stackFileName;
             byte[] bytes;
-            IParseService bing = Options.bing; // actually Microsoft Cognitive Service.Linguistic
-            IParseServiceResponse r;
+            ParseServiceResponse r;
+            System.Collections.Generic.IEnumerable<ParseServiceResponse> AllParseServiceResponses;
+            System.Collections.Generic.IEnumerable<SpeechToTextServiceResponse> AllSpeechToTextServiceResponses;
 
             if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek().ToUpper()))
             {
@@ -300,7 +307,7 @@ namespace WoundifyShared
                     {
                         text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
                         if (Options.options.debugLevel >= 4)
-                            await ParseServices.RunAllPreferredParseServices(text);
+                            AllServiceResponses = (AllParseServiceResponses = await ParseServices.RunAllPreferredParseServices(text)).Select(sr => sr.sr);
                         r = await ParseServices.PreferredOrderedParseServices[0].ParseServiceAsync(text);
                     }
                     else if (fileName.EndsWith(".wav"))
@@ -308,11 +315,11 @@ namespace WoundifyShared
                         bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // todo: implement local file scheme (non-tempFolder directory)
                         int sampleRate = await Audio.GetSampleRateAsync(fileName.Substring(1));
                         if (Options.options.debugLevel >= 4)
-                            await SpeechToTextServices.RunAllPreferredSpeechToTextServices(bytes, sampleRate);
-                        ISpeechToTextServiceResponse sttr = await SpeechToTextServices.PreferredOrderedISpeechToTextServices[0].SpeechToTextAsync(bytes, sampleRate);
+                            AllServiceResponses = (AllSpeechToTextServiceResponses = await SpeechToTextServices.RunAllPreferredSpeechToTextServices(bytes, sampleRate)).Select(sr => sr.sr);
+                        SpeechToTextServiceResponse sttr = await SpeechToTextServices.PreferredOrderedISpeechToTextServices[0].SpeechToTextAsync(bytes, sampleRate);
                         text = sttr.sr.ResponseResult;
                         if (Options.options.debugLevel >= 4)
-                            await ParseServices.RunAllPreferredParseServices(text);
+                            AllServiceResponses = (AllParseServiceResponses = await ParseServices.RunAllPreferredParseServices(text)).Select(sr => sr.sr);
                         r = await ParseServices.PreferredOrderedParseServices[0].ParseServiceAsync(text);
                     }
                     else
@@ -323,7 +330,7 @@ namespace WoundifyShared
                 else
                 {
                     if (Options.options.debugLevel >= 4)
-                        await ParseServices.RunAllPreferredParseServices(text);
+                        AllServiceResponses = (AllParseServiceResponses = await ParseServices.RunAllPreferredParseServices(text)).Select(sr => sr.sr);
                     r = await ParseServices.PreferredOrderedParseServices[0].ParseServiceAsync(text);
                 }
             }
@@ -334,7 +341,7 @@ namespace WoundifyShared
                 {
                     text = await Helpers.ReadTextFromFileAsync(fileName);
                     if (Options.options.debugLevel >= 4)
-                        await ParseServices.RunAllPreferredParseServices(text);
+                        AllServiceResponses = (AllParseServiceResponses = await ParseServices.RunAllPreferredParseServices(text)).Select(sr => sr.sr);
                     r = await ParseServices.PreferredOrderedParseServices[0].ParseServiceAsync(text);
                 }
                 else if (fileName.EndsWith(".wav"))
@@ -342,11 +349,11 @@ namespace WoundifyShared
                     bytes = await Helpers.ReadBytesFromFileAsync(fileName);
                     int sampleRate = await Audio.GetSampleRateAsync(Options.options.tempFolderPath + fileName);
                     if (Options.options.debugLevel >= 4)
-                        await SpeechToTextServices.RunAllPreferredSpeechToTextServices(bytes, sampleRate);
-                    ISpeechToTextServiceResponse sttr = await SpeechToTextServices.PreferredOrderedISpeechToTextServices[0].SpeechToTextAsync(bytes, sampleRate);
+                        AllServiceResponses = (AllSpeechToTextServiceResponses = await SpeechToTextServices.RunAllPreferredSpeechToTextServices(bytes, sampleRate)).Select(sr => sr.sr);
+                    SpeechToTextServiceResponse sttr = await SpeechToTextServices.PreferredOrderedISpeechToTextServices[0].SpeechToTextAsync(bytes, sampleRate);
                     text = sttr.sr.ResponseResult;
                     if (Options.options.debugLevel >= 4)
-                        await ParseServices.RunAllPreferredParseServices(text);
+                        AllServiceResponses = (AllParseServiceResponses = await ParseServices.RunAllPreferredParseServices(text)).Select(sr => sr.sr);
                     r = await ParseServices.PreferredOrderedParseServices[0].ParseServiceAsync(text);
                 }
                 else
@@ -358,15 +365,19 @@ namespace WoundifyShared
             stackFileName = "stack" + (operandStack.Count + 1).ToString() + ".txt";
             await Helpers.WriteTextToFileAsync(stackFileName, r.sr.ResponseResult);
             operandStack.Push(stackFileName);
-            lastServiceResponse = r.sr;
-            ConstituencyTreeNode root = ParseHelpers.ConstituencyTreeFromText(r.sr.ResponseResult);
-            text = ParseHelpers.TextFromConstituencyTree(root);
-            if (text != r.sr.ResponseResult)
-                throw new FormatException();
-            string words = ParseHelpers.WordsFromConstituencyTree(root);
-            string[] printLines = ParseHelpers.FormatConstituencyTree(root);
-            foreach (string p in printLines)
-                Console.WriteLine(p);
+            PreferredServiceResponse = r.sr;
+            Newtonsoft.Json.Linq.JArray arrayOfResults = Newtonsoft.Json.Linq.JArray.Parse(r.sr.ResponseResult);
+            foreach (Newtonsoft.Json.Linq.JToken s in arrayOfResults)
+            {
+                ConstituencyTreeNode root = ParseHelpers.ConstituencyTreeFromText(s.ToString());
+                text = ParseHelpers.TextFromConstituencyTree(root);
+                if (text != s.ToString())
+                    throw new FormatException();
+                string words = ParseHelpers.WordsFromConstituencyTree(root);
+                string[] printLines = ParseHelpers.FormatConstituencyTree(root);
+                foreach (string p in printLines)
+                    Console.WriteLine(p);
+            }
             return 0;
         }
 
@@ -474,7 +485,10 @@ namespace WoundifyShared
         {
             string stackFileName;
             stackFileName = "stack" + (operandStack.Count + 1).ToString() + ".txt";
-            await Helpers.WriteTextToFileAsync(stackFileName, lastServiceResponse.ResponseResult);
+            if (Options.options.debugLevel >= 4)
+                foreach (ServiceResponse sr in AllServiceResponses)
+                    Log.WriteLine(sr.ServiceName + ":" + sr.ResponseResult);
+            await Helpers.WriteTextToFileAsync(stackFileName, PreferredServiceResponse.ResponseResult);
             operandStack.Push(stackFileName);
             return 0;
         }

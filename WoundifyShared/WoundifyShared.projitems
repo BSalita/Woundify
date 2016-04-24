@@ -24,6 +24,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Options.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParseHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParseService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ServiceHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SpeechToText.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SpeechToTextService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TextToSpeech.cs" />

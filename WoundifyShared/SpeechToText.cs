@@ -51,12 +51,12 @@ namespace WoundifyShared
                 if (r.sr.StatusCode == 200)
                 {
                     text = r.sr.ResponseResult;
-                    Console.WriteLine(STT.GetType().Name + ":\"" + text + "\" Total Elapsed ms:" + r.sr.TotalElapsedMilliseconds + " Request Elapsed ms:" + r.sr.RequestElapsedMilliseconds);
+                    Console.WriteLine(r.ServiceName + ":\"" + text + "\" Total Elapsed ms:" + r.sr.TotalElapsedMilliseconds + " Request Elapsed ms:" + r.sr.RequestElapsedMilliseconds);
                     return text;
                 }
                 else
                 {
-                    Console.WriteLine(STT.GetType().Name + " not available.");
+                    Console.WriteLine(r.ServiceName + " not available.");
                 }
             }
             throw new Exception("All SpeechToText responses have failed. Are you properly connected to the Internet?");
@@ -92,19 +92,19 @@ namespace WoundifyShared
                 foreach (ISpeechToTextService STT in SpeechToTextServices.PreferredOrderedISpeechToTextServices)
                 {
                     // ISpeechToTextService STT = (ISpeechToTextService)constructor.Invoke(Type.EmptyTypes);
-                    ISpeechToTextServiceResponse r = await STT.SpeechToTextAsync(bytes, await Audio.GetSampleRateAsync(Options.options.tempFolderPath + Options.options.audio.speechSynthesisFileName));
+                    SpeechToTextServiceResponse r = await STT.SpeechToTextAsync(bytes, await Audio.GetSampleRateAsync(Options.options.tempFolderPath + Options.options.audio.speechSynthesisFileName));
                     if (r.sr.StatusCode == 200)
                     {
                         text = r.sr.ResponseResult;
-                        Console.WriteLine(STT.GetType().Name + ":\"" + text + "\" Total Elapsed ms:" + r.sr.TotalElapsedMilliseconds + " Request Elapsed ms:" + r.sr.RequestElapsedMilliseconds);
+                        Console.WriteLine(r.sr.ServiceName + ":\"" + text + "\" Total Elapsed ms:" + r.sr.TotalElapsedMilliseconds + " Request Elapsed ms:" + r.sr.RequestElapsedMilliseconds);
                         return text;
                     }
                     else
                     {
-                        Console.WriteLine(STT.GetType().Name + " not available.");
+                        Console.WriteLine(r.sr.ServiceName + " not available.");
                     }
                 }
-                ISpeechToTextServiceResponse response = await wSTT.SpeechToTextAsync(bytes, await Audio.GetSampleRateAsync(Options.options.tempFolderPath + Options.options.audio.speechSynthesisFileName));
+                SpeechToTextServiceResponse response = await wSTT.SpeechToTextAsync(bytes, await Audio.GetSampleRateAsync(Options.options.tempFolderPath + Options.options.audio.speechSynthesisFileName));
                 text = response.sr.ResponseResult;
                 Console.WriteLine("Windows STT (default):\"" + text + "\" Total Elapsed ms:" + response.sr.TotalElapsedMilliseconds + " Request Elapsed ms:" + response.sr.RequestElapsedMilliseconds);
                 return text;
@@ -171,19 +171,19 @@ namespace WoundifyShared
                         foreach (ISpeechToTextService STT in SpeechToTextServices.PreferredOrderedISpeechToTextServices)
                         {
                             // ISpeechToTextService STT = (ISpeechToTextService)constructor.Invoke(Type.EmptyTypes);
-                            ISpeechToTextServiceResponse r = await STT.SpeechToTextAsync(bytes, await Audio.GetSampleRateAsync(Options.options.tempFolderPath + Options.options.audio.speechSynthesisFileName));
+                            SpeechToTextServiceResponse r = await STT.SpeechToTextAsync(bytes, await Audio.GetSampleRateAsync(Options.options.tempFolderPath + Options.options.audio.speechSynthesisFileName));
                             if (r.sr.StatusCode == 200)
                             {
                                 text = r.sr.ResponseResult;
-                                Console.WriteLine(STT.GetType().Name + ":\"" + text + "\" Total Elapsed ms:" + r.sr.TotalElapsedMilliseconds + " Request Elapsed ms:" + r.sr.RequestElapsedMilliseconds);
+                                Console.WriteLine(r.sr.ServiceName + ":\"" + text + "\" Total Elapsed ms:" + r.sr.TotalElapsedMilliseconds + " Request Elapsed ms:" + r.sr.RequestElapsedMilliseconds);
                                 return text.Split(" ".ToCharArray(), StringSplitOptions.None);
                             }
                             else
                             {
-                                Console.WriteLine(STT.GetType().Name + " not available.");
+                                Console.WriteLine(r.sr.ServiceName + " not available.");
                             }
                         }
-                        ISpeechToTextServiceResponse response = await wSTT.SpeechToTextAsync(bytes, await Audio.GetSampleRateAsync(Options.options.tempFolderPath + Options.options.audio.speechSynthesisFileName));
+                        SpeechToTextServiceResponse response = await wSTT.SpeechToTextAsync(bytes, await Audio.GetSampleRateAsync(Options.options.tempFolderPath + Options.options.audio.speechSynthesisFileName));
                         text = response.sr.ResponseResult;
                         Console.WriteLine("Windows STT (default):\"" + text + "\" Total Elapsed ms:" + response.sr.TotalElapsedMilliseconds + " Request Elapsed ms:" + response.sr.RequestElapsedMilliseconds);
                         return text.Split(" ".ToCharArray(), StringSplitOptions.None);

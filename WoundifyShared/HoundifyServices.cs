@@ -14,9 +14,9 @@ namespace WoundifyShared
         private static JToken IntentConversationState = null;
         private System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
 
-        public override async System.Threading.Tasks.Task<IIntentServiceResponse> IntentServiceAsync(string text)
+        public override async System.Threading.Tasks.Task<IntentServiceResponse> IntentServiceAsync(string text)
         {
-            IIntentServiceResponse response = new IIntentServiceResponse();
+            IntentServiceResponse response = new IntentServiceResponse();
             dynamic settings = Options.options.Services.APIs.Intent.HoundifyIntent;
             UriBuilder ub = new UriBuilder();
             ub.Scheme = "https";
@@ -27,9 +27,9 @@ namespace WoundifyShared
             return response;
         }
 
-        public override async System.Threading.Tasks.Task<IIntentServiceResponse> IntentServiceAsync(byte[] audioBytes, int sampleRate)
+        public override async System.Threading.Tasks.Task<IntentServiceResponse> IntentServiceAsync(byte[] audioBytes, int sampleRate)
         {
-            IIntentServiceResponse response = new IIntentServiceResponse();
+            IntentServiceResponse response = new IntentServiceResponse();
             dynamic settings = Options.options.Services.APIs.Intent.HoundifyIntent;
             UriBuilder ub = new UriBuilder();
             ub.Scheme = "https";
@@ -39,9 +39,9 @@ namespace WoundifyShared
             return response;
         }
 
-        public override async System.Threading.Tasks.Task<ISpeechToTextServiceResponse> SpeechToTextAsync(byte[] audioBytes, int sampleRate)
+        public override async System.Threading.Tasks.Task<SpeechToTextServiceResponse> SpeechToTextAsync(byte[] audioBytes, int sampleRate)
         {
-            ISpeechToTextServiceResponse response = new ISpeechToTextServiceResponse();
+            SpeechToTextServiceResponse response = new SpeechToTextServiceResponse();
             dynamic settings = Options.options.Services.APIs.SpeechToText.HoundifySpeechToText;
             UriBuilder ub = new UriBuilder();
             ub.Scheme = "https";
@@ -129,9 +129,9 @@ namespace WoundifyShared
         }
 #endif
 
-        public async System.Threading.Tasks.Task<IServiceResponse> PostAsyncSystemNet(Uri uri, string RequestBodyJson, byte[] RequestBodyBytes, string HoundRequestAuthentication, string HoundClientAuthentication)
+        public async System.Threading.Tasks.Task<ServiceResponse> PostAsyncSystemNet(Uri uri, string RequestBodyJson, byte[] RequestBodyBytes, string HoundRequestAuthentication, string HoundClientAuthentication)
         {
-            IServiceResponse response = new IServiceResponse();
+            ServiceResponse response = new ServiceResponse(this.ToString());
             try
             {
                 // Using HttpClient to grab chunked encoding (partial) responses.
@@ -219,9 +219,9 @@ namespace WoundifyShared
             return response;
         }
 
-        public async System.Threading.Tasks.Task<IServiceResponse> PostAsync(UriBuilder ub, byte[] RequestContentBytes, dynamic settings, int sampleRate = 0)
+        public async System.Threading.Tasks.Task<ServiceResponse> PostAsync(UriBuilder ub, byte[] RequestContentBytes, dynamic settings, int sampleRate = 0)
         {
-            IServiceResponse response = new IServiceResponse();
+            ServiceResponse response = new ServiceResponse(this.ToString());
             Log.WriteLine("Content length:" + RequestContentBytes.Length);
             stopWatch.Start();
 

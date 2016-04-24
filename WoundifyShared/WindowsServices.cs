@@ -6,12 +6,12 @@ namespace WoundifyShared
     {
         private static System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
 
-        public override async System.Threading.Tasks.Task<ISpeechToTextServiceResponse> SpeechToTextAsync(byte[] audioBytes, int sampleRate)
+        public override async System.Threading.Tasks.Task<SpeechToTextServiceResponse> SpeechToTextAsync(byte[] audioBytes, int sampleRate)
         {
-            ISpeechToTextServiceResponse response = new ISpeechToTextServiceResponse();
+            SpeechToTextServiceResponse response = new SpeechToTextServiceResponse();
             Log.WriteLine("audio file length:" + audioBytes.Length + " sampleRate:" + sampleRate);
             stopWatch.Start();
-            response.sr = new IServiceResponse();
+            response.sr = new ServiceResponse(this.ToString());
             response.sr.ResponseResult = await SpeechToText.SpeechToTextAsync(audioBytes);
             response.sr.StatusCode = 200;
             stopWatch.Stop();

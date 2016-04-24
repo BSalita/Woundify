@@ -8,7 +8,7 @@ using Windows.Services.Maps;
 
 namespace WoundifyShared
 {
-    class GeoLocation
+    static class GeoLocation
     {
         public static double longitude = Options.options.geolocaton.longitude;
         public static double latitude = Options.options.geolocaton.latitude;

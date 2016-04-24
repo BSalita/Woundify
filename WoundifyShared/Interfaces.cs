@@ -2,8 +2,13 @@
 
 namespace WoundifyShared
 {
-    public class IServiceResponse
+    public class ServiceResponse
     {
+        public ServiceResponse(string _ServiceName)
+        {
+            ServiceName = _ServiceName;
+        }
+        public string ServiceName { get; set; }
         public string ResponseResult { get; set; }
         public string ResponseJson { get; set; }
         public string ResponseJsonFormatted { get; set; }
@@ -13,49 +18,48 @@ namespace WoundifyShared
     }
     public interface IIntentService
     {
-        System.Threading.Tasks.Task<IIntentServiceResponse> IntentServiceAsync(string text);
-        System.Threading.Tasks.Task<IIntentServiceResponse> IntentServiceAsync(byte[] audioBytes, int sampleRate);
+        System.Threading.Tasks.Task<IntentServiceResponse> IntentServiceAsync(string text);
+        System.Threading.Tasks.Task<IntentServiceResponse> IntentServiceAsync(byte[] audioBytes, int sampleRate);
     }
-    public class IIntentServiceResponse
+    public class IntentServiceResponse
     {
-        public IServiceResponse sr;
+        public ServiceResponse sr;
     }
     public interface IParseService
     {
-        System.Threading.Tasks.Task<IParseServiceResponse> ParseServiceAsync(string text);
+        System.Threading.Tasks.Task<ParseServiceResponse> ParseServiceAsync(string text);
     }
-    public class IParseServiceResponse
+    public class ParseServiceResponse
     {
-        public IServiceResponse sr;
+        public ServiceResponse sr;
     }
     public interface ISpeechToTextService
     {
-        System.Threading.Tasks.Task<ISpeechToTextServiceResponse> SpeechToTextAsync(byte[] audioBytes, int sampleRate);
+        System.Threading.Tasks.Task<SpeechToTextServiceResponse> SpeechToTextAsync(byte[] audioBytes, int sampleRate);
     }
-    public class ISpeechToTextServiceResponse
+    public class SpeechToTextServiceResponse
     {
-        public IServiceResponse sr;
+        public ServiceResponse sr;
     }
     public class WoundifyServices : IIntentService, IParseService, ISpeechToTextService
     {
-
-        public virtual System.Threading.Tasks.Task<IIntentServiceResponse> IntentServiceAsync(string text)
+        public virtual System.Threading.Tasks.Task<IntentServiceResponse> IntentServiceAsync(string text)
         {
             return null;
         }
-        public virtual System.Threading.Tasks.Task<IIntentServiceResponse> IntentServiceAsync(byte[] audioBytes, int sampleRate)
+        public virtual System.Threading.Tasks.Task<IntentServiceResponse> IntentServiceAsync(byte[] audioBytes, int sampleRate)
         {
             return null;
         }
-        public virtual System.Threading.Tasks.Task<IParseServiceResponse> ParseServiceAsync(string text)
+        public virtual System.Threading.Tasks.Task<ParseServiceResponse> ParseServiceAsync(string text)
         {
             return null;
         }
-        public virtual System.Threading.Tasks.Task<IParseServiceResponse> ParseServiceAsync(byte[] audioBytes, int sampleRate)
+        public virtual System.Threading.Tasks.Task<ParseServiceResponse> ParseServiceAsync(byte[] audioBytes, int sampleRate)
         {
             return null;
         }
-        public virtual System.Threading.Tasks.Task<ISpeechToTextServiceResponse> SpeechToTextAsync(byte[] audioBytes, int sampleRate)
+        public virtual System.Threading.Tasks.Task<SpeechToTextServiceResponse> SpeechToTextAsync(byte[] audioBytes, int sampleRate)
         {
             return null;
         }

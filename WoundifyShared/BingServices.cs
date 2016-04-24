@@ -20,10 +20,11 @@ namespace WoundifyShared
                 GetAnalyzers().Wait();
         }
 
-        public override async System.Threading.Tasks.Task<IParseServiceResponse> ParseServiceAsync(string text)
+        public override async System.Threading.Tasks.Task<ParseServiceResponse> ParseServiceAsync(string text)
         {
-            IParseServiceResponse response = new IParseServiceResponse();
+            ParseServiceResponse response = new ParseServiceResponse();
             Log.WriteLine("Bing: parse:" + text);
+            stopWatch.Start();
             dynamic settings = Options.options.Services.APIs.Parse.BingParse;
             UriBuilder ub = new UriBuilder();
             ub.Scheme = "https";
@@ -37,10 +38,13 @@ namespace WoundifyShared
             // todo: maybe a dictionary of headers should be passed including content-type. Then PostAsync can do if (dict.Contains("Content-Type")) headers.add(dict...)
             // todo: maybe should init a header class, add values and pass to Post?
             response.sr = await PostAsyncSystemNet(ub.Uri, text, "application/json", Headers);
+            stopWatch.Stop();
+            response.sr.TotalElapsedMilliseconds = stopWatch.ElapsedMilliseconds;
+            Log.WriteLine("Total: Elapsed milliseconds:" + stopWatch.ElapsedMilliseconds);
             return response;
         }
 
-        private async System.Threading.Tasks.Task<IServiceResponse> GetAnalyzers()
+        private async System.Threading.Tasks.Task<ServiceResponse> GetAnalyzers()
         {
             Log.WriteLine("Bing: GetAnalyzers");
             Analyzers = new System.Collections.Generic.List<string>();
@@ -56,23 +60,17 @@ namespace WoundifyShared
             return await GetAsyncSystemNet(ub.Uri, Headers);
         }
 
-        public override async System.Threading.Tasks.Task<IParseServiceResponse> ParseServiceAsync(byte[] audioBytes, int sampleRate)
+        public override async System.Threading.Tasks.Task<ParseServiceResponse> ParseServiceAsync(byte[] audioBytes, int sampleRate)
         {
-            IParseServiceResponse response = new IParseServiceResponse();
+            ParseServiceResponse response = new ParseServiceResponse();
 #if false // todo
-            dynamic settings = Options.options.Services.APIs.Intent.HoundifyIntent;
-            UriBuilder ub = new UriBuilder();
-            ub.Scheme = "https";
-            ub.Host = "api.houndify.com";
-            ub.Path = "v1/audio";
-            response.sr = await PostAsyncSystemNet(new Uri(requestUri), audioBytes, sampleRate, contentType, headerValue);
 #endif
             return response;
         }
 
-        public override async System.Threading.Tasks.Task<ISpeechToTextServiceResponse> SpeechToTextAsync(byte[] audioBytes, int sampleRate)
+        public override async System.Threading.Tasks.Task<SpeechToTextServiceResponse> SpeechToTextAsync(byte[] audioBytes, int sampleRate)
         {
-            ISpeechToTextServiceResponse response = new ISpeechToTextServiceResponse();
+            SpeechToTextServiceResponse response = new SpeechToTextServiceResponse();
             Log.WriteLine("Bing: audio file length:" + audioBytes.Length + " sampleRate:" + sampleRate);
 
             stopWatch.Start();
@@ -143,9 +141,9 @@ namespace WoundifyShared
             return response;
         }
 
-        public async System.Threading.Tasks.Task<IServiceResponse> GetAsyncSystemNet(Uri uri, System.Collections.Generic.List<Tuple<string, string>> Headers)
+        public async System.Threading.Tasks.Task<ServiceResponse> GetAsyncSystemNet(Uri uri, System.Collections.Generic.List<Tuple<string, string>> Headers)
         {
-            IServiceResponse response = new IServiceResponse();
+            ServiceResponse response = new ServiceResponse(this.ToString());
             using (System.Net.Http.HttpClient httpClient = new System.Net.Http.HttpClient())
             {
                 try
@@ -159,20 +157,15 @@ namespace WoundifyShared
                         Log.WriteLine("Fail! - Response is null");
                     else
                     {
-                        if (response.ResponseJson[0] != '{')
-                            response.ResponseJson = "{ 'root':" + response.ResponseJson + "}"; // Analyse API doesn't return outer braces. Why?
-                        JObject ResponseBodyToken = JObject.Parse(response.ResponseJson);
-                        if ((ResponseBodyToken.SelectToken("$.root")) == null)
-                            Log.WriteLine("Fail! - Status is null");
-                        else
+                        if (response.ResponseJson[0] != '[')
+                            throw new FormatException("Expecting array:" + response.ResponseJson);
+                        JArray ResponseBodyToken = JArray.Parse(response.ResponseJson);
+                        foreach (JToken tokAnalyzerResult in ResponseBodyToken)
                         {
-                            foreach (JToken tokAnalyzerResult in ResponseBodyToken.SelectToken("$.root"))
-                            {
-                                Analyzers.Add(tokAnalyzerResult["id"].ToString());
-                                AnalyzerStringized += "'" + tokAnalyzerResult["id"].ToString() + "', ";
-                            }
-                            AnalyzerStringized = AnalyzerStringized.Substring(0, AnalyzerStringized.Length - 2); // remove trailing "', "
+                            Analyzers.Add(tokAnalyzerResult["id"].ToString());
+                            AnalyzerStringized += "'" + tokAnalyzerResult["id"].ToString() + "', ";
                         }
+                        AnalyzerStringized = AnalyzerStringized.Substring(0, AnalyzerStringized.Length - 2); // remove trailing "', "
                     }
                 }
                 catch (Exception ex)
@@ -274,9 +267,9 @@ namespace WoundifyShared
         }
 #endif
 
-        public async System.Threading.Tasks.Task<IServiceResponse> PostAsyncSystemNet(Uri uri, string text, string contentType, System.Collections.Generic.List<Tuple<string, string>> Headers)
+        public async System.Threading.Tasks.Task<ServiceResponse> PostAsyncSystemNet(Uri uri, string text, string contentType, System.Collections.Generic.List<Tuple<string, string>> Headers)
         {
-            IServiceResponse response = new IServiceResponse();
+            ServiceResponse response = new ServiceResponse(this.ToString());
             try
             {
                 System.Net.HttpWebRequest request = (System.Net.HttpWebRequest)System.Net.HttpWebRequest.Create(uri);
@@ -321,9 +314,9 @@ namespace WoundifyShared
                             {
                                 response.ResponseJson = await sr.ReadToEndAsync();
                             }
-                            if (response.ResponseJson[0] != '{')
-                                response.ResponseJson = "{ 'root':" + response.ResponseJson + "}"; // Analyse API doesn't return outer braces. Why?
-                            JObject ResponseBodyToken = JObject.Parse(response.ResponseJson);
+                            if (response.ResponseJson[0] != '[')
+                                throw new FormatException("Expecting array:" + response.ResponseJson);
+                            JArray ResponseBodyToken = JArray.Parse(response.ResponseJson);
                             string ResponseJsonFormatted = JsonConvert.SerializeObject(ResponseBodyToken, new JsonSerializerSettings() { Formatting = Newtonsoft.Json.Formatting.Indented });
                             if (Options.options.debugLevel >= 4)
                                 Log.WriteLine("ResponseJsonFormatted:" + ResponseJsonFormatted);
@@ -359,9 +352,9 @@ namespace WoundifyShared
             return response;
         }
 
-        public async System.Threading.Tasks.Task<IServiceResponse> PostAsyncSystemNet(Uri uri, byte[] audioBytes, int sampleRate, string contentType, string headerValue)
+        public async System.Threading.Tasks.Task<ServiceResponse> PostAsyncSystemNet(Uri uri, byte[] audioBytes, int sampleRate, string contentType, string headerValue)
         {
-            IServiceResponse response = new IServiceResponse();
+            ServiceResponse response = new ServiceResponse(this.ToString());
             try
             {
                 System.Net.HttpWebRequest request = (System.Net.HttpWebRequest)System.Net.HttpWebRequest.Create(uri);
@@ -445,20 +438,19 @@ namespace WoundifyShared
                 Log.WriteLine("Fail! - Response is null");
             else
             {
-                if ((response.SelectToken("$.root")) == null)
-                    Log.WriteLine("Fail! - Status is null");
-                else
+                foreach (JToken tokAnalyzerResult in response)
                 {
-                    foreach (JToken tokAnalyzerResult in response.SelectToken("$.root"))
+                    if (tokAnalyzerResult["analyzerId"].ToString() == "22a6b758-420f-4745-8a3c-46835a67c0d2") // Tree result
                     {
-                        if (tokAnalyzerResult["analyzerId"].ToString() == "22a6b758-420f-4745-8a3c-46835a67c0d2") // Tree result
-                        {
+#if true
+                        tok = tokAnalyzerResult.SelectToken("result");
+#else
                             foreach (JToken tokResult in tokAnalyzerResult.SelectToken("result"))
                             {
                                 tok = tokResult;
                             }
-                            break;
-                        }
+#endif
+                        break;
                     }
                 }
             }

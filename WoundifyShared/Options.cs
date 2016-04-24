@@ -5,12 +5,14 @@ namespace WoundifyShared
     class Options
     {
         public static Settings.RootObject options;
+#if false
         public static BingServices bing;
         public static GoogleServices google;
         public static HoundifyServices houndify;
         public static WindowsServices windows;
         public static WitServices wit;
         public static GeoLocation geoLocation;
+#endif
 
         private static void SearchForSettings(string[] settingsJsonSearchPaths)
         {
@@ -86,6 +88,7 @@ namespace WoundifyShared
             Log.logFile = new System.IO.StreamWriter(options.logFilePath);
             Log.logFile.AutoFlush = true; // flush after every write
 #endif
+#if false
             // todo: obsolete? for initializing statics?
             bing = new BingServices();
             google = new GoogleServices();
@@ -93,6 +96,7 @@ namespace WoundifyShared
             windows = new WindowsServices();
             wit = new WitServices();
             geoLocation = new GeoLocation();
+#endif
         }
     }
 

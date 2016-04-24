@@ -9,9 +9,9 @@ namespace WoundifyShared
     {
         private System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
 
-        public override async System.Threading.Tasks.Task<ISpeechToTextServiceResponse> SpeechToTextAsync(byte[] audioBytes, int sampleRate)
+        public override async System.Threading.Tasks.Task<SpeechToTextServiceResponse> SpeechToTextAsync(byte[] audioBytes, int sampleRate)
         {
-            ISpeechToTextServiceResponse response = new ISpeechToTextServiceResponse();
+            SpeechToTextServiceResponse response = new SpeechToTextServiceResponse();
             Log.WriteLine("audio file length:" + audioBytes.Length + " sampleRate:" + sampleRate);
 
             stopWatch.Start();
@@ -122,9 +122,9 @@ namespace WoundifyShared
         }
 #endif
 
-        public async System.Threading.Tasks.Task<IServiceResponse> PostAsyncSystemNet(Uri uri, byte[] audioBytes, int sampleRate)
+        public async System.Threading.Tasks.Task<ServiceResponse> PostAsyncSystemNet(Uri uri, byte[] audioBytes, int sampleRate)
         {
-            IServiceResponse response = new IServiceResponse();
+            ServiceResponse response = new ServiceResponse(this.ToString());
             try
             {
                 // Using HttpClient to grab chunked encoding (partial) responses.
