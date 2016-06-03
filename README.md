@@ -12,7 +12,7 @@ Examples:
 
 > `woundify text "What's the weather in Paris?" intent speak`<br>Sends the text to Houndify and speaks the response.
   
-> `woundify listen intent speak`<br>Listens to the microphone (default timeout) and speaks the response.
+> `woundify listen intent speak`<br>Listens to the microphone (default timeout), calls intent service, speaks the response.
   
 > `woundify text @WeatherInParis.txt intent show`<br>Send the contents of file WeatherInParis.txt to Houndify and shows the stack.
   
@@ -82,10 +82,12 @@ Woundify first tries to load WoundifyDefaultSettings.json file, followed by Woun
 | ----------------- | ---------------------------------------------------------------------------------------------------------- |
 | END | End program. Same as QUIT.
 | HELP | Show help.
-| INTENT | Pops stack and sends audio/text to Houndify's intent service. The response is pushed onto the stack.
+| IDENTIFY | Pops stack and sends audio/text to language identification service. The response is pushed onto the stack.
+| INTENT | Pops stack and sends audio/text to intent service. The response is pushed onto the stack.
 | LISTEN | Record audio and push utterance onto stack.
 | LOOP | Loop back to first command and continue execution.
 | PAUSE | Pause for seconds specified in argument (or uses default).
+| PERSONALITY | Pops stack and sends audio/text to personality characteristics service. The response is pushed onto the stack.
 | PRONOUNCE | Convert text at top of stack into spelled pronounciations.
 | QUIT | Quit program. Same as END.
 | REPLAY | Replay TOS. If TOS is text, display text. If audio, it plays the audio.
@@ -95,6 +97,8 @@ Woundify first tries to load WoundifyDefaultSettings.json file, followed by Woun
 | SPEAK | Pops stack and speaks it.
 | SPEECH | Push audio onto stack.
 | TEXT | Push text onto stack.
+| TONE | Pops stack and sends audio/text to tone of voice (happy, angry) service. The response is pushed onto the stack.
+| TRANSLATE | Pops stack and sends audio/text to language translation service. The response is pushed onto the stack.
 | WAKEUP | Wait for wakeup word(s), convert rest of audio to text, push as text onto stack.
 
 ## Chart of Command Actions Based on Arguments
@@ -103,11 +107,13 @@ Woundify first tries to load WoundifyDefaultSettings.json file, followed by Woun
 | ----------------- | ------------------- | ------------------- |  ------------------ | ------------------- | ------------------- |
 | END               |                     |                     |                     |                     |                     |
 | HELP              |                     |                     |                     |                     |                     |
+| IDENTIFY          | Pop, send text      | Pop, send audio     | Send text           | Send text           | Send audio          |
 | INTENT            | Pop, send text      | Pop, send audio     | Send text           | Send text           | Send audio          |
 | LISTEN            |                     |                     | TTS, push audio     | TTS, push audio     | Push audio          |
 | LOOP              |                     |                     |                     |                     |                     |
 | PARSE             | Pop, send text      | Pop, STT, send Text | Send text           | Send text           | STT, send text      |
 | PAUSE             |                     |                     | Seconds to pause    |                     |                     |
+| PERSONALITY       | Pop, send text      | Pop, send audio     | Send text           | Send text           | Send audio          |
 | PRONOUNCE         | Pop, push pronounce | Pop, STT, push pronounce | Push pronounce | Push pronounce      | STT, push pronounce |
 | QUIT              |                     |                     |                     |                     |                     |
 | REPLAY            | Display TOS text    | Play TOS audio      |                     |                     |                     |
@@ -117,6 +123,8 @@ Woundify first tries to load WoundifyDefaultSettings.json file, followed by Woun
 | SPEAK             | Pop, TTS, play audio | Pop, play audio    | TTS, play audio     | TTS, play audio     | Play audio          |
 | SPEECH            | Pop, TTS, push audio | no change          | TTS, push audio     | TTS, push audio     | Push audio          |
 | TEXT              | Push text           | Pop, STT, push text | Push text           | STT, push text      | STT, push text      |
+| TONE              | Pop, send text      | Pop, send audio     | Send text           | Send text           | Send audio          |
+| TRANSLATE         | Pop, send text      | Pop, send audio     | Send text           | Send text           | Send audio          |
 | WAKEUP            |                     |                     | Use as wakeup words | Use as wakeup words |                     |
 
 Table Notes:
