@@ -1,5 +1,25 @@
 # Woundify
-Woundify is a cognitive services (AI) comparision tool, a benchmarking tool and a scripting tool. Woundify is written in C# and is compatible with Windows Console, WPF and UWP systems. Woundify supports AI services from Google, Houndify, IBM Watson, Microsoft (Bing), and Wit.ai. Woundify was originally developed as a Windows client for the Houndify intent service, 
+Woundify is a cognitive services (AI) comparision tool, a benchmarking tool and a scripting tool. Woundify is written in C# and is compatible with Windows Console, WPF and UWP systems. Woundify supports AI services from Google, Houndify, IBM Watson, Microsoft (Bing), and Wit.ai. Woundify was originally developed as a Windows client for the Houndify intent service.
+
+## Requisites
+
+Tasks:
+1. Install Visual Studio 2015. The free Community Edition is fine.
+2. Load this repo into Visual Studio.
+3. Register for the AI services that you'll be using (Bing, Google, Houndify, IBM, etc.). URLs listed below.
+4. No API access keys are provided. You'll need to add your own API access keys to either `WoundifyDefaultSettings.json` or  `WoundifySettings.json`. If `WoundifySettings.json` does not exist, create it by copying `WoundifyDefaultSettings.json` to `WoundifySettings.json`. `WoundifyDefaultlSettings.json` is loaded first and then `WoundifySettings.json` is loaded overriding the defaults. Recommended practice is to modify `WoundifySettings.json` and never modifying `WoundifyDefaultlSettings.json`.
+
+The `WoundifyDefaultSettings.json` and `WoundifySettings.json` files contain properties used for each service such as API acccess keys. Services all use differing API access property names (e.g. Key, ClientID, Password, etc.). Register for the following services and insert their API access keys into the "services" section of the settings file. Be careful when modifying these files. Mistakes can cause unpredictable behaviors.
+
+1. https://www.houndify.com
+2. https://console.ng.bluemix.net/registration/?
+3. https://cloud.google.com/speech/
+4. https://cloud.google.com/translate/
+5. https://www.microsoft.com/cognitive-services/en-us/speech-api
+6. https://datamarket.azure.com/dataset/bing/microsofttranslatorspeech
+7. https://datamarket.azure.com/dataset/bing/speechoutput
+8. https://datamarket.azure.com/dataset/bing/microsofttranslator
+
 
 ## Console Application
 The woundify.exe is a console app tool for scripting audio, text and Houndify operations. There are commands for recording audio, converting text-to-speech (TTS), converting speech-to-text (STT), and invoking Houndify intent services.
