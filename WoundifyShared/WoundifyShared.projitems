@@ -13,7 +13,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)AudioUtilitiesUWP.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BingServices.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Commands.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)GenericServices.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GeoLocation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GoogleCloudServices.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GoogleServices.cs" />
