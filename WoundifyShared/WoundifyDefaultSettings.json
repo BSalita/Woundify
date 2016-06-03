@@ -18,14 +18,131 @@
   },
   "commands": [
     {
-      "Key": "END",
-      "Name": "END",
-      "Help": "End execution."
+      "key": "End",
+      "name": "End",
+      "help": "End execution."
     },
     {
-      "Key": "HELP",
-      "Name": "HELP",
-      "Help": "Show commands and options."
+      "key": "Help",
+      "name": "Help",
+      "help": "Show commands and options."
+    },
+    {
+      "key": "Identify",
+      "name": "Identify",
+      "help": "Identify language of text.",
+      "commandService": "IdentifyLanguageService"
+    },
+    {
+      "key": "Intent",
+      "name": "Intent",
+      "help": "Intent of text.",
+      "commandService": "IntentService"
+    },
+    {
+      "key": "Personality",
+      "name": "Personality",
+      "help": "Personality of text.",
+      "commandService": "PersonalityService"
+    },
+    {
+      "key": "Parse",
+      "name": "Parse",
+      "help": "Parse text.",
+      "commandService": "ParseService"
+    },
+    {
+      "key": "SpeechToText",
+      "name": "Speech",
+      "help": "Speech to text.",
+      "commandService": "SpeechToTextService"
+    },
+    {
+      "key": "TextToSpeech",
+      "name": "Text",
+      "help": "Capture as text.",
+      "commandService": "TextToSpeechService"
+    },
+    {
+      "key": "Tone",
+      "name": "Tone",
+      "help": "Tone of text.",
+      "commandService": "ToneService"
+    },
+    {
+      "key": "Translate",
+      "name": "Translate",
+      "help": "Translation of text.",
+      "commandService": "TranslateService"
+    }
+  ],
+  "commandServices": [
+    {
+      "key": "Identify",
+      "name": "IdentifyLanguageService",
+      "preferredServices": [
+        "IbmWatsonIdentifyLanguageService"
+      ]
+    },
+    {
+      "key": "Intent",
+      "name": "IntentService",
+      "preferredServices": [
+        "HoundifyIntentAudioService",
+        "HoundifyIntentTextService"
+      ]
+    },
+    {
+      "key": "Parse",
+      "name": "ParseService",
+      "preferredServices": [
+        "BingParseService"
+      ]
+    },
+    {
+      "key": "Personality",
+      "name": "PersonalityService",
+      "preferredServices": [
+        "IbmWatsonPersonalityService"
+      ]
+    },
+    {
+      "key": "SpeechToText",
+      "name": "SpeechToTextService",
+      "preferredServices": [
+        "GoogleCloudSpeechToTextService",
+        "BingSpeechToTextService",
+        "GoogleSpeechToTextService",
+        "HoundifySpeechToTextService",
+        "IbmWatsonSpeechToTextService",
+        "WindowsSpeechToTextService",
+        "WitSpeechToTextService"
+      ]
+    },
+    {
+      "key": "TextToSpeech",
+      "name": "TextToSpeechService",
+      "preferredServices": [
+        "WindowsTextToSpeechService",
+        "IbmWatsonTextToSpeechService" // produces bad wav file? bing, houndify and windows won't recognize "hello world". google is ok.
+      ],
+      "voiceAge": 0,
+      "voiceGender": 0,
+      "sampleRate": 16000 // move bitDepth, channels from "Audio" to here? or just use "Audio" settings?
+    },
+    {
+      "key": "Tone",
+      "name": "ToneService",
+      "preferredServices": [
+        "IbmWatsonToneService"
+      ]
+    },
+    {
+      "key": "Translate",
+      "name": "TranslateService",
+      "preferredServices": [
+        "IbmWatsonTranslateService"
+      ]
     }
   ],
   "geolocaton": {
@@ -51,62 +168,528 @@
       "computer"
     ]
   },
-  "Services": {
-    "APIs": {
-      "preferSystemNet": false,
-      "preferChunkedEncodedRequests": false,
-      "Intent": {
-        "preferredIntentServices": [
-          "HoundifyServices"
+  "APIs": {
+    "preferSystemNet": false,
+    "preferChunkedEncodedRequests": false
+  },
+  "services": [
+    {
+      "name": "BingParseService",
+      "classInterface": "BingServices.IParseService",
+      "curl": "curl -X POST -u \"{username}:{password}\" --header \"Content-Type: application/json; charset=utf-8\" --data-binary @profile.json \"https://api.projectoxford.ai/linguistics/v1.0/analyze\"",
+      "request": {
+        "method": "post", // { "get" | "post" | <custom> }
+        "preferChunkedEncodedRequests": false,
+        "uri": {
+          "scheme": "https",
+          "host": "api.projectoxford.ai",
+          "path": "linguistics/v1.0/analyze"
+          //"query": ""
+        },
+        "headers": [
+          {
+            "Name": "Accept",
+            "Accept": "application/json"
+          },
+          {
+            "Name": "Content-Type",
+            "ContentType": "application/json"
+          },
+          {
+            "Name": "OcpApimSubscriptionKey",
+            "OcpApimSubscriptionKey": ""
+          }
         ],
-        "HoundifyIntent": {
-          "ClientID": "",
-          "ClientKey": "",
-          "UserID": "",
-          "PartialTranscriptsDesired": false
+        "data": {
+          "type": "binary", // { ascii | base64 | binary | raw | string | urlencode }
+          "value": "{'language' : 'en', 'analyzerIds' : [{AnalyzerStringized}], 'text' :'{text}'}"
         }
       },
-      "Parse": {
-        "preferredParseServices": [
-          "BingServices"
-        ],
-        "BingParse": {
-          "OcpApimSubscriptionKey": ""
-        }
-      },
-      "SpeechToText": {
-        "preferredSpeechToTextServices": [
-          "GoogleServices",
-          "HoundifyServices",
-          "BingServices",
-          "WindowsServices",
-          "WitServices"
-        ],
+      "response": {
         "missingResponse": "whatever",
-        "BingSpeechToText": {
-          "callSpeechToText": true,
-          "ClientID": "",
-          "clientSecret": ""
+        "jsonPath": ""
+      }
+    },
+    {
+      "name": "BingSpeechToTextService",
+      "classInterface": "BingServices.ISpeechToTextService",
+      "curl": "curl -X POST -u \"{username}:{password}\" --header \"Content-Type: application/json; charset=utf-8\" --data-binary @profile.json \"https://speech.platform.bing.com/recognize\"",
+      "request": {
+        "method": "post", // { "get" | "post" | <custom> }
+        "preferChunkedEncodedRequests": false,
+        "uri": {
+          "scheme": "https",
+          "host": "speech.platform.bing.com",
+          "path": "recognize"
+          //"query": ""
         },
-        "GoogleSpeechToText": {
-          "callSpeechToText": true,
-          "key": ""
+        "headers": [
+          {
+            "Name": "Accept",
+            "Accept": "application/json"
+          },
+          {
+            "Name": "BearerAuthentication",
+            "BearerAuthentication": {
+              "type": "bearer", // { basic | bearer | <custom> }
+              "clientID": "",
+              "clientSecret": ""
+            }
+          },
+          {
+            "Name": "Content-Type",
+            "ContentType": "audio/wav; codec=\"audio/pcm\"; samplerate={sampleRate}"
+          }
+        ],
+        "data": {
+          "type": "binary" // { ascii | base64 | binary | raw | string | urlencode }
+        }
+      },
+      "response": {
+        "missingResponse": "whatever",
+        "jsonPath": ""
+      }
+    },
+    {
+      "name": "GoogleCloudSpeechToTextService",
+      "classInterface": "GoogleCloudServices.ISpeechToTextService",
+      "curl": "curl -X POST -u \"{username}:{password}\" --header \"Content-Type: application/json; charset=utf-8\" --data-binary @profile.json \"https://speech.googleapis.com/v1/speech:recognize\"",
+      "request": {
+        "method": "post", // { "get" | "post" | <custom> }
+        "preferChunkedEncodedRequests": false,
+        "uri": {
+          "scheme": "https",
+          "host": "speech.googleapis.com",
+          "path": "v1/speech:recognize",
+          "query": "key={key}"
         },
-        "HoundifySpeechToText": {
-          "callSpeechToText": true,
-          "ClientID": "",
-          "ClientKey": "",
-          "UserID": ""
+        "headers": [
+          {
+            "Name": "Content-Type",
+            "ContentType": "application/json"
+          },
+          {
+            "Name": "BearerAuthentication",
+            "BearerAuthentication": {
+              "type": "bearer", // { basic | bearer | <custom> }
+              "key": ""
+            }
+          }
+        ],
+        "data": {
+          "type": "base64", // { ascii | base64 | binary | raw | string | urlencode }
+          "value": "{'initialRequest':{'encoding':'LINEAR16','sampleRate':16000},'audioRequest':{'content':'{base64AudioBytes}'}}"
+        }
+      },
+      "response": {
+        "missingResponse": "whatever",
+        "jsonPath": ""
+      }
+    },
+    {
+      "name": "GoogleSpeechToTextService",
+      "classInterface": "GoogleServices.ISpeechToTextService",
+      "curl": "curl -X POST -u \"{username}:{password}\" --header \"Content-Type: application/json; charset=utf-8\" --data-binary @profile.json \"https://www.google.com/speech-api/v2/recognize/output=json&lang={Options.options.locale.language}&key={settings.key}\"",
+      "request": {
+        "method": "post", // { "get" | "post" | <custom> }
+        "preferChunkedEncodedRequests": false,
+        "uri": {
+          "scheme": "https",
+          "host": "www.google.com",
+          "path": "speech-api/v2/recognize",
+          "query": "output=json&lang={language}&key={key}"
         },
-        "WindowsSpeechToText": {
-          "callSpeechToText": true,
-          "voiceAge": 0,
-          "voiceGender": 0
+        "headers": [
+          {
+            "Name": "Content-Type",
+            "ContentType": "audio/l16; rate={sampleRate.ToString()}"
+          },
+          {
+            "Name": "BearerAuthentication",
+            "BearerAuthentication": {
+              "type": "bearer", // { basic | bearer | <custom> }
+              "key": ""
+            }
+          }
+        ],
+        "data": {
+          "type": "binary" // { ascii | base64 | binary | raw | string | urlencode }
+        }
+      },
+      "response": {
+        "missingResponse": "whatever",
+        "jsonPath": ""
+      }
+    },
+    {
+      "name": "HoundifyIntentAudioService",
+      "classInterface": "HoundifyServices.IIntentService",
+      "curl": "curl -X POST --data-binary @computer.wav --header \"Hound-Request-Authentication:{HoundRequestAuthentication}\" --header \"Hound-Client-Authentication:{HoundClientAuthentication}\" --header \"Hound-Request-Info:{RequestBodyJson.Replace(\"'\", \"'\")}\" {ub.Uri}",
+      "request": {
+        "method": "post", // { "get" | "post" | <custom> }
+        "preferChunkedEncodedRequests": false,
+        "uri": {
+          "scheme": "https",
+          "host": "api.houndify.com",
+          "path": "v1/audio"
         },
-        "WitSpeechToText": {
-          "Bearer": ""
+        "headers": [
+          {
+            "Name": "HoundifyAuthentication",
+            "HoundifyAuthentication": {
+              "ClientID": "",
+              "ClientKey": "",
+              "UserID": ""
+            }
+          }
+        ],
+        "data": {
+          "type": "binary" // { ascii | base64 | binary | raw | string | urlencode }
+        }
+      },
+      "response": {
+        "missingResponse": "whatever",
+        "PartialTranscriptsDesired": false,
+        "jsonPath": ""
+      }
+    },
+    {
+      "name": "HoundifyIntentTextService",
+      "classInterface": "HoundifyServices.IIntentService",
+      "curl": "curl -X POST --data-binary @computer.wav --header \"Hound-Request-Authentication:{HoundRequestAuthentication}\" --header \"Hound-Client-Authentication:{HoundClientAuthentication}\" --header \"Hound-Request-Info:{RequestBodyJson.Replace(\"'\", \"'\")}\" {ub.Uri}",
+      "request": {
+        "method": "post", // { "get" | "post" | <custom> }
+        "preferChunkedEncodedRequests": false,
+        "uri": {
+          "scheme": "https",
+          "host": "api.houndify.com",
+          "path": "v1/text",
+          "query": "query={text}"
         },
+        "headers": [
+          {
+            "Name": "HoundifyAuthentication",
+            "HoundifyAuthentication": {
+              "ClientID": "",
+              "ClientKey": "",
+              "UserID": ""
+            }
+          }
+        ],
+        "data": {
+          "type": "binary" // { ascii | base64 | binary | raw | string | urlencode }
+        }
+      },
+      "response": {
+        "missingResponse": "whatever",
+        "PartialTranscriptsDesired": false,
+        "jsonPath": ""
+      }
+    },
+    {
+      "name": "HoundifySpeechToTextService",
+      "classInterface": "HoundifyServices.ISpeechToTextService",
+      "curl": "curl -X POST --data-binary @computer.wav --header \"Hound-Request-Authentication:{HoundRequestAuthentication}\" --header \"Hound-Client-Authentication:{HoundClientAuthentication}\" --header \"Hound-Request-Info:{RequestBodyJson.Replace(\"'\", \"'\")}\" {ub.Uri}",
+      "request": {
+        "method": "post", // { "get" | "post" | <custom> }
+        "preferChunkedEncodedRequests": false,
+        "uri": {
+          "scheme": "https",
+          "host": "api.houndify.com",
+          "path": "v1/audio"
+        },
+        "headers": [
+          {
+            "Name": "HoundifyAuthentication",
+            "HoundifyAuthentication": {
+              "ClientID": "",
+              "ClientKey": "",
+              "UserID": ""
+            }
+          }
+        ],
+        "data": {
+          "type": "binary" // { ascii | base64 | binary | raw | string | urlencode }
+        }
+      },
+      "response": {
+        "missingResponse": "whatever",
+        "jsonPath": ""
+      }
+    },
+    {
+      "name": "IbmWatsonPersonalityService",
+      "classInterface": "IbmWatsonServices.IPersonalityService",
+      "curl": "curl -X POST -u \"{username}:{password}\" --header \"Content-Type: application/json; charset=utf-8\" --data-binary @profile.json \"https://gateway.watsonplatform.net/personality-insights/api/v2/profile\"",
+      "request": {
+        "method": "post", // { "get" | "post" | <custom> }
+        "preferChunkedEncodedRequests": false,
+        "uri": {
+          "scheme": "https",
+          "host": "gateway.watsonplatform.net",
+          "path": "personality-insights/api/v2/profile"
+          //"query": ""
+        },
+        "headers": [
+          {
+            "Name": "Content-Type",
+            "ContentType": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+          },
+          {
+            "Name": "BasicAuthentication",
+            "BasicAuthentication": {
+              "type": "basic", // { basic | bearer | <custom> }
+              "username": "",
+              "password": ""
+            }
+          }
+        ],
+        "data": {
+          "type": "string" // { ascii | base64 | binary | raw | string | urlencode }
+        }
+      },
+      "response": {
+        "missingResponse": "whatever",
+        "jsonPath": ""
+      }
+    },
+    {
+      "name": "IbmWatsonIdentifyLanguageService",
+      "classInterface": "IbmWatsonServices.IIdentifyLanguageService",
+      "curl": "curl -u \"{username}:{password}\" -H \"content-type: text/plain\" -H \"accept: application/json\" -X POST -d \"@%1\" \"https://gateway.watsonplatform.net/language-translation/api/v2/identify\"",
+      "request": {
+        "method": "post", // { "get" | "post" | <custom> }
+        "preferChunkedEncodedRequests": false,
+        "uri": {
+          "scheme": "https",
+          "host": "gateway.watsonplatform.net",
+          "path": "language-translation/api/v2/identify"
+          //"query": ""
+        },
+        "headers": [
+          {
+            "Name": "Accept",
+            "Accept": "application/json"
+          },
+          {
+            "Name": "BasicAuthentication",
+            "BasicAuthentication": {
+              "type": "basic", // { basic | bearer | <custom> }
+              "username": "",
+              "password": ""
+            }
+          },
+          {
+            "Name": "Content-Type",
+            "ContentType": "text/plain"
+          }
+        ],
+        "data": {
+          "type": "string" // { ascii | base64 | binary | raw | string | urlencode }
+        }
+      },
+      "response": {
+        "missingResponse": "whatever",
+        "jsonPath": "" // return entire json result
+      }
+    },
+    {
+      "name": "IbmWatsonSpeechToTextService",
+      "classInterface": "IbmWatsonServices.ISpeechToTextService",
+      "curl": "curl -v -X POST -u \"{username}:{password}\" --header \"Content-Type: audio/wav\" --data-binary @audio.wav \"https: //stream.watsonplatform.net/speech-to-text/api/v1/recognize?timestamps=true&word_alternatives_threshold=0.9\"",
+      "request": {
+        "method": "post", // { "get" | "post" | <custom> }
+        "preferChunkedEncodedRequests": false,
+        "uri": {
+          "scheme": "https",
+          "host": "stream.watsonplatform.net",
+          "path": "speech-to-text/api/v1/recognize",
+          "query": "timestamps=true&word_alternatives_threshold=0.9"
+        },
+        "headers": [
+          {
+            "Name": "Content-Type",
+            "ContentType": "audio/wav"
+          },
+          {
+            "Name": "BasicAuthentication",
+            "BasicAuthentication": {
+              "type": "basic", // { basic | bearer | <custom> }
+              "username": "",
+              "password": ""
+            }
+          }
+        ],
+        "data": {
+          "type": "binary" // { ascii | base64 | binary | raw | string | urlencode }
+        }
+      },
+      "response": {
+        "missingResponse": "whatever",
+        "jsonPath": ""
+      }
+    },
+    {
+      "name": "IbmWatsonTextToSpeechService",
+      "classInterface": "IbmWatsonServices.ITextToSpeechService",
+      "curl": "curl -X POST -u \"{username}:{password}\" --header \"Content-Type: application/json\" --header \"Accept: audio/wav\" --data \"{\"text\":\"Hello world.\"}\" --output hello_world.wav \"https://stream.watsonplatform.net/text-to-speech/api/v1/synthesize?voice=en-US_AllisonVoice\"",
+      "request": {
+        "method": "post", // { "get" | "post" | <custom> }
+        "preferChunkedEncodedRequests": false,
+        "uri": {
+          "scheme": "https",
+          "host": "stream.watsonplatform.net",
+          "path": "text-to-speech/api/v1/synthesize",
+          "query": "voice=en-US_AllisonVoice"
+        },
+        "headers": [
+          {
+            "Name": "Accept",
+            "Accept": "audio/wav"
+          },
+          {
+            "Name": "BasicAuthentication",
+            "BasicAuthentication": {
+              "type": "basic", // { basic | bearer | <custom> }
+              "username": "",
+              "password": ""
+            }
+          },
+          {
+            "Name": "Content-Type",
+            "ContentType": "application/json"
+          }
+        ],
+        "data": {
+          "type": "string", // { ascii | base64 | binary | raw | urlencode
+          "value": "{ \"text\":\"{text}\" }" // can also use "text={text}" (text/plain multipart)
+        }
+      },
+      "response": {
+        "missingResponse": "whatever",
+        "jsonPath": ""
+      }
+    },
+    {
+      "name": "IbmWatsonToneService",
+      "classInterface": "IbmWatsonServices.IToneService",
+      "curl": "curl --libcurl %0.curl -u \"{username}:{password}\" -H \"Content-Type: application/json\" -d \"{\"text\": \"A word is dead when it is said, some say. Emily Dickinson\"}\" \"https://gateway.watsonplatform.net/tone-analyzer/api/v3/tone?version=2016-05-19\"",
+      "request": {
+        "method": "post", // { "get" | "post" | <custom> }
+        "preferChunkedEncodedRequests": false,
+        "uri": {
+          "scheme": "https",
+          "host": "gateway.watsonplatform.net",
+          "path": "tone-analyzer/api/v3/tone",
+          "query": "version=2016-05-19"
+        },
+        "headers": [
+          {
+            "Name": "Content-Type",
+            "ContentType": "application/json"
+          },
+          {
+            "Name": "BasicAuthentication",
+            "BasicAuthentication": {
+              "type": "basic", // { basic | bearer | <custom> }
+              "username": "",
+              "password": ""
+            }
+          }
+        ],
+        "data": {
+          "type": "string", // { ascii | base64 | binary | raw | string | urlencode }
+          "value": "{\"text\":\"{text}\"}"
+        }
+      },
+      "response": {
+        "missingResponse": "whatever",
+        "jsonPath": "" // use entire json response as result
+      }
+    },
+    {
+      "name": "IbmWatsonTranslateService",
+      "classInterface": "IbmWatsonServices.ITranslateService",
+      "curl": "curl -u \"{username}:{password}\" -X POST -d \"@%1\" \"https://gateway.watsonplatform.net/language-translation/api/v2/translate?source=en&target=es\"",
+      "request": {
+        "method": "post", // { "get" | "post" | <custom> }
+        "preferChunkedEncodedRequests": false,
+        "uri": {
+          "scheme": "https",
+          "host": "gateway.watsonplatform.net",
+          "path": "language-translation/api/v2/translate",
+          "query": "source=en&target=es"
+        },
+        "headers": [
+          {
+            "Name": "Accept",
+            "Accept": "application/json" // will return text/plain too
+          },
+          {
+            "Name": "Content-Type",
+            "ContentType": "application/json" // can use text/plain but must use multipart
+          },
+          {
+            "Name": "BasicAuthentication",
+            "BasicAuthentication": {
+              "type": "basic", // { basic | bearer | <custom> }
+              "username": "",
+              "password": ""
+            }
+          }
+        ],
+        "data": {
+          "type": "string", // { ascii | base64 | binary | raw | string | urlencode }
+          "value": "{ \"text\":\"{text}\" }" // can also use "text={text}" (text/plain multipart)
+        }
+      },
+      "response": {
+        "missingResponse": "whatever",
+        "jsonPath": "translations[0].translation"
+      }
+    },
+    {
+      "name": "WindowsSpeechToTextService", // not a HTTP service
+      "classInterface": "WindowsServices.ISpeechToTextService"
+    },
+    {
+      "name": "WindowsTextToSpeechService", // not a HTTP service
+      "classInterface": "WindowsServices.ITextToSpeechService"
+    },
+    {
+      "name": "WitSpeechToTextService",
+      "classInterface": "WitServices.ISpeechToTextService",
+      "curl": "curl -XPOST \"https://api.wit.ai/speech?v=20141022\" -i -L -H \"Authorization: Bearer {Bearer}\" -H \"Content-Type: audio/wav\" --data-binary \"@{file}\"",
+      "request": {
+        "method": "post", // { "get" | "post" | <custom> }
+        "preferChunkedEncodedRequests": false,
+        "uri": {
+          "scheme": "https",
+          "host": "api.wit.ai",
+          "path": "speech",
+          "query": "v=20141022"
+        },
+        "headers": [
+          {
+            "Name": "BearerAuthentication",
+            "BearerAuthentication": {
+              "type": "bearer", // { basic | bearer | <custom> }
+              "bearer": ""
+            }
+          },
+          {
+            "Name": "Content-Type",
+            "ContentType": "audio/wav"
+          }
+        ],
+        "data": {
+          "type": "binary" // { ascii | base64 | binary | raw | string | urlencode }
+        }
+      },
+      "response": {
+        "missingResponse": "whatever",
+        "jsonPath": ""
       }
     }
-  }
+  ]
 }

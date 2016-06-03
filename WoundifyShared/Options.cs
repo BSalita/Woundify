@@ -1,13 +1,19 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace WoundifyShared
 {
     class Options
     {
-        public static Settings.RootObject options;
+        public static Settings.Rootobject options;
+        public static Dictionary<string, Settings.Command> commands = new Dictionary<string, Settings.Command>(StringComparer.OrdinalIgnoreCase);
+        public static Dictionary<string, Settings.Commandservice> commandservices = new Dictionary<string, Settings.Commandservice>(StringComparer.OrdinalIgnoreCase);
+        public static Dictionary<string, Settings.Service> services = new Dictionary<string, Settings.Service>(StringComparer.OrdinalIgnoreCase);
 #if false
         public static BingServices bing;
         public static GoogleServices google;
+        public static GoogleCloudServices googlecloud;
+        public static IbmWatsonServices ibmwatson;
         public static HoundifyServices houndify;
         public static WindowsServices windows;
         public static WitServices wit;
@@ -25,7 +31,7 @@ namespace WoundifyShared
                     if (options == null)
                     {
                         Console.WriteLine(". File found. Initializing settings.");
-                        options = Newtonsoft.Json.JsonConvert.DeserializeObject<Settings.RootObject>(System.IO.File.ReadAllText(path));
+                        options = Newtonsoft.Json.JsonConvert.DeserializeObject<Settings.Rootobject>(System.IO.File.ReadAllText(path));
                     }
                     else
                     {
@@ -88,168 +94,34 @@ namespace WoundifyShared
             Log.logFile = new System.IO.StreamWriter(options.logFilePath);
             Log.logFile.AutoFlush = true; // flush after every write
 #endif
+            foreach (Settings.Service service in Options.options.services)
+            {
+                services.Add(service.name, service);
+            }
+            foreach (Settings.Command command in Options.options.commands)
+            {
+                commands.Add(command.key, command);
+            }
+            foreach (Settings.Commandservice s in Options.options.commandServices)
+            {
+                if (!commands.ContainsKey(s.key)) // must be a listed command
+                    throw new NotImplementedException();
+                foreach (string pref in s.preferredServices)
+                    if (!services.ContainsKey(pref)) // must be a listed service
+                        throw new NotImplementedException();
+                commandservices.Add(s.key, s);
+            }
+        }
 #if false
             // todo: obsolete? for initializing statics?
             bing = new BingServices();
             google = new GoogleServices();
+            googlecloud = new GoogleCloudServices();
+            ibmwatson = new IbmWatsonServices();
             houndify = new HoundifyServices();
             windows = new WindowsServices();
             wit = new WitServices();
             geoLocation = new GeoLocation();
 #endif
-        }
-    }
-
-    public class Settings
-    {
-        public class NAudio
-        {
-            public int desiredLatencyMilliseconds { get; set; }
-            public int inputDeviceNumber { get; set; }
-            public int waveInBufferMilliseconds { get; set; }
-        }
-
-        public class Audio
-        {
-            public string transCodeFileName { get; set; }
-            public string speechSynthesisFileName { get; set; }
-            public int bitDepth { get; set; }
-            public int channels { get; set; }
-            public int samplingRate { get; set; }
-            public NAudio NAudio { get; set; }
-        }
-
-        public class Command
-        {
-            public string Key { get; set; }
-            public string Name { get; set; }
-            public string Help { get; set; }
-        }
-
-        public class Geolocaton
-        {
-            public double longitude { get; set; }
-            public double latitude { get; set; }
-            public int accuracyInMeters { get; set; }
-            public string town { get; set; }
-            public string region { get; set; }
-            public string regionCode { get; set; }
-            public string country { get; set; }
-            public string countryCode { get; set; }
-        }
-
-        public class Locale
-        {
-            public string language { get; set; }
-        }
-
-        public class Wakeup
-        {
-            public double confidence { get; set; }
-            public double endSilenceTimeout { get; set; }
-            public double initialSilenceTimeout { get; set; }
-            public double listenTimeOut { get; set; }
-            public bool preferLoopUntilWakeUpWordFound { get; set; }
-            public System.Collections.Generic.List<string> words { get; set; }
-        }
-
-        public class BingSpeechToText
-        {
-            public bool callSpeechToText { get; set; }
-            public string ClientID { get; set; }
-            public string clientSecret { get; set; }
-        }
-
-        public class GoogleSpeechToText
-        {
-            public bool callSpeechToText { get; set; }
-            public string key { get; set; }
-        }
-
-        public class HoundifySpeechToText
-        {
-            public bool callSpeechToText { get; set; }
-            public string ClientID { get; set; }
-            public string ClientKey { get; set; }
-            public string UserID { get; set; }
-        }
-
-        public class WindowsSpeechToText
-        {
-            public bool callSpeechToText { get; set; }
-            public int voiceAge { get; set; }
-            public int voiceGender { get; set; }
-        }
-
-        public class WitSpeechToText
-        {
-            public string Bearer { get; set; }
-        }
-
-        public class SpeechToText
-        {
-            public string missingResponse { get; set; }
-            public System.Collections.Generic.List<string> preferredSpeechToTextServices { get; set; }
-            public BingSpeechToText BingSpeechToText { get; set; }
-            public GoogleSpeechToText GoogleSpeechToText { get; set; }
-            public HoundifySpeechToText HoundifySpeechToText { get; set; }
-            public WindowsSpeechToText WindowsSpeechToText { get; set; }
-            public WitSpeechToText WitSpeechToText { get; set; }
-        }
-
-        public class HoundifyIntent
-        {
-            public string ClientID { get; set; }
-            public string ClientKey { get; set; }
-            public string UserID { get; set; }
-            public bool PartialTranscriptsDesired { get; set; }
-        }
-
-        public class Intent
-        {
-            public System.Collections.Generic.List<string> preferredIntentServices { get; set; }
-            public HoundifyIntent HoundifyIntent { get; set; }
-        }
-
-        public class BingParse
-        {
-            public string OcpApimSubscriptionKey { get; set; }
-        }
-
-        public class Parse
-        {
-            public System.Collections.Generic.List<string> preferredParseServices { get; set; }
-            public BingParse BingParse { get; set; }
-        }
-
-        public class APIs
-        {
-            public bool PreferSystemNet { get; set; }
-            public bool PreferChunkedEncodedRequests { get; set; }
-            public Intent Intent { get; set; }
-            public Parse Parse { get; set; }
-            public SpeechToText SpeechToText { get; set; }
-        }
-
-        public class Services
-        {
-            public APIs APIs { get; set; }
-        }
-
-        public class RootObject
-        {
-            public string version { get; set; }
-            public int debugLevel { get; set; }
-            public string tempFolderPath { get; set; }
-            public string logFilePath { get; set; }
-            public double pauseSecondsDefault { get; set; }
-            public Audio audio { get; set; }
-            public System.Collections.Generic.List<Command> commands { get; set; }
-            public Geolocaton geolocaton { get; set; }
-            public IntentServices intentServices { get; set; }
-            public Locale locale { get; set; }
-            public Wakeup wakeup { get; set; }
-            public Services Services { get; set; }
-        }
     }
 }

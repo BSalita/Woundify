@@ -67,7 +67,7 @@ namespace WoundifyShared
 
         public static async System.Threading.Tasks.Task<string> MicrophoneToTextAsync()
         {
-            ISpeechToTextService wSTT = new WindowsServices();
+            ISpeechToTextService wSTT = new WindowsServices(new Settings.Service()); // NOTE: service created
             System.Globalization.CultureInfo ci = new System.Globalization.CultureInfo(Options.options.locale.language);
             using (System.Speech.Recognition.SpeechRecognitionEngine RecognitionEngine = new System.Speech.Recognition.SpeechRecognitionEngine(ci))
             {
@@ -92,7 +92,7 @@ namespace WoundifyShared
                 foreach (ISpeechToTextService STT in SpeechToTextServices.PreferredOrderedISpeechToTextServices)
                 {
                     // ISpeechToTextService STT = (ISpeechToTextService)constructor.Invoke(Type.EmptyTypes);
-                    SpeechToTextServiceResponse r = await STT.SpeechToTextAsync(bytes, await Audio.GetSampleRateAsync(Options.options.tempFolderPath + Options.options.audio.speechSynthesisFileName));
+                    SpeechToTextServiceResponse r = await STT.SpeechToTextServiceAsync(bytes, await Audio.GetSampleRateAsync(Options.options.tempFolderPath + Options.options.audio.speechSynthesisFileName));
                     if (r.sr.StatusCode == 200)
                     {
                         text = r.sr.ResponseResult;
@@ -104,7 +104,7 @@ namespace WoundifyShared
                         Console.WriteLine(r.sr.ServiceName + " not available.");
                     }
                 }
-                SpeechToTextServiceResponse response = await wSTT.SpeechToTextAsync(bytes, await Audio.GetSampleRateAsync(Options.options.tempFolderPath + Options.options.audio.speechSynthesisFileName));
+                SpeechToTextServiceResponse response = await wSTT.SpeechToTextServiceAsync(bytes, await Audio.GetSampleRateAsync(Options.options.tempFolderPath + Options.options.audio.speechSynthesisFileName));
                 text = response.sr.ResponseResult;
                 Console.WriteLine("Windows STT (default):\"" + text + "\" Total Elapsed ms:" + response.sr.TotalElapsedMilliseconds + " Request Elapsed ms:" + response.sr.RequestElapsedMilliseconds);
                 return text;
@@ -114,7 +114,7 @@ namespace WoundifyShared
         public static async System.Threading.Tasks.Task<string[]> WaitForWakeUpWordThenRecognizeRemainingSpeechAsync(string[] WakeUpWords)
         {
             Console.WriteLine("Say the wakeup word (" + string.Join(" ", WakeUpWords) + ") followed by the request ...");
-            ISpeechToTextService wSTT = new WindowsServices();
+            ISpeechToTextService wSTT = new WindowsServices(new Settings.Service()); // NOTE: creating service
             System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
             stopWatch.Start(); // continues until return
             System.Globalization.CultureInfo ci = new System.Globalization.CultureInfo(Options.options.locale.language);
@@ -171,7 +171,7 @@ namespace WoundifyShared
                         foreach (ISpeechToTextService STT in SpeechToTextServices.PreferredOrderedISpeechToTextServices)
                         {
                             // ISpeechToTextService STT = (ISpeechToTextService)constructor.Invoke(Type.EmptyTypes);
-                            SpeechToTextServiceResponse r = await STT.SpeechToTextAsync(bytes, await Audio.GetSampleRateAsync(Options.options.tempFolderPath + Options.options.audio.speechSynthesisFileName));
+                            SpeechToTextServiceResponse r = await STT.SpeechToTextServiceAsync(bytes, await Audio.GetSampleRateAsync(Options.options.tempFolderPath + Options.options.audio.speechSynthesisFileName));
                             if (r.sr.StatusCode == 200)
                             {
                                 text = r.sr.ResponseResult;
@@ -183,7 +183,7 @@ namespace WoundifyShared
                                 Console.WriteLine(r.sr.ServiceName + " not available.");
                             }
                         }
-                        SpeechToTextServiceResponse response = await wSTT.SpeechToTextAsync(bytes, await Audio.GetSampleRateAsync(Options.options.tempFolderPath + Options.options.audio.speechSynthesisFileName));
+                        SpeechToTextServiceResponse response = await wSTT.SpeechToTextServiceAsync(bytes, await Audio.GetSampleRateAsync(Options.options.tempFolderPath + Options.options.audio.speechSynthesisFileName));
                         text = response.sr.ResponseResult;
                         Console.WriteLine("Windows STT (default):\"" + text + "\" Total Elapsed ms:" + response.sr.TotalElapsedMilliseconds + " Request Elapsed ms:" + response.sr.RequestElapsedMilliseconds);
                         return text.Split(" ".ToCharArray(), StringSplitOptions.None);
@@ -192,12 +192,12 @@ namespace WoundifyShared
             }
         }
 
-        public static async System.Threading.Tasks.Task<string> SpeechToTextAsync()
+        public static async System.Threading.Tasks.Task<string> SpeechToTextServiceAsync()
         {
-            return await SpeechToTextAsync(Options.options.tempFolderPath + Options.options.audio.speechSynthesisFileName);
+            return await SpeechToTextServiceAsync(Options.options.tempFolderPath + Options.options.audio.speechSynthesisFileName);
         }
 
-        public static async System.Threading.Tasks.Task<string> SpeechToTextAsync(string fileName)
+        public static async System.Threading.Tasks.Task<string> SpeechToTextServiceAsync(string fileName)
         {
             if (System.IO.File.Exists(Options.options.tempFolderPath + fileName))
             {
@@ -213,13 +213,13 @@ namespace WoundifyShared
             return null;
         }
 
-        public static async System.Threading.Tasks.Task<string> SpeechToTextAsync(byte[] bytes)
+        public static async System.Threading.Tasks.Task<string> SpeechToTextServiceAsync(byte[] bytes)
         {
             System.IO.MemoryStream stream = new System.IO.MemoryStream(bytes);
-            return await SpeechToTextAsync(stream);
+            return await SpeechToTextServiceAsync(stream);
         }
 
-        public static async System.Threading.Tasks.Task<string> SpeechToTextAsync(System.IO.MemoryStream stream)
+        public static async System.Threading.Tasks.Task<string> SpeechToTextServiceAsync(System.IO.MemoryStream stream)
         {
             System.Globalization.CultureInfo ci = new System.Globalization.CultureInfo(Options.options.locale.language);
             using (System.Speech.Recognition.SpeechRecognitionEngine RecognitionEngine = new System.Speech.Recognition.SpeechRecognitionEngine(ci))
@@ -227,6 +227,8 @@ namespace WoundifyShared
                 RecognitionEngine.SetInputToWaveStream(stream);
                 RecognitionEngine.LoadGrammar(new System.Speech.Recognition.DictationGrammar());
                 System.Speech.Recognition.RecognitionResult result = RecognitionEngine.Recognize();
+                if (result == null)
+                    return "Speech.RecognitionEngine.Recognize returned null result";
                 return result.Text;
             }
         }
@@ -246,10 +248,10 @@ namespace WoundifyShared
                     string[] words = text.Split(" ".ToCharArray(), StringSplitOptions.None);
                     if (words.Length > 0)
                     {
-                        string firstWordUpper = words[0].ToUpper();
+                        string firstWordUpper = words[0];
                         foreach (string wakeupword in WakeUpWords)
                         {
-                            if (firstWordUpper == wakeupword.ToUpper())
+                            if (firstWordUpper == wakeupword)
                             {
                                 return words;
                             }

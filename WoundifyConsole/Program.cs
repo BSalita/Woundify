@@ -9,6 +9,7 @@ namespace WoundifyConsole
     {
         static int Main(string[] args)
         {
+            Console.OutputEncoding = System.Text.Encoding.Unicode;
             try
             {
                 WoundifyShared.Options.OptionsInit().Wait();

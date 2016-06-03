@@ -13,3 +13,7 @@
 /.vs/config
 /packages/NAudio.1.7.3
 /packages/Newtonsoft.Json.8.0.1
+/Notes.txt
+/WoundifyConsole/bin/Release
+/WoundifyConsole/obj/Release
+/WoundifyConsole/PortabilityAnalysis.html

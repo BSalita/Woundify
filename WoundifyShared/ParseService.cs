@@ -6,7 +6,7 @@ namespace WoundifyShared
 {
     public class ParseServices
     {
-        public static System.Collections.Generic.List<IParseService> PreferredOrderedParseServices = new FindServices<IParseService>(Options.options.Services.APIs.Parse.preferredParseServices).PreferredOrderingOfServices;
+        public static System.Collections.Generic.List<IParseService> PreferredOrderedParseServices = new FindServices<IParseService>(Options.commandservices["Parse"].preferredServices).PreferredOrderingOfServices;
 
         public static async System.Threading.Tasks.Task<System.Collections.Generic.List<ParseServiceResponse>> RunAllPreferredParseServices(string text)
         {

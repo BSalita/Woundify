@@ -4,7 +4,7 @@ namespace WoundifyShared
 {
     public class SpeechToTextServices
     {
-        public static System.Collections.Generic.List<ISpeechToTextService> PreferredOrderedISpeechToTextServices = new FindServices<ISpeechToTextService>(Options.options.Services.APIs.SpeechToText.preferredSpeechToTextServices).PreferredOrderingOfServices;
+        public static System.Collections.Generic.List<ISpeechToTextService> PreferredOrderedISpeechToTextServices = new FindServices<ISpeechToTextService>(Options.commandservices["SpeechToText"].preferredServices).PreferredOrderingOfServices;
 
         public static async System.Threading.Tasks.Task<System.Collections.Generic.List<SpeechToTextServiceResponse>> RunAllPreferredSpeechToTextServices(string fileName)
         {
@@ -19,7 +19,7 @@ namespace WoundifyShared
             // invoke each ISpeechToTextService and show what it can do.
             foreach (ISpeechToTextService STT in PreferredOrderedISpeechToTextServices)
             {
-                responses.Add(await STT.SpeechToTextAsync(bytes, sampleRate).ContinueWith<SpeechToTextServiceResponse>((c) =>
+                responses.Add(await STT.SpeechToTextServiceAsync(bytes, sampleRate).ContinueWith<SpeechToTextServiceResponse>((c) =>
                 {
                     ServiceResponse r = c.Result.sr;
                     if (string.IsNullOrEmpty(r.ResponseResult) || r.StatusCode != 200)

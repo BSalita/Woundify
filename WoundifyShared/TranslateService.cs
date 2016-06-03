@@ -4,17 +4,17 @@ using System.Reflection; // for GetTypeInfo()
 
 namespace WoundifyShared
 {
-    public class IntentServices
+    public class TranslateServices
     {
-        public static System.Collections.Generic.List<IIntentService> PreferredOrderIntentServices = new FindServices<IIntentService>(Options.commandservices["Intent"].preferredServices).PreferredOrderingOfServices;
+        public static System.Collections.Generic.List<ITranslateService> PreferredOrderTranslateServices = new FindServices<ITranslateService>(Options.commandservices["Translate"].preferredServices).PreferredOrderingOfServices;
 
-        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<IntentServiceResponse>> RunAllPreferredIntentServices(string text)
+        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<TranslateServiceResponse>> RunAllPreferredTranslateServices(string text)
         {
-            System.Collections.Generic.List<IntentServiceResponse> responses = new System.Collections.Generic.List<IntentServiceResponse>();
-            // invoke each IIntentService and show what it can do.
-            foreach (IIntentService STT in PreferredOrderIntentServices)
+            System.Collections.Generic.List<TranslateServiceResponse> responses = new System.Collections.Generic.List<TranslateServiceResponse>();
+            // invoke each ITranslateService and show what it can do.
+            foreach (ITranslateService STT in PreferredOrderTranslateServices)
             {
-                responses.Add(await STT.IntentServiceAsync(text).ContinueWith<IntentServiceResponse>((c) =>
+                responses.Add(await STT.TranslateServiceAsync(text).ContinueWith<TranslateServiceResponse>((c) =>
                 {
                     ServiceResponse r = c.Result.sr;
                     if (string.IsNullOrEmpty(r.ResponseResult) || r.StatusCode != 200)
@@ -27,13 +27,13 @@ namespace WoundifyShared
             return responses;
         }
 
-        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<IntentServiceResponse>> RunAllPreferredIntentServices(byte[] bytes, int sampleRate)
+        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<TranslateServiceResponse>> RunAllPreferredTranslateServices(byte[] bytes, int sampleRate)
         {
-            System.Collections.Generic.List<IntentServiceResponse> responses = new System.Collections.Generic.List<IntentServiceResponse>();
-            // invoke each IIntentService and show what it can do.
-            foreach (IIntentService STT in PreferredOrderIntentServices)
+            System.Collections.Generic.List<TranslateServiceResponse> responses = new System.Collections.Generic.List<TranslateServiceResponse>();
+            // invoke each ITranslateService and show what it can do.
+            foreach (ITranslateService STT in PreferredOrderTranslateServices)
             {
-                responses.Add(await STT.IntentServiceAsync(bytes, sampleRate).ContinueWith<IntentServiceResponse>((c) =>
+                responses.Add(await STT.TranslateServiceAsync(bytes, sampleRate).ContinueWith<TranslateServiceResponse>((c) =>
                 {
                     ServiceResponse r = c.Result.sr;
                     if (string.IsNullOrEmpty(r.ResponseResult) || r.StatusCode != 200)
@@ -47,13 +47,13 @@ namespace WoundifyShared
         }
 
 #if false
-        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<IIntentServiceResponse>> RunAllPreferredIntentServices(byte[] bytes, int sampleRate)
+        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<ITranslateServiceResponse>> RunAllPreferredTranslateServices(byte[] bytes, int sampleRate)
         {
-            System.Collections.Generic.List<IIntentServiceResponse> responses = new System.Collections.Generic.List<IIntentServiceResponse>();
-            // invoke each IIntentService and show what it can do.
-            foreach (IIntentService STT in PreferredIIntentServices)
+            System.Collections.Generic.List<ITranslateServiceResponse> responses = new System.Collections.Generic.List<ITranslateServiceResponse>();
+            // invoke each ITranslateService and show what it can do.
+            foreach (ITranslateService STT in PreferredITranslateServices)
             {
-                await STT.IntentServicesAsync(bytes, sampleRate).ContinueWith<IIntentServiceResponse>((c) =>
+                await STT.TranslateServicesAsync(bytes, sampleRate).ContinueWith<ITranslateServiceResponse>((c) =>
                 {
                     if (string.IsNullOrEmpty(c.Result.sr.ResponseResult) || c.Result.sr.StatusCode != 200)
                         Console.WriteLine(r.ServiceName + " STT (async): Failed with StatusCode of " + c.Result.StatusCode);
@@ -65,5 +65,5 @@ namespace WoundifyShared
             return responses;
         }
 #endif
-        }
     }
+}

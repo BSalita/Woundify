@@ -9,27 +9,34 @@ namespace WoundifyShared
     {
         private System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
 
-        public override async System.Threading.Tasks.Task<SpeechToTextServiceResponse> SpeechToTextAsync(byte[] audioBytes, int sampleRate)
+        public WitServices(Settings.Service service) : base(service)
+        {
+        }
+
+        public override async System.Threading.Tasks.Task<SpeechToTextServiceResponse> SpeechToTextServiceAsync(byte[] audioBytes, int sampleRate)
         {
             SpeechToTextServiceResponse response = new SpeechToTextServiceResponse();
             Log.WriteLine("audio file length:" + audioBytes.Length + " sampleRate:" + sampleRate);
 
             stopWatch.Start();
 
-            dynamic settings = Options.options.Services.APIs.SpeechToText.WitSpeechToText;
-
             UriBuilder ub = new UriBuilder();
-            ub.Scheme = "https";
-            ub.Host = "api.wit.ai";
-            ub.Path = "speech";
-            ub.Query = "v=20141022";
+            ub.Scheme = service.request.uri.scheme;
+            ub.Host = service.request.uri.host;
+            ub.Path = service.request.uri.path;
+            ub.Query = service.request.uri.query;
+            System.Collections.Generic.List<Tuple<string, string>> Headers = new System.Collections.Generic.List<Tuple<string, string>>()
+                {
+                    new Tuple<string, string>("Authorization", "Bearer " + service.request.headers[0].BearerAuthentication.bearer),
+                    new Tuple<string, string>("Content-Type", service.request.headers[1].ContentType), // ;bits=16;rate=" + sampleRate.ToString()); // 403 if wrong
+            };
 #if WINDOWS_UWP
             if (Options.options.Services.APIs.PreferSystemNet)
                response.sr = await PostAsyncSystemNet(ub.Uri, audioBytes, sampleRate);
             else
                 response.sr = await PostAsyncWindowsWeb(ub.Uri, audioBytes, sampleRate);
 #else
-            response.sr = await PostAsyncSystemNet(ub.Uri, audioBytes, sampleRate);
+            response.sr = await PostAsyncSystemNet(ub.Uri, audioBytes, sampleRate, Headers);
 #endif
             stopWatch.Stop();
             response.sr.TotalElapsedMilliseconds = stopWatch.ElapsedMilliseconds;
@@ -51,7 +58,7 @@ namespace WoundifyShared
                     // rate must be specified but doesn't seem to need to be accurate.
 
                     Windows.Web.Http.IHttpContent requestContent = null;
-                    if (Options.options.Services.APIs.PreferChunkedEncodedRequests)
+                    if (Options.options.APIs.preferChunkedEncodedRequests)
                     {
                         // using chunked transfer requests
                         Log.WriteLine("Using chunked encoding");
@@ -120,7 +127,7 @@ namespace WoundifyShared
         }
 #endif
 
-        public async System.Threading.Tasks.Task<ServiceResponse> PostAsyncSystemNet(Uri uri, byte[] audioBytes, int sampleRate)
+        public async System.Threading.Tasks.Task<ServiceResponse> PostAsyncSystemNet(Uri uri, byte[] audioBytes, int sampleRate, System.Collections.Generic.List<Tuple<string, string>> Headers)
         {
             ServiceResponse response = new ServiceResponse(this.ToString());
             try
@@ -132,13 +139,19 @@ namespace WoundifyShared
                     // todo: create variables for encoding and endian?
                     // todo: make bits=16... work
                     // todo: double check that other Services use same headers
-#if true // not sure why bits and rate don't work for either type.
-                    requestContent.Headers.Add("Content-Type", "audio/wav"); // ;bits=16;rate=" + sampleRate.ToString()); // must add header AFTER contents are initialized
-#else
-                    requestContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("audio/wav"); //;bits=16;rate=" + sampleRate.ToString()); // must add header AFTER contents are initialized
-#endif
-                    httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", Options.options.Services.APIs.SpeechToText.WitSpeechToText.Bearer);
-                    if (Options.options.Services.APIs.PreferChunkedEncodedRequests)
+                    foreach (Tuple<string, string> h in Headers)
+                    {
+                        switch (h.Item1)
+                        {
+                            case "Content-Type":
+                                requestContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(h.Item2);
+                                break;
+                            default:
+                                httpClient.DefaultRequestHeaders.Add(h.Item1, h.Item2); // must add header AFTER contents are initialized
+                                break;
+                        }
+                    }
+                    if (Options.options.APIs.preferChunkedEncodedRequests)
                     {
                         Log.WriteLine("Using chunked encoding");
                         httpClient.DefaultRequestHeaders.TransferEncodingChunked = true;
@@ -147,6 +160,12 @@ namespace WoundifyShared
                         else
                             requestContent.Headers.ContentLength = 0;
                     }
+
+#if false // todo: unfinished. Need to implement ContentType, Accept, Method, Headers
+//curl -XPOST "https://api.wit.ai/speech?v=20141022" -i -L -H "Authorization: Bearer {Bearer}" -H "Content-Type: audio/wav" --data-binary "@{file}"
+                    Log.WriteLine("curl -X POST --data \"" + text + "\" --header ""...""" + "\"" + uri);
+#endif
+
                     Log.WriteLine("Before post: Elapsed milliseconds:" + stopWatch.ElapsedMilliseconds);
                     response.RequestElapsedMilliseconds = stopWatch.ElapsedMilliseconds;
                     using (System.Net.Http.HttpResponseMessage rm = await httpClient.PostAsync(uri, requestContent))
@@ -190,7 +209,7 @@ namespace WoundifyShared
                                     Newtonsoft.Json.Linq.JToken tokResult = ProcessResponse(ResponseBodyToken);
                                     if (tokResult == null || string.IsNullOrEmpty(tokResult.ToString()))
                                     {
-                                        response.ResponseResult = Options.options.Services.APIs.SpeechToText.missingResponse;
+                                        response.ResponseResult = Options.services["WitSpeechToTextService"].response.missingResponse;
                                         if (Options.options.debugLevel >= 3)
                                             Log.WriteLine(response.ResponseResult);
                                     }

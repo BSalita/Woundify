@@ -14,30 +14,34 @@ namespace WoundifyShared
         private static System.Collections.Generic.List<string> Analyzers;
         private static string AnalyzerStringized;
 
-        public BingServices()
+        public BingServices(Settings.Service service) : base(service)
         {
-            if (Analyzers == null)
-                GetAnalyzers().Wait();
         }
 
         public override async System.Threading.Tasks.Task<ParseServiceResponse> ParseServiceAsync(string text)
         {
+            if (Analyzers == null)
+            {
+                GetAnalyzers().Wait();
+                if (Analyzers == null || Analyzers.Count == 0)
+                    throw new InvalidOperationException(); // can't continue without at least one Analyzer
+            }
             ParseServiceResponse response = new ParseServiceResponse();
             Log.WriteLine("Bing: parse:" + text);
             stopWatch.Start();
-            dynamic settings = Options.options.Services.APIs.Parse.BingParse;
             UriBuilder ub = new UriBuilder();
-            ub.Scheme = "https";
-            ub.Host = "api.projectoxford.ai";
-            ub.Path = "linguistics/v1.0/analyze";
-            text = "{'language' : 'en', 'analyzerIds' : [" + AnalyzerStringized + "], 'text' :'" + text + "'}";
+            ub.Scheme = service.request.uri.scheme;
+            ub.Host = service.request.uri.host;
+            ub.Path = service.request.uri.path;
+            text = service.request.data.value.Replace("{AnalyzerStringized}", AnalyzerStringized).Replace("{text}", text);
             System.Collections.Generic.List<Tuple<string, string>> Headers = new System.Collections.Generic.List<Tuple<string, string>>()
             {
-                new Tuple<string, string>("Ocp-Apim-Subscription-Key", settings.OcpApimSubscriptionKey) // todo: get from settings
+                new Tuple<string, string>("Content-Type", service.request.headers[1].ContentType), // todo: need dictionary lookup instead of hardcoding
+                new Tuple<string, string>("Ocp-Apim-Subscription-Key", service.request.headers[2].OcpApimSubscriptionKey) // todo: need dictionary lookup instead of hardcoding
             };
             // todo: maybe a dictionary of headers should be passed including content-type. Then PostAsync can do if (dict.Contains("Content-Type")) headers.add(dict...)
             // todo: maybe should init a header class, add values and pass to Post?
-            response.sr = await PostAsyncSystemNet(ub.Uri, text, "application/json", Headers);
+            response.sr = await PostAsyncSystemNet(ub.Uri, text, Headers);
             stopWatch.Stop();
             response.sr.TotalElapsedMilliseconds = stopWatch.ElapsedMilliseconds;
             Log.WriteLine("Total: Elapsed milliseconds:" + stopWatch.ElapsedMilliseconds);
@@ -48,14 +52,13 @@ namespace WoundifyShared
         {
             Log.WriteLine("Bing: GetAnalyzers");
             Analyzers = new System.Collections.Generic.List<string>();
-            dynamic settings = Options.options.Services.APIs.Parse.BingParse;
             UriBuilder ub = new UriBuilder();
-            ub.Scheme = "https";
-            ub.Host = "api.projectoxford.ai";
-            ub.Path = "linguistics/v1.0/analyzers";
+            ub.Scheme = service.request.uri.scheme; // same as Parse
+            ub.Host = service.request.uri.host; // same as Parse
+            ub.Path = "linguistics/v1.0/analyzers"; // can't use service.request.uri.path because it's for Parse
             System.Collections.Generic.List<Tuple<string, string>> Headers = new System.Collections.Generic.List<Tuple<string, string>>()
             {
-                new Tuple<string, string>("Ocp-Apim-Subscription-Key", settings.OcpApimSubscriptionKey) // todo: get from settings
+                new Tuple<string, string>("Ocp-Apim-Subscription-Key", service.request.headers[2].OcpApimSubscriptionKey) // todo: get from settings
             };
             return await GetAsyncSystemNet(ub.Uri, Headers);
         }
@@ -68,44 +71,41 @@ namespace WoundifyShared
             return response;
         }
 
-        public override async System.Threading.Tasks.Task<SpeechToTextServiceResponse> SpeechToTextAsync(byte[] audioBytes, int sampleRate)
+        public override async System.Threading.Tasks.Task<SpeechToTextServiceResponse> SpeechToTextServiceAsync(byte[] audioBytes, int sampleRate)
         {
             SpeechToTextServiceResponse response = new SpeechToTextServiceResponse();
             Log.WriteLine("Bing: audio file length:" + audioBytes.Length + " sampleRate:" + sampleRate);
 
             stopWatch.Start();
 
-            dynamic settings = Options.options.Services.APIs.SpeechToText.BingSpeechToText;
 
-            string requestUri = "https://speech.platform.bing.com/recognize";
+            /* URI Params. Refer to the README file for more information. */
+            string query = null;
+            query += @"scenarios=smd";                                  // websearch is the other main option.
+            query += @"&appid=D4D52672-91D7-4C74-8AD8-42B1D98141A5";     // You must use this ID.
+            query += @"&locale=" + Options.options.locale.language;      // We support several other languages.  Refer to README file.
+            query += @"&device.os=wp7";
+            query += @"&version=3.0";
+            query += @"&format=json";
+            query += @"&instanceid=565D69FF-E928-4B7E-87DA-9A750B96D9E3";
+            query += @"&requestid=" + Guid.NewGuid().ToString();
 
-            AccessTokenInfo token;
-            string headerValue;
-
+            UriBuilder ub = new UriBuilder();
+            ub.Scheme = service.request.uri.scheme;
+            ub.Host = service.request.uri.host;
+            ub.Path = service.request.uri.path;
+            ub.Query = query;
             // Note: Sign up at http://www.projectoxford.ai to get a subscription key.
             // Use the subscription key, called Primary Key, as the Client secret below.
             // todo: looks like I've implemented an old method of calling, albeit it seems to work. Should I update to: https://onedrive.live.com/prev?id=9a8c02c3b59e575!115&cid=09A8C02C3B59E575&parId=root&authkey=!AOE9yiNn9bOskFE&v=TextFileEditor
             Authentication auth = new Authentication();
-            string ClientID = settings.ClientID;
-            string clientSecret = settings.clientSecret;
-            await auth.PerformAuthenticationAsync(ClientID, clientSecret);
-
-            /* URI Params. Refer to the README file for more information. */
-            requestUri += @"?scenarios=smd";                                  // websearch is the other main option.
-            requestUri += @"&appid=D4D52672-91D7-4C74-8AD8-42B1D98141A5";     // You must use this ID.
-            requestUri += @"&locale=" + Options.options.locale.language;      // We support several other languages.  Refer to README file.
-            requestUri += @"&device.os=wp7";
-            requestUri += @"&version=3.0";
-            requestUri += @"&format=json";
-            requestUri += @"&instanceid=565D69FF-E928-4B7E-87DA-9A750B96D9E3";
-            requestUri += @"&requestid=" + Guid.NewGuid().ToString();
-
-            // if samplerate is wrong, gives 403 bad request error
-            string contentType = @"audio/wav; codec=""audio/pcm""; samplerate=" + sampleRate.ToString();
+            string clientID = service.request.headers[1].BearerAuthentication.clientID;
+            string clientSecret = service.request.headers[1].BearerAuthentication.clientSecret;
+            await auth.PerformAuthenticationAsync(clientID, clientSecret);
 
             try
             {
-                token = auth.GetAccessToken();
+                AccessTokenInfo token = auth.GetAccessToken();
                 if (token == null)
                 {
                     Log.WriteLine("Invalid authentication token");
@@ -113,20 +113,22 @@ namespace WoundifyShared
                 }
                 Log.WriteLine("Token: {0}\n" + token.access_token);
 
-                /*
-                 * Create a header with the access_token property of the returned token
-                 */
-                headerValue = "Bearer " + token.access_token;
+                System.Collections.Generic.List<Tuple<string, string>> Headers = new System.Collections.Generic.List<Tuple<string, string>>()
+                {
+                    new Tuple<string, string>("Accept", service.request.headers[0].Accept),
+                    new Tuple<string, string>("Authorization", "Bearer " + token.access_token),
+                    new Tuple<string, string>("Content-Type", service.request.headers[2].ContentType.Replace("{sampleRate}",sampleRate.ToString())), // 403 if wrong
+                };
 
                 if (Options.options.debugLevel >= 4)
-                    Log.WriteLine("Request Uri: " + requestUri);
+                    Log.WriteLine("Request Uri: " + ub.Uri);
 #if WINDOWS_UWP
                 if (Options.options.Services.APIs.PreferSystemNet)
                     response.sr = await PostAsyncSystemNet(new Uri(requestUri), audioBytes, sampleRate, contentType, headerValue);
                 else
                     response.sr = await PostAsyncWindowsWeb(new Uri(requestUri), audioBytes, sampleRate, contentType, headerValue);
 #else
-                response.sr = await PostAsyncSystemNet(new Uri(requestUri), audioBytes, sampleRate, contentType, headerValue);
+                response.sr = await PostAsyncSystemNet(ub.Uri, audioBytes, sampleRate, Headers);
 #endif
             }
             catch (Exception ex)
@@ -200,7 +202,7 @@ namespace WoundifyShared
                     // httpClient.DefaultRequestHeaders["ProtocolVersion"] = HttpVersion.Version11; // doesn't seem to be needed
 
                     Windows.Web.Http.IHttpContent requestContent = null;
-                    if (Options.options.Services.APIs.PreferChunkedEncodedRequests)
+                    if (Options.options.APIs.preferChunkedEncodedRequests)
                     {
                         // using chunked transfer requests
                         Log.WriteLine("Using chunked encoding");
@@ -267,7 +269,7 @@ namespace WoundifyShared
         }
 #endif
 
-        public async System.Threading.Tasks.Task<ServiceResponse> PostAsyncSystemNet(Uri uri, string text, string contentType, System.Collections.Generic.List<Tuple<string, string>> Headers)
+        public async System.Threading.Tasks.Task<ServiceResponse> PostAsyncSystemNet(Uri uri, string text, System.Collections.Generic.List<Tuple<string, string>> Headers)
         {
             ServiceResponse response = new ServiceResponse(this.ToString());
             try
@@ -276,20 +278,29 @@ namespace WoundifyShared
 
                 request.Method = "POST";
 
-                // make headers same as project oxford sample headers
-                request.ContentType = contentType;
-                request.Accept = @"application/json;text/xml";
                 foreach (Tuple<string, string> h in Headers)
                 {
-                    request.Headers[h.Item1] = h.Item2;
+                    switch (h.Item1)
+                    {
+                        case "Accept":
+                            request.Accept = h.Item2;
+                            break;
+                        case "Content-Type":
+                            request.ContentType = h.Item2;
+                            break;
+                        default:
+                            request.Headers[h.Item1] = h.Item2;
+                        break;
+                    }
                 }
+
                 // can't seem to set - request.Expect = "100-continue"; // in header of sample
                 //request.Host = host; // doesn't seem to be needed
                 //request.ProtocolVersion = HttpVersion.Version11; // doesn't seem to be needed
 
                 using (System.IO.Stream requestStream = await request.GetRequestStreamAsync())
                 {
-                    if (Options.options.Services.APIs.PreferChunkedEncodedRequests)
+                    if (Options.options.APIs.preferChunkedEncodedRequests)
                     {
                         Log.WriteLine("Using chunked encoding");
                         request.Headers["Content-Length"] = "0";
@@ -298,6 +309,10 @@ namespace WoundifyShared
                     byte[] btext = System.Text.Encoding.UTF8.GetBytes(text); // Is there a string overload for Write() so we don't have to do this?
                     requestStream.Write(btext, 0, btext.Length);
                 }
+
+#if false // todo: unfinished. Need to implement ContentType, Accept, Method, Headers
+                Log.WriteLine("curl -X POST --data \"" + text + "\" --header ""...""" + "\"" + uri);
+#endif
 
                 Log.WriteLine("Before Post: Elapsed milliseconds:" + stopWatch.ElapsedMilliseconds);
                 response.RequestElapsedMilliseconds = stopWatch.ElapsedMilliseconds;
@@ -324,7 +339,7 @@ namespace WoundifyShared
                             // todo: temp, restore JToken tokResult = ProcessResponseSpeech(ResponseBodyToken);
                             if (tokResult == null || string.IsNullOrEmpty(tokResult.ToString()))
                             {
-                                response.ResponseResult = Options.options.Services.APIs.SpeechToText.missingResponse;
+                                response.ResponseResult = Options.services["BingSpeechToTextService"].response.missingResponse;
                                 if (Options.options.debugLevel >= 3)
                                     Log.WriteLine("SpeechToTextResult:" + response.ResponseResult);
                             }
@@ -352,7 +367,7 @@ namespace WoundifyShared
             return response;
         }
 
-        public async System.Threading.Tasks.Task<ServiceResponse> PostAsyncSystemNet(Uri uri, byte[] audioBytes, int sampleRate, string contentType, string headerValue)
+        public async System.Threading.Tasks.Task<ServiceResponse> PostAsyncSystemNet(Uri uri, byte[] audioBytes, int sampleRate, System.Collections.Generic.List<Tuple<string, string>> Headers)
         {
             ServiceResponse response = new ServiceResponse(this.ToString());
             try
@@ -361,17 +376,28 @@ namespace WoundifyShared
 
                 request.Method = "POST";
 
-                // make headers same as project oxford sample headers
-                request.ContentType = contentType;
-                request.Accept = @"application/json;text/xml";
-                request.Headers["Authorization"] = headerValue;
+                foreach (Tuple<string, string> h in Headers)
+                {
+                    switch (h.Item1)
+                    {
+                        case "Accept":
+                            request.Accept = h.Item2;
+                            break;
+                        case "Content-Type":
+                            request.ContentType = h.Item2;
+                            break;
+                        default:
+                            request.Headers[h.Item1] = h.Item2;
+                        break;
+                    }
+                }
+
                 // can't seem to set - request.Expect = "100-continue"; // in header of sample
                 //request.Host = host; // doesn't seem to be needed
                 //request.ProtocolVersion = HttpVersion.Version11; // doesn't seem to be needed
-
                 using (System.IO.Stream requestStream = await request.GetRequestStreamAsync())
                 {
-                    if (Options.options.Services.APIs.PreferChunkedEncodedRequests)
+                    if (Options.options.APIs.preferChunkedEncodedRequests)
                     {
                         Log.WriteLine("Using chunked encoding");
                         request.Headers["Content-Length"] = "0";
@@ -379,6 +405,10 @@ namespace WoundifyShared
                     }
                     requestStream.Write(audioBytes, 0, audioBytes.Length);
                 }
+
+#if false // todo: unfinished. Need to implement ContentType, Accept, Method, Headers
+                Log.WriteLine("curl -X POST --data \"" + text + "\" --header ""...""" + "\"" + uri);
+#endif
 
                 Log.WriteLine("Before Post: Elapsed milliseconds:" + stopWatch.ElapsedMilliseconds);
                 response.RequestElapsedMilliseconds = stopWatch.ElapsedMilliseconds;
@@ -403,7 +433,7 @@ namespace WoundifyShared
                             JToken tokResult = ProcessResponseSpeech(ResponseBodyToken);
                             if (tokResult == null || string.IsNullOrEmpty(tokResult.ToString()))
                             {
-                                response.ResponseResult = Options.options.Services.APIs.SpeechToText.missingResponse;
+                                response.ResponseResult = Options.services["BingSpeechToTextService"].response.missingResponse;
                                 if (Options.options.debugLevel >= 3)
                                     Log.WriteLine("SpeechToTextResult:" + response.ResponseResult);
                             }
@@ -630,7 +660,7 @@ namespace WoundifyShared
                 //webRequest.ContentLength = bytes.Length;
                 using (System.IO.Stream outputStream = await webRequest.GetRequestStreamAsync())
                 {
-                    if (Options.options.Services.APIs.PreferChunkedEncodedRequests)
+                    if (Options.options.APIs.preferChunkedEncodedRequests)
                     {
                         Log.WriteLine("Using chunked encoding");
                         webRequest.Headers["Content-Length"] = "0";

@@ -14,40 +14,41 @@ namespace WoundifyShared
         private static JToken IntentConversationState = null;
         private System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
 
+        public HoundifyServices(Settings.Service service) : base(service)
+        {
+        }
+
         public override async System.Threading.Tasks.Task<IntentServiceResponse> IntentServiceAsync(string text)
         {
             IntentServiceResponse response = new IntentServiceResponse();
-            dynamic settings = Options.options.Services.APIs.Intent.HoundifyIntent;
             UriBuilder ub = new UriBuilder();
-            ub.Scheme = "https";
-            ub.Host = "api.houndify.com";
-            ub.Path = "v1/text";
-            ub.Query = "query=" + System.Uri.EscapeDataString(text.Trim());
-            response.sr = await PostAsync(ub, new byte[0], settings);
+            ub.Scheme = service.request.uri.scheme;
+            ub.Host = service.request.uri.host;
+            ub.Path = service.request.uri.path;
+            ub.Query = service.request.uri.query.Replace("{text}", System.Uri.EscapeDataString(text.Trim()));
+            response.sr = await PostAsync(ub, new byte[0]);
             return response;
         }
 
         public override async System.Threading.Tasks.Task<IntentServiceResponse> IntentServiceAsync(byte[] audioBytes, int sampleRate)
         {
             IntentServiceResponse response = new IntentServiceResponse();
-            dynamic settings = Options.options.Services.APIs.Intent.HoundifyIntent;
             UriBuilder ub = new UriBuilder();
-            ub.Scheme = "https";
-            ub.Host = "api.houndify.com";
-            ub.Path = "v1/audio";
-            response.sr = await PostAsync(ub, audioBytes, settings, sampleRate);
+            ub.Scheme = service.request.uri.scheme;
+            ub.Host = service.request.uri.host;
+            ub.Path = service.request.uri.path;
+            response.sr = await PostAsync(ub, audioBytes, sampleRate);
             return response;
         }
 
-        public override async System.Threading.Tasks.Task<SpeechToTextServiceResponse> SpeechToTextAsync(byte[] audioBytes, int sampleRate)
+        public override async System.Threading.Tasks.Task<SpeechToTextServiceResponse> SpeechToTextServiceAsync(byte[] audioBytes, int sampleRate)
         {
             SpeechToTextServiceResponse response = new SpeechToTextServiceResponse();
-            dynamic settings = Options.options.Services.APIs.SpeechToText.HoundifySpeechToText;
             UriBuilder ub = new UriBuilder();
-            ub.Scheme = "https";
-            ub.Host = "api.houndify.com";
-            ub.Path = "v1/audio";
-            response.sr = await PostAsync(ub, audioBytes, settings, sampleRate);
+            ub.Scheme = service.request.uri.scheme;
+            ub.Host = service.request.uri.host;
+            ub.Path = service.request.uri.path;
+            response.sr = await PostAsync(ub, audioBytes, sampleRate);
             return response;
         }
 
@@ -65,7 +66,7 @@ namespace WoundifyShared
                     httpClient.DefaultRequestHeaders.Add("Hound-Client-Authentication", HoundClientAuthentication); // client-id;timestamp;signature
 
                     Windows.Web.Http.IHttpContent requestContent = null;
-                    if (Options.options.Services.APIs.PreferChunkedEncodedRequests)
+                    if (Options.options.APIs.preferChunkedEncodedRequests)
                     {
                         // using chunked transfer requests
                         Log.WriteLine("Using chunked encoding");
@@ -140,12 +141,17 @@ namespace WoundifyShared
                     httpClient.DefaultRequestHeaders.Add("Hound-Request-Info-Length", RequestBodyJson.Length.ToString());
                     httpClient.DefaultRequestHeaders.Add("Hound-Request-Authentication", HoundRequestAuthentication); // user-id;request-id
                     httpClient.DefaultRequestHeaders.Add("Hound-Client-Authentication", HoundClientAuthentication); // client-id;timestamp;signature
-                    if (Options.options.Services.APIs.PreferChunkedEncodedRequests)
+                    if (Options.options.APIs.preferChunkedEncodedRequests)
                     {
                         Log.WriteLine("Using chunked encoding");
                         httpClient.DefaultRequestHeaders.Add("Content-Length", "0");
                         httpClient.DefaultRequestHeaders.Add("Transfer-Encoding", "chunked");
                     }
+
+#if true
+                    Log.WriteLine("curl -X POST --data-binary @computer.wav --header \"Hound-Request-Authentication:" + HoundRequestAuthentication + "\" --header \"Hound-Client-Authentication:" + HoundClientAuthentication + "\" --header \"Hound-Request-Info:" + RequestBodyJson.Replace('"', '\'') + "\" " + uri);
+#endif
+
                     Log.WriteLine("Before Post: Elapsed milliseconds:" + stopWatch.ElapsedMilliseconds);
                     response.RequestElapsedMilliseconds = stopWatch.ElapsedMilliseconds;
                     using (System.Net.Http.HttpResponseMessage rm = await httpClient.PostAsync(uri, new System.Net.Http.ByteArrayContent(RequestBodyBytes)))
@@ -187,7 +193,7 @@ namespace WoundifyShared
                                             JToken tokResult = ProcessResponse(ResponseBodyToken);
                                             if (tokResult == null || string.IsNullOrEmpty(tokResult.ToString()))
                                             {
-                                                response.ResponseResult = Options.options.Services.APIs.SpeechToText.missingResponse;
+                                                response.ResponseResult = Options.services["HoundifySpeechToTextService"].response.missingResponse;
                                                 if (Options.options.debugLevel >= 3)
                                                     Log.WriteLine("ResponseResult:" + response.ResponseResult);
                                             }
@@ -219,15 +225,15 @@ namespace WoundifyShared
             return response;
         }
 
-        public async System.Threading.Tasks.Task<ServiceResponse> PostAsync(UriBuilder ub, byte[] RequestContentBytes, dynamic settings, int sampleRate = 0)
+        public async System.Threading.Tasks.Task<ServiceResponse> PostAsync(UriBuilder ub, byte[] RequestContentBytes, int sampleRate = 0)
         {
             ServiceResponse response = new ServiceResponse(this.ToString());
             Log.WriteLine("Content length:" + RequestContentBytes.Length);
             stopWatch.Start();
 
-            string ClientID = settings.ClientID; // moot? throws Exception thrown: 'Microsoft.CSharp.RuntimeBinder.RuntimeBinderException' in Microsoft.CSharp.dll
-            string ClientKey = settings.ClientKey; // moot? Exception thrown: 'Microsoft.CSharp.RuntimeBinder.RuntimeBinderException' in Microsoft.CSharp.dll
-            string UserID = settings.UserID;
+            string ClientID = service.request.headers[0].HoundifyAuthentication.ClientID; // moot? throws Exception thrown: 'Microsoft.CSharp.RuntimeBinder.RuntimeBinderException' in Microsoft.CSharp.dll
+            string ClientKey = service.request.headers[0].HoundifyAuthentication.ClientKey; // moot? Exception thrown: 'Microsoft.CSharp.RuntimeBinder.RuntimeBinderException' in Microsoft.CSharp.dll
+            string UserID = service.request.headers[0].HoundifyAuthentication.UserID;
 
             JObject RequestBodyObject = JObject.FromObject(new
             {
@@ -238,7 +244,7 @@ namespace WoundifyShared
                 UserID = UserID,
                 ClientID = ClientID,
                 // audio specific
-                PartialTranscriptsDesired = Options.options.Services.APIs.Intent.HoundifyIntent.PartialTranscriptsDesired
+                PartialTranscriptsDesired = Options.services["HoundifyIntentAudioService"].response.PartialTranscriptsDesired
             });
 
             if (IntentConversationState != null)
@@ -334,6 +340,5 @@ namespace WoundifyShared
             }
             return tok;
         }
-
     }
 }

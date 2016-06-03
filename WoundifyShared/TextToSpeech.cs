@@ -62,31 +62,31 @@ namespace WoundifyShared
             return text; // todo: implement
         }
 #else
-        public static async System.Threading.Tasks.Task<int> SynSpeechWriteToFileAsync(string text, string fileName)
+        public static async System.Threading.Tasks.Task<Byte[]> TextToSpeechServiceAsync(string text, int sampleRate)
         {
-            Log.WriteLine("text:\"" + text + "\" filename:" + fileName);
+            Log.WriteLine("text:\"" + text + "\"");
             //System.Globalization.CultureInfo ci = new System.Globalization.CultureInfo(Options.options.locale.language);
             using (System.Speech.Synthesis.SpeechSynthesizer synth = new System.Speech.Synthesis.SpeechSynthesizer())
             {
                 // Explicitly specify audio settings. All services are ok with 16000/16/1. It's ok to cast options to enums as their values are identical.
-                System.Speech.AudioFormat.SpeechAudioFormatInfo si = new System.Speech.AudioFormat.SpeechAudioFormatInfo(WoundifyShared.Options.options.audio.samplingRate, (System.Speech.AudioFormat.AudioBitsPerSample)WoundifyShared.Options.options.audio.bitDepth, (System.Speech.AudioFormat.AudioChannel)WoundifyShared.Options.options.audio.channels);
-                synth.SetOutputToWaveFile(Options.options.tempFolderPath + fileName, si);
-                synth.SelectVoiceByHints((System.Speech.Synthesis.VoiceGender)Options.options.Services.APIs.SpeechToText.WindowsSpeechToText.voiceGender, (System.Speech.Synthesis.VoiceAge)Options.options.Services.APIs.SpeechToText.WindowsSpeechToText.voiceAge);
+                System.Speech.AudioFormat.SpeechAudioFormatInfo si = new System.Speech.AudioFormat.SpeechAudioFormatInfo(sampleRate, (System.Speech.AudioFormat.AudioBitsPerSample)WoundifyShared.Options.options.audio.bitDepth, (System.Speech.AudioFormat.AudioChannel)WoundifyShared.Options.options.audio.channels);
+                // TODO: use memory based file instead
+                synth.SetOutputToWaveFile(Options.options.tempFolderPath + Options.options.audio.speechSynthesisFileName, si);
+                synth.SelectVoiceByHints((System.Speech.Synthesis.VoiceGender)Options.commandservices["TextToSpeech"].voiceGender, (System.Speech.Synthesis.VoiceAge)Options.commandservices["TextToSpeech"].voiceAge);
                 synth.Speak(text);
             }
-            return 0;
+            return await Helpers.ReadBytesFromFileAsync(Options.options.audio.speechSynthesisFileName);
         }
 
-        public static async System.Threading.Tasks.Task<int> SynSpeechPlayAsync(string text)
+        public static async System.Threading.Tasks.Task TextToSpeechServiceAsync(string text)
         {
             //System.Globalization.CultureInfo ci = new System.Globalization.CultureInfo(Options.options.locale.language);
             Log.WriteLine("text:" + text);
             using (System.Speech.Synthesis.SpeechSynthesizer synth = new System.Speech.Synthesis.SpeechSynthesizer())
             {
-                synth.SelectVoiceByHints((System.Speech.Synthesis.VoiceGender)Options.options.Services.APIs.SpeechToText.WindowsSpeechToText.voiceGender, (System.Speech.Synthesis.VoiceAge)Options.options.Services.APIs.SpeechToText.WindowsSpeechToText.voiceAge);
+                synth.SelectVoiceByHints((System.Speech.Synthesis.VoiceGender)Options.commandservices["TextToSpeech"].voiceAge);
                 synth.Speak(text);
             }
-            return 0;
         }
 
         public static async System.Threading.Tasks.Task<string> TextToSpelledPronunciation(string text)
@@ -95,7 +95,10 @@ namespace WoundifyShared
             using (System.Speech.Recognition.SpeechRecognitionEngine RecognitionEngine = new System.Speech.Recognition.SpeechRecognitionEngine())
             {
                 RecognitionEngine.LoadGrammar(new System.Speech.Recognition.DictationGrammar());
+                text = text.Replace(".", ""); // EmulateRecognize returns null if a period is in the text
                 System.Speech.Recognition.RecognitionResult result = RecognitionEngine.EmulateRecognize(text);
+                if (result == null)
+                    throw new FormatException();
                 string pronunciations = null;
                 foreach (System.Speech.Recognition.RecognizedWordUnit w in result.Words)
                     pronunciations += w.Pronunciation + " ";

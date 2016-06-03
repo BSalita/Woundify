@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 
 namespace WoundifyShared
 {
-    class GoogleServices : WoundifyServices
+    class GoogleCloudServices : WoundifyServices
     {
         private System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
 
-        public GoogleServices(Settings.Service service) : base(service)
+        public GoogleCloudServices(Settings.Service service) : base(service)
         {
         }
 
@@ -24,7 +24,7 @@ namespace WoundifyShared
             ub.Scheme = service.request.uri.scheme;
             ub.Host = service.request.uri.host;
             ub.Path = service.request.uri.path;
-            ub.Query = service.request.uri.query.Replace("{language}", Options.options.locale.language).Replace("{key}", service.request.headers[1].BearerAuthentication.key); // todo: replace [1] with dictionary lookup
+            ub.Query = service.request.uri.query.Replace("{key}", service.request.headers[1].BearerAuthentication.key); // todo: replace [1] with dictionary lookup
 #if WINDOWS_UWP
             if (Options.options.Services.APIs.PreferSystemNet)
                response.sr = await PostAsyncSystemNet(ub.Uri, audioBytes, sampleRate);
@@ -130,11 +130,13 @@ namespace WoundifyShared
                 // Using HttpClient to grab chunked encoding (partial) responses.
                 using (System.Net.Http.HttpClient httpClient = new System.Net.Http.HttpClient())
                 {
-                    System.Net.Http.ByteArrayContent requestContent = new System.Net.Http.ByteArrayContent(audioBytes);
-#if true // not sure why first works but not second. Seems like the should be the same.
-                    requestContent.Headers.Add("Content-Type", "audio/l16; rate=" + sampleRate.ToString()); // must add header AFTER contents are initialized
+                    string base64AudioBytes = Convert.ToBase64String(audioBytes).Replace('+', '-').Replace('/', '_');
+                    string requestJson = "{'initialRequest':{'encoding':'LINEAR16','sampleRate':16000},'audioRequest':{'content':'" + base64AudioBytes + "'}}";
+                    System.Net.Http.StringContent requestContent = new System.Net.Http.StringContent(requestJson);
+#if false
+                    requestContent.Headers.Add("Content-Type", "application/json"); // must add header AFTER contents are initialized
 #else
-                    requestContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("audio/l16; rate=" + sampleRate.ToString()); // must add header AFTER contents are initialized
+                    requestContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json"); // must add header AFTER contents are initialized
 #endif
                     if (Options.options.APIs.preferChunkedEncodedRequests)
                     {
@@ -147,6 +149,7 @@ namespace WoundifyShared
                     }
 
 #if false // todo: unfinished. Need to implement ContentType, Accept, Method, Headers
+// curl --header "Content-Type: application/json" --data-binary "@{file}" "https://speech.googleapis.com/v1/speech:recognize?key={key}"
                     Log.WriteLine("curl -X POST --data \"" + text + "\" --header ""...""" + "\"" + uri);
 #endif
 
@@ -163,45 +166,44 @@ namespace WoundifyShared
                             {
                                 using (System.IO.StreamReader r = new System.IO.StreamReader(rr)) // if needed, there is a constructor which will leave the stream open
                                 {
-                                    // attempts to display individual partial responses. However, some lame assumptions needed to do so.
-                                    while (!r.EndOfStream)
+                                    string ResponseBodyBlob = string.Empty;
+                                    // Google Cloud partial results are incomplete json strings while Google Web's are complete json of initial results
+                                    while (!r.EndOfStream) // todo: is this best way of handling chunked? Seems too syncronous.
                                     {
-                                        string ResponseBodyBlob = r.ReadLine();
+                                        ResponseBodyBlob += r.ReadLine();
                                         if (Options.options.debugLevel >= 4)
                                             Log.WriteLine("ResponseBodyBlob:" + ResponseBodyBlob);
-                                        string ResponseBodyString = null;
-                                        Newtonsoft.Json.Linq.JToken ResponseBodyToken = null;
-                                        while (ResponseBodyBlob != "")
-                                        {
-                                            try
-                                            {
-                                                ResponseBodyToken = Newtonsoft.Json.Linq.JObject.Parse(ResponseBodyBlob);
-                                                ResponseBodyString = ResponseBodyBlob;
-                                            }
-                                            catch (Newtonsoft.Json.JsonReaderException ex) when (ex.HResult == -2146233088)
-                                            {
-                                                Log.WriteLine(ex.Message);
-                                                ResponseBodyString = ResponseBodyBlob.Substring(0, ex.LinePosition);
-                                                ResponseBodyToken = Newtonsoft.Json.Linq.JObject.Parse(ResponseBodyString);
-                                            }
-                                            response.ResponseJson = ResponseBodyBlob = ResponseBodyBlob.Substring(ResponseBodyString.Length);
-                                            response.ResponseJsonFormatted = Newtonsoft.Json.JsonConvert.SerializeObject(ResponseBodyToken, new Newtonsoft.Json.JsonSerializerSettings() { Formatting = Newtonsoft.Json.Formatting.Indented });
-                                            if (Options.options.debugLevel >= 4)
-                                                Log.WriteLine(response.ResponseJsonFormatted);
-                                            Newtonsoft.Json.Linq.JToken tokResult = ProcessResponse(ResponseBodyToken);
-                                            if (tokResult == null || string.IsNullOrEmpty(tokResult.ToString()))
-                                            {
-                                                response.ResponseResult = Options.services["GoogleSpeechToTextService"].response.missingResponse;
-                                                if (Options.options.debugLevel >= 3)
-                                                    Log.WriteLine(response.ResponseResult);
-                                            }
-                                            else
-                                            {
-                                                response.ResponseResult = tokResult.ToString();
-                                                if (Options.options.debugLevel >= 3)
-                                                    Log.WriteLine(tokResult.Path + ": " + response.ResponseResult);
-                                            }
-                                        }
+                                    }
+                                    string ResponseBodyString = string.Empty;
+                                    Newtonsoft.Json.Linq.JToken ResponseBodyToken = null;
+                                    try
+                                    {
+                                        ResponseBodyToken = Newtonsoft.Json.Linq.JObject.Parse(ResponseBodyBlob);
+                                        ResponseBodyString = ResponseBodyBlob;
+                                    }
+                                    // todo: obsolete?
+                                    catch (Newtonsoft.Json.JsonReaderException ex) when (ex.HResult == -2146233088)
+                                    {
+                                        Log.WriteLine(ex.Message);
+                                        ResponseBodyString = ResponseBodyBlob.Substring(0, ex.LinePosition);
+                                        ResponseBodyToken = Newtonsoft.Json.Linq.JObject.Parse(ResponseBodyString);
+                                    }
+                                    response.ResponseJson = ResponseBodyBlob = ResponseBodyBlob.Substring(ResponseBodyString.Length);
+                                    response.ResponseJsonFormatted = Newtonsoft.Json.JsonConvert.SerializeObject(ResponseBodyToken, new Newtonsoft.Json.JsonSerializerSettings() { Formatting = Newtonsoft.Json.Formatting.Indented });
+                                    if (Options.options.debugLevel >= 4)
+                                        Log.WriteLine(response.ResponseJsonFormatted);
+                                    Newtonsoft.Json.Linq.JToken tokResult = ProcessResponse(ResponseBodyToken);
+                                    if (tokResult == null || string.IsNullOrEmpty(tokResult.ToString()))
+                                    {
+                                        response.ResponseResult = Options.services["GoogleCloudSpeechToTextService"].response.missingResponse;
+                                        if (Options.options.debugLevel >= 3)
+                                            Log.WriteLine(response.ResponseResult);
+                                    }
+                                    else
+                                    {
+                                        response.ResponseResult = tokResult.ToString();
+                                        if (Options.options.debugLevel >= 3)
+                                            Log.WriteLine(tokResult.Path + ": " + response.ResponseResult);
                                     }
                                 }
                             }
@@ -230,19 +232,22 @@ namespace WoundifyShared
                 Log.WriteLine("Fail! - Response is null");
             else
             {
-                if ((response.SelectToken("$.result")) == null)
+                if ((response.SelectToken("responses")) == null)
                     Log.WriteLine("Fail! - result is null");
                 else
                 {
-                    foreach (Newtonsoft.Json.Linq.JToken r in response.SelectToken("$.result"))
+                    foreach (Newtonsoft.Json.Linq.JToken res in response.SelectToken("responses"))
                     {
-                        foreach (Newtonsoft.Json.Linq.JToken a in r.SelectToken("$.alternative"))
+                        foreach (Newtonsoft.Json.Linq.JToken result in res.SelectToken("results"))
                         {
-                            if ((tok = a.SelectToken("$.transcript")) != null)
+                            foreach (Newtonsoft.Json.Linq.JToken a in result.SelectToken("alternatives"))
+                            {
+                                if ((tok = a.SelectToken("transcript")) != null)
+                                    break;
+                            }
+                            if (tok != null)
                                 break;
                         }
-                        if (tok != null)
-                            break;
                     }
                 }
             }

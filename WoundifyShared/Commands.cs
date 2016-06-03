@@ -22,15 +22,17 @@ namespace WoundifyShared
 
         // todo: change to use class of command (Func, -1/+1 (push, pop))
         public static System.Collections.Generic.Dictionary<string, verbAction> verbActionsAsync =
-            new System.Collections.Generic.Dictionary<string, verbAction>()
+            new System.Collections.Generic.Dictionary<string, verbAction>(StringComparer.OrdinalIgnoreCase)
             {
                 { "END", new verbAction() { actionFunc = verbEndAsync, stackChange = 0, helpTip = "End program. Same as QUIT." } },
                 { "HELP", new verbAction() { actionFunc = verbHelpAsync, stackChange = 0, helpTip = "Show help." } },
+                { "IDENTIFY", new verbAction() { actionFunc = verbIdentifyAsync, stackChange = 0, helpTip = "Pop stack passing to identify language service, push response." } },
                 { "INTENT", new verbAction() { actionFunc = verbIntentAsync, stackChange = 0, helpTip = "Pop stack passing to intent service, push response." } },
                 { "LISTEN",new verbAction() { actionFunc = verbListenAsync, stackChange = +1, helpTip = "Listen and push utterance." } },
                 { "LOOP", new verbAction() { actionFunc = verbLoopAsync, stackChange = 0, helpTip = "Loop to first command and repeat." } },
                 { "PARSE", new verbAction() { actionFunc = verbParseAsync, stackChange = 0, helpTip = "Parse into phrase types. Show constituency tree." } },
                 { "PAUSE", new verbAction() { actionFunc = verbPauseAsync, stackChange = 0, helpTip = "Pause for specified seconds." } },
+                { "PERSONALITY", new verbAction() { actionFunc = verbPersonalityAsync, stackChange = 0, helpTip = "Pop stack passing to personality service, push response." } },
                 { "PRONOUNCE", new verbAction() { actionFunc = verbPronounceAsync, stackChange = 0, helpTip = "Convert text at top of stack into spelled pronounciations." } },
                 { "QUIT", new verbAction() { actionFunc = verbQuitAsync, stackChange = 0, helpTip = "Quit processing." } },
                 { "REPLAY", new verbAction() { actionFunc = verbReplayAsync, stackChange = 0, helpTip = "Replay top of stack." } },
@@ -40,6 +42,8 @@ namespace WoundifyShared
                 { "SPEAK", new verbAction() { actionFunc = verbSpeakAsync, stackChange = -1, helpTip = "Pop stack (text or speech) and speak." } },
                 { "SPEECH", new verbAction() { actionFunc = verbSpeechAsync, stackChange = +1, helpTip = "Push argument as speech." } },
                 { "TEXT", new verbAction() { actionFunc = verbTextAsync, stackChange = +1, helpTip = "Push argument as text." } },
+                { "TONE", new verbAction() { actionFunc = verbToneAsync, stackChange = 0, helpTip = "Pop stack passing to tone service, push response." } },
+                { "TRANSLATE", new verbAction() { actionFunc = verbTranslateAsync, stackChange = 0, helpTip = "Pop stack passing to translate service, push response." } },
                 { "WAKEUP", new verbAction() { actionFunc = verbWakeUpAsync, stackChange = +1, helpTip = "Wait for wakeup, convert to text, push remaining words onto stack." } },
             };
 
@@ -108,7 +112,7 @@ namespace WoundifyShared
                 return (-11);
             }
             string action = operatorStack.Pop();
-            string actionUpper = action.ToUpper();
+            string actionUpper = action;
             if (Commands.verbActionsAsync.ContainsKey(actionUpper))
             {
                 Console.WriteLine("Executing command:" + action);
@@ -150,6 +154,85 @@ namespace WoundifyShared
             return 0;
         }
 
+        private static async System.Threading.Tasks.Task<int> verbIdentifyAsync(string[] args, System.Collections.Generic.Stack<string> operatorStack, System.Collections.Generic.Stack<string> operandStack)
+        {
+            string text;
+            string fileName;
+            string stackFileName;
+            byte[] bytes;
+            IdentifyLanguageServiceResponse r;
+            System.Collections.Generic.IEnumerable<IdentifyLanguageServiceResponse> AllIdentifyLanguageServiceResponses;
+            System.Collections.Generic.IEnumerable<SpeechToTextServiceResponse> AllSpeechToTextServiceResponses;
+
+            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek()))
+            {
+                text = fileName = operatorStack.Pop();
+                if (fileName.First() == '@')
+                {
+                    if (fileName.EndsWith(".txt")) // todo: implement json same as Translate?
+                    {
+                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
+                        if (Options.options.debugLevel >= 4)
+                            AllServiceResponses = (AllIdentifyLanguageServiceResponses = await IdentifyLanguageServices.RunAllPreferredIdentifyLanguageServices(text)).Select(sr => sr.sr);
+                        r = await IdentifyLanguageServices.PreferredOrderIdentifyLanguageServices[0].IdentifyLanguageServiceAsync(text);
+                    }
+                    else if (fileName.EndsWith(".wav"))
+                    {
+                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // todo: implement local file scheme (non-tempFolder directory)
+                        int sampleRate = await Audio.GetSampleRateAsync(fileName.Substring(1));
+                        if (Options.options.debugLevel >= 4)
+                            AllServiceResponses = (AllSpeechToTextServiceResponses = await SpeechToTextServices.RunAllPreferredSpeechToTextServices(bytes, sampleRate)).Select(sr => sr.sr);
+                        if (Options.options.debugLevel >= 4)
+                            AllServiceResponses = (AllIdentifyLanguageServiceResponses = await IdentifyLanguageServices.RunAllPreferredIdentifyLanguageServices(bytes, sampleRate)).Select(sr => sr.sr);
+                        r = await IdentifyLanguageServices.PreferredOrderIdentifyLanguageServices[0].IdentifyLanguageServiceAsync(bytes, sampleRate);
+                        Console.WriteLine("Identify result (from audio):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
+                    }
+                    else
+                    {
+                        throw new Exception("Identify: Unknown file extension:" + fileName);
+                    }
+                }
+                else
+                {
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllIdentifyLanguageServiceResponses = await IdentifyLanguageServices.RunAllPreferredIdentifyLanguageServices(text)).Select(sr => sr.sr);
+                    r = await IdentifyLanguageServices.PreferredOrderIdentifyLanguageServices[0].IdentifyLanguageServiceAsync(text);
+                }
+            }
+            else
+            {
+                fileName = operandStack.Pop();
+                if (fileName.EndsWith(".txt"))
+                {
+                    text = await Helpers.ReadTextFromFileAsync(fileName);
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllIdentifyLanguageServiceResponses = await IdentifyLanguageServices.RunAllPreferredIdentifyLanguageServices(text)).Select(sr => sr.sr);
+                    r = await IdentifyLanguageServices.PreferredOrderIdentifyLanguageServices[0].IdentifyLanguageServiceAsync(text);
+                    Console.WriteLine("Identify result (text):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
+                }
+                else if (fileName.EndsWith(".wav"))
+                {
+                    bytes = await Helpers.ReadBytesFromFileAsync(fileName);
+                    int sampleRate = await Audio.GetSampleRateAsync(Options.options.tempFolderPath + fileName);
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllSpeechToTextServiceResponses = await SpeechToTextServices.RunAllPreferredSpeechToTextServices(bytes, sampleRate)).Select(sr => sr.sr);
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllIdentifyLanguageServiceResponses = await IdentifyLanguageServices.RunAllPreferredIdentifyLanguageServices(bytes, sampleRate)).Select(sr => sr.sr);
+                    r = await IdentifyLanguageServices.PreferredOrderIdentifyLanguageServices[0].IdentifyLanguageServiceAsync(bytes, sampleRate);
+                    Console.WriteLine("Identify result (audio):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
+                }
+                else
+                {
+                    throw new Exception("Identify: Unknown file extension:" + fileName);
+                }
+            }
+            stackFileName = "stack" + (operandStack.Count + 1).ToString() + ".txt";
+            await Helpers.WriteTextToFileAsync(stackFileName, r.sr.ResponseResult);
+            operandStack.Push(stackFileName);
+            PreferredServiceResponse = r.sr;
+            return 0;
+        }
+
         private static async System.Threading.Tasks.Task<int> verbIntentAsync(string[] args, System.Collections.Generic.Stack<string> operatorStack, System.Collections.Generic.Stack<string> operandStack)
         {
             string text;
@@ -160,7 +243,7 @@ namespace WoundifyShared
             System.Collections.Generic.IEnumerable<IntentServiceResponse> AllIntentServiceResponses;
             System.Collections.Generic.IEnumerable<SpeechToTextServiceResponse> AllSpeechToTextServiceResponses;
 
-            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek().ToUpper()))
+            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek()))
             {
                 text = fileName = operatorStack.Pop();
                 if (fileName.First() == '@')
@@ -170,7 +253,7 @@ namespace WoundifyShared
                         text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
                         if (Options.options.debugLevel >= 4)
                             AllServiceResponses = (AllIntentServiceResponses = await IntentServices.RunAllPreferredIntentServices(text)).Select(sr => sr.sr);
-                        r = await IntentServices.PreferredOrderIntentServices[0].IntentServiceAsync(text);
+                        r = await IntentServices.PreferredOrderIntentServices[1].IntentServiceAsync(text); // todo: implement dictionary. for now [0] is audio and for now [1] is text
                     }
                     else if (fileName.EndsWith(".wav"))
                     {
@@ -180,7 +263,7 @@ namespace WoundifyShared
                             AllServiceResponses = (AllSpeechToTextServiceResponses = await SpeechToTextServices.RunAllPreferredSpeechToTextServices(bytes, sampleRate)).Select(sr => sr.sr);
                         if (Options.options.debugLevel >= 4)
                             AllServiceResponses = (AllIntentServiceResponses = await IntentServices.RunAllPreferredIntentServices(bytes, sampleRate)).Select(sr => sr.sr);
-                        r = await IntentServices.PreferredOrderIntentServices[0].IntentServiceAsync(bytes, sampleRate);
+                        r = await IntentServices.PreferredOrderIntentServices[0].IntentServiceAsync(bytes, sampleRate); // todo: implement dictionary.  for now [0] is audio and for now [1] is text
                         Console.WriteLine("Intent result (from audio):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
                     }
                     else
@@ -192,7 +275,7 @@ namespace WoundifyShared
                 {
                     if (Options.options.debugLevel >= 4)
                         AllServiceResponses = (AllIntentServiceResponses = await IntentServices.RunAllPreferredIntentServices(text)).Select(sr => sr.sr);
-                    r = await IntentServices.PreferredOrderIntentServices[0].IntentServiceAsync(text);
+                    r = await IntentServices.PreferredOrderIntentServices[1].IntentServiceAsync(text);
                 }
             }
             else
@@ -203,7 +286,7 @@ namespace WoundifyShared
                     text = await Helpers.ReadTextFromFileAsync(fileName);
                     if (Options.options.debugLevel >= 4)
                         AllServiceResponses = (AllIntentServiceResponses = await IntentServices.RunAllPreferredIntentServices(text)).Select(sr => sr.sr);
-                    r = await IntentServices.PreferredOrderIntentServices[0].IntentServiceAsync(text);
+                    r = await IntentServices.PreferredOrderIntentServices[1].IntentServiceAsync(text);
                     Console.WriteLine("Intent result (text):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
                 }
                 else if (fileName.EndsWith(".wav"))
@@ -235,9 +318,11 @@ namespace WoundifyShared
             string fileName;
             string stackFileName;
             byte[] bytes;
+            System.Collections.Generic.IEnumerable<TextToSpeechServiceResponse> AllTextToSpeechServiceResponses;
+            TextToSpeechServiceResponse r;
 
             stackFileName = "stack" + (operandStack.Count + 1).ToString() + ".wav";
-            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek().ToUpper()))
+            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek()))
             {
                 text = fileName = operatorStack.Pop();
                 if (fileName.First() == '@')
@@ -245,7 +330,10 @@ namespace WoundifyShared
                     if (fileName.EndsWith(".txt"))
                     {
                         text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
-                        await TextToSpeech.SynSpeechWriteToFileAsync(text, stackFileName);
+                        if (Options.options.debugLevel >= 4)
+                            AllServiceResponses = (AllTextToSpeechServiceResponses = await TextToSpeechServices.RunAllPreferredTextToSpeechServices(text)).Select(sr => sr.sr);
+                        r = await TextToSpeechServices.PreferredOrderedTextToSpeechServices[0].TextToSpeechServiceAsync(text, Options.commandservices["TextToSpeech"].sampleRate);
+                        await Helpers.WriteBytesToFileAsync(stackFileName, r.sr.ResponseBytes);
                     }
                     else if (fileName.EndsWith(".wav"))
                     {
@@ -269,7 +357,10 @@ namespace WoundifyShared
                 }
                 else
                 {
-                    await TextToSpeech.SynSpeechWriteToFileAsync(text, stackFileName);
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllTextToSpeechServiceResponses = await TextToSpeechServices.RunAllPreferredTextToSpeechServices(text)).Select(sr => sr.sr);
+                    r = await TextToSpeechServices.PreferredOrderedTextToSpeechServices[0].TextToSpeechServiceAsync(text, Options.commandservices["TextToSpeech"].sampleRate);
+                    await Helpers.WriteBytesToFileAsync(stackFileName, r.sr.ResponseBytes);
                 }
             }
             else
@@ -298,7 +389,7 @@ namespace WoundifyShared
             System.Collections.Generic.IEnumerable<ParseServiceResponse> AllParseServiceResponses;
             System.Collections.Generic.IEnumerable<SpeechToTextServiceResponse> AllSpeechToTextServiceResponses;
 
-            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek().ToUpper()))
+            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek()))
             {
                 text = fileName = operatorStack.Pop();
                 if (fileName.First() == '@')
@@ -316,7 +407,7 @@ namespace WoundifyShared
                         int sampleRate = await Audio.GetSampleRateAsync(fileName.Substring(1));
                         if (Options.options.debugLevel >= 4)
                             AllServiceResponses = (AllSpeechToTextServiceResponses = await SpeechToTextServices.RunAllPreferredSpeechToTextServices(bytes, sampleRate)).Select(sr => sr.sr);
-                        SpeechToTextServiceResponse sttr = await SpeechToTextServices.PreferredOrderedISpeechToTextServices[0].SpeechToTextAsync(bytes, sampleRate);
+                        SpeechToTextServiceResponse sttr = await SpeechToTextServices.PreferredOrderedISpeechToTextServices[0].SpeechToTextServiceAsync(bytes, sampleRate);
                         text = sttr.sr.ResponseResult;
                         if (Options.options.debugLevel >= 4)
                             AllServiceResponses = (AllParseServiceResponses = await ParseServices.RunAllPreferredParseServices(text)).Select(sr => sr.sr);
@@ -350,7 +441,7 @@ namespace WoundifyShared
                     int sampleRate = await Audio.GetSampleRateAsync(Options.options.tempFolderPath + fileName);
                     if (Options.options.debugLevel >= 4)
                         AllServiceResponses = (AllSpeechToTextServiceResponses = await SpeechToTextServices.RunAllPreferredSpeechToTextServices(bytes, sampleRate)).Select(sr => sr.sr);
-                    SpeechToTextServiceResponse sttr = await SpeechToTextServices.PreferredOrderedISpeechToTextServices[0].SpeechToTextAsync(bytes, sampleRate);
+                    SpeechToTextServiceResponse sttr = await SpeechToTextServices.PreferredOrderedISpeechToTextServices[0].SpeechToTextServiceAsync(bytes, sampleRate);
                     text = sttr.sr.ResponseResult;
                     if (Options.options.debugLevel >= 4)
                         AllServiceResponses = (AllParseServiceResponses = await ParseServices.RunAllPreferredParseServices(text)).Select(sr => sr.sr);
@@ -398,6 +489,85 @@ namespace WoundifyShared
             return 0;
         }
 
+        private static async System.Threading.Tasks.Task<int> verbPersonalityAsync(string[] args, System.Collections.Generic.Stack<string> operatorStack, System.Collections.Generic.Stack<string> operandStack)
+        {
+            string text;
+            string fileName;
+            string stackFileName;
+            byte[] bytes;
+            PersonalityServiceResponse r;
+            System.Collections.Generic.IEnumerable<PersonalityServiceResponse> AllPersonalityServiceResponses;
+            System.Collections.Generic.IEnumerable<SpeechToTextServiceResponse> AllSpeechToTextServiceResponses;
+
+            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek()))
+            {
+                text = fileName = operatorStack.Pop();
+                if (fileName.First() == '@')
+                {
+                    if (fileName.EndsWith(".json") || fileName.EndsWith(".txt")) // todo: support json elsewhere?
+                    {
+                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
+                        if (Options.options.debugLevel >= 4)
+                            AllServiceResponses = (AllPersonalityServiceResponses = await PersonalityServices.RunAllPreferredPersonalityServices(text)).Select(sr => sr.sr);
+                        r = await PersonalityServices.PreferredOrderPersonalityServices[0].PersonalityServiceAsync(text);
+                    }
+                    else if (fileName.EndsWith(".wav"))
+                    {
+                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // todo: implement local file scheme (non-tempFolder directory)
+                        int sampleRate = await Audio.GetSampleRateAsync(fileName.Substring(1));
+                        if (Options.options.debugLevel >= 4)
+                            AllServiceResponses = (AllSpeechToTextServiceResponses = await SpeechToTextServices.RunAllPreferredSpeechToTextServices(bytes, sampleRate)).Select(sr => sr.sr);
+                        if (Options.options.debugLevel >= 4)
+                            AllServiceResponses = (AllPersonalityServiceResponses = await PersonalityServices.RunAllPreferredPersonalityServices(bytes, sampleRate)).Select(sr => sr.sr);
+                        r = await PersonalityServices.PreferredOrderPersonalityServices[0].PersonalityServiceAsync(bytes, sampleRate);
+                        Console.WriteLine("Personality result (from audio):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
+                    }
+                    else
+                    {
+                        throw new Exception("Personality: Unknown file extension:" + fileName);
+                    }
+                }
+                else
+                {
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllPersonalityServiceResponses = await PersonalityServices.RunAllPreferredPersonalityServices(text)).Select(sr => sr.sr);
+                    r = await PersonalityServices.PreferredOrderPersonalityServices[0].PersonalityServiceAsync(text);
+                }
+            }
+            else
+            {
+                fileName = operandStack.Pop();
+                if (fileName.EndsWith(".txt"))
+                {
+                    text = await Helpers.ReadTextFromFileAsync(fileName);
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllPersonalityServiceResponses = await PersonalityServices.RunAllPreferredPersonalityServices(text)).Select(sr => sr.sr);
+                    r = await PersonalityServices.PreferredOrderPersonalityServices[0].PersonalityServiceAsync(text);
+                    Console.WriteLine("Personality result (text):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
+                }
+                else if (fileName.EndsWith(".wav"))
+                {
+                    bytes = await Helpers.ReadBytesFromFileAsync(fileName);
+                    int sampleRate = await Audio.GetSampleRateAsync(Options.options.tempFolderPath + fileName);
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllSpeechToTextServiceResponses = await SpeechToTextServices.RunAllPreferredSpeechToTextServices(bytes, sampleRate)).Select(sr => sr.sr);
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllPersonalityServiceResponses = await PersonalityServices.RunAllPreferredPersonalityServices(bytes, sampleRate)).Select(sr => sr.sr);
+                    r = await PersonalityServices.PreferredOrderPersonalityServices[0].PersonalityServiceAsync(bytes, sampleRate);
+                    Console.WriteLine("Personality result (audio):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
+                }
+                else
+                {
+                    throw new Exception("Personality: Unknown file extension:" + fileName);
+                }
+            }
+            stackFileName = "stack" + (operandStack.Count + 1).ToString() + ".txt";
+            await Helpers.WriteTextToFileAsync(stackFileName, r.sr.ResponseResult);
+            operandStack.Push(stackFileName);
+            PreferredServiceResponse = r.sr;
+            return 0;
+        }
+
         private static async System.Threading.Tasks.Task<int> verbPronounceAsync(string[] args, System.Collections.Generic.Stack<string> operatorStack, System.Collections.Generic.Stack<string> operandStack)
         {
             string text;
@@ -406,7 +576,7 @@ namespace WoundifyShared
             byte[] bytes;
 
             stackFileName = "stack" + (operandStack.Count + 1).ToString() + ".wav";
-            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek().ToUpper()))
+            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek()))
             {
                 text = fileName = operatorStack.Pop();
                 if (fileName.First() == '@')
@@ -418,7 +588,7 @@ namespace WoundifyShared
                     else if (fileName.EndsWith(".wav"))
                     {
                         bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // todo: implement local file scheme (non-tempFolder directory)
-                        text = await SpeechToText.SpeechToTextAsync(bytes);
+                        text = await SpeechToText.SpeechToTextServiceAsync(bytes);
                     }
                     else
                     {
@@ -439,7 +609,7 @@ namespace WoundifyShared
                 }
                 else if (fileName.EndsWith(".wav"))
                 {
-                    text = await SpeechToText.SpeechToTextAsync(fileName);
+                    text = await SpeechToText.SpeechToTextServiceAsync(fileName);
                 }
                 else
                 {
@@ -495,7 +665,7 @@ namespace WoundifyShared
 
         private static async System.Threading.Tasks.Task<int> verbSettingsAsync(string[] args, System.Collections.Generic.Stack<string> operatorStack, System.Collections.Generic.Stack<string> operandStack)
         {
-            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek().ToUpper()))
+            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek()))
             {
                 string text = operatorStack.Pop();
                 if (text.First() == '@')
@@ -545,16 +715,24 @@ namespace WoundifyShared
         {
             string text;
             string fileName;
-            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek().ToUpper()))
+            string stackFileName;
+            System.Collections.Generic.IEnumerable<TextToSpeechServiceResponse> AllTextToSpeechServiceResponses;
+            TextToSpeechServiceResponse r;
+
+            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek()))
             {
                 text = fileName = operatorStack.Pop();
+                stackFileName = "stack" + (operandStack.Count + 1).ToString() + ".wav";
                 if (fileName.First() == '@')
                 {
                     if (fileName.EndsWith(".txt"))
                     {
                         text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
                         Log.WriteLine("Converting text to speech:" + text);
-                        await TextToSpeech.SynSpeechPlayAsync(text);
+                        if (Options.options.debugLevel >= 4)
+                            AllServiceResponses = (AllTextToSpeechServiceResponses = await TextToSpeechServices.RunAllPreferredTextToSpeechServices(text)).Select(sr => sr.sr);
+                        r = await TextToSpeechServices.PreferredOrderedTextToSpeechServices[0].TextToSpeechServiceAsync(text, Options.commandservices["TextToSpeech"].sampleRate);
+                        await Helpers.WriteBytesToFileAsync(stackFileName, r.sr.ResponseBytes);
                     }
                     else if (fileName.EndsWith(".wav"))
                     {
@@ -567,22 +745,31 @@ namespace WoundifyShared
                     }
                 }
                 else
-                    await TextToSpeech.SynSpeechPlayAsync(text);
+                {
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllTextToSpeechServiceResponses = await TextToSpeechServices.RunAllPreferredTextToSpeechServices(text)).Select(sr => sr.sr);
+                    r = await TextToSpeechServices.PreferredOrderedTextToSpeechServices[0].TextToSpeechServiceAsync(text, Options.commandservices["TextToSpeech"].sampleRate);
+                    await Helpers.WriteBytesToFileAsync(stackFileName, r.sr.ResponseBytes);
+                }
             }
             else
             {
                 fileName = operandStack.Pop();
+                stackFileName = "stack" + (operandStack.Count + 1).ToString() + ".wav";
                 if (fileName.EndsWith(".txt"))
                 {
                     text = await Helpers.ReadTextFromFileAsync(fileName);
                     Log.WriteLine("Converting text to speech:" + text);
-                    await TextToSpeech.SynSpeechPlayAsync(text);
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllTextToSpeechServiceResponses = await TextToSpeechServices.RunAllPreferredTextToSpeechServices(text)).Select(sr => sr.sr);
+                    r = await TextToSpeechServices.PreferredOrderedTextToSpeechServices[0].TextToSpeechServiceAsync(text, Options.commandservices["TextToSpeech"].sampleRate);
+                    await Helpers.WriteBytesToFileAsync(stackFileName, r.sr.ResponseBytes);
                 }
                 else if (fileName.EndsWith(".wav"))
                 {
-                    Log.WriteLine("Playing wave file.");
+                    Log.WriteLine("Playing wav file.");
                     await Audio.PlayFileAsync(Options.options.tempFolderPath + fileName);
-                }
+                 }
                 else
                 {
                     throw new Exception("Speak: Unknown file extension:" + fileName);
@@ -597,7 +784,10 @@ namespace WoundifyShared
             byte[] bytes;
             string fileName;
             string stackFileName;
-            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek().ToUpper()))
+            System.Collections.Generic.IEnumerable<TextToSpeechServiceResponse> AllTextToSpeechServiceResponses;
+            TextToSpeechServiceResponse r;
+
+            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek()))
             {
                 text = fileName = operatorStack.Pop();
                 stackFileName = "stack" + (operandStack.Count + 1).ToString() + ".wav";
@@ -606,7 +796,10 @@ namespace WoundifyShared
                     if (fileName.EndsWith(".txt"))
                     {
                         text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
-                        await TextToSpeech.SynSpeechWriteToFileAsync(text, stackFileName);
+                        if (Options.options.debugLevel >= 4)
+                            AllServiceResponses = (AllTextToSpeechServiceResponses = await TextToSpeechServices.RunAllPreferredTextToSpeechServices(text)).Select(sr => sr.sr);
+                        r = await TextToSpeechServices.PreferredOrderedTextToSpeechServices[0].TextToSpeechServiceAsync(text, Options.commandservices["TextToSpeech"].sampleRate);
+                        await Helpers.WriteBytesToFileAsync(stackFileName, r.sr.ResponseBytes);
                     }
                     else if (fileName.EndsWith(".wav"))
                     {
@@ -629,7 +822,12 @@ namespace WoundifyShared
                     await Audio.MicrophoneToFileAsync(stackFileName, TimeSpan.FromSeconds(listenTimeOut));
                 }
                 else
-                    await TextToSpeech.SynSpeechWriteToFileAsync(text, stackFileName);
+                {
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllTextToSpeechServiceResponses = await TextToSpeechServices.RunAllPreferredTextToSpeechServices(text)).Select(sr => sr.sr);
+                    r = await TextToSpeechServices.PreferredOrderedTextToSpeechServices[0].TextToSpeechServiceAsync(text, Options.commandservices["TextToSpeech"].sampleRate);
+                    await Helpers.WriteBytesToFileAsync(stackFileName, r.sr.ResponseBytes);
+                }
             }
             else
             {
@@ -638,7 +836,10 @@ namespace WoundifyShared
                 if (fileName.EndsWith(".txt"))
                 {
                     text = await Helpers.ReadTextFromFileAsync(fileName);
-                    await TextToSpeech.SynSpeechWriteToFileAsync(text, stackFileName);
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllTextToSpeechServiceResponses = await TextToSpeechServices.RunAllPreferredTextToSpeechServices(text)).Select(sr => sr.sr);
+                    r = await TextToSpeechServices.PreferredOrderedTextToSpeechServices[0].TextToSpeechServiceAsync(text, Options.commandservices["TextToSpeech"].sampleRate);
+                    await Helpers.WriteBytesToFileAsync(stackFileName, r.sr.ResponseBytes);
                 }
                 else if (fileName.EndsWith(".wav"))
                 {
@@ -659,7 +860,9 @@ namespace WoundifyShared
             byte[] bytes;
             string fileName;
             string stackFileName;
-            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek().ToUpper()))
+            System.Collections.Generic.IEnumerable<SpeechToTextServiceResponse> AllSpeechToTextServiceResponses;
+
+            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek()))
             {
                 text = fileName = operatorStack.Pop();
                 stackFileName = "stack" + (operandStack.Count + 1).ToString() + ".txt";
@@ -672,7 +875,11 @@ namespace WoundifyShared
                     else if (fileName.EndsWith(".wav"))
                     {
                         bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // todo: implement local file scheme (non-tempFolder directory)
-                        text = await SpeechToText.SpeechToTextAsync(bytes);
+                        int sampleRate = await Audio.GetSampleRateAsync(fileName.Substring(1));
+                        if (Options.options.debugLevel >= 4)
+                            AllServiceResponses = (AllSpeechToTextServiceResponses = await SpeechToTextServices.RunAllPreferredSpeechToTextServices(bytes, sampleRate)).Select(sr => sr.sr);
+                        SpeechToTextServiceResponse sttr = await SpeechToTextServices.PreferredOrderedISpeechToTextServices[0].SpeechToTextServiceAsync(bytes, sampleRate);
+                        text = sttr.sr.ResponseResult;
                     }
                     else
                     {
@@ -695,7 +902,7 @@ namespace WoundifyShared
                 else if (fileName.EndsWith(".wav"))
                 {
                     bytes = await Helpers.ReadBytesFromFileAsync(fileName); // todo: implement local file scheme (non-tempFolder directory)
-                    text = await SpeechToText.SpeechToTextAsync(bytes);
+                    text = await SpeechToText.SpeechToTextServiceAsync(bytes);
                 }
                 else
                 {
@@ -708,13 +915,171 @@ namespace WoundifyShared
             return 0;
         }
 
+        private static async System.Threading.Tasks.Task<int> verbToneAsync(string[] args, System.Collections.Generic.Stack<string> operatorStack, System.Collections.Generic.Stack<string> operandStack)
+        {
+            string text;
+            string fileName;
+            string stackFileName;
+            byte[] bytes;
+            ToneServiceResponse r;
+            System.Collections.Generic.IEnumerable<ToneServiceResponse> AllToneServiceResponses;
+            System.Collections.Generic.IEnumerable<SpeechToTextServiceResponse> AllSpeechToTextServiceResponses;
+
+            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek()))
+            {
+                text = fileName = operatorStack.Pop();
+                if (fileName.First() == '@')
+                {
+                    if (fileName.EndsWith(".txt"))
+                    {
+                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
+                        if (Options.options.debugLevel >= 4)
+                            AllServiceResponses = (AllToneServiceResponses = await ToneServices.RunAllPreferredToneServices(text)).Select(sr => sr.sr);
+                        r = await ToneServices.PreferredOrderToneServices[0].ToneServiceAsync(text);
+                    }
+                    else if (fileName.EndsWith(".wav"))
+                    {
+                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // todo: implement local file scheme (non-tempFolder directory)
+                        int sampleRate = await Audio.GetSampleRateAsync(fileName.Substring(1));
+                        if (Options.options.debugLevel >= 4)
+                            AllServiceResponses = (AllSpeechToTextServiceResponses = await SpeechToTextServices.RunAllPreferredSpeechToTextServices(bytes, sampleRate)).Select(sr => sr.sr);
+                        if (Options.options.debugLevel >= 4)
+                            AllServiceResponses = (AllToneServiceResponses = await ToneServices.RunAllPreferredToneServices(bytes, sampleRate)).Select(sr => sr.sr);
+                        r = await ToneServices.PreferredOrderToneServices[0].ToneServiceAsync(bytes, sampleRate);
+                        Console.WriteLine("Tone result (from audio):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
+                    }
+                    else
+                    {
+                        throw new Exception("Tone: Unknown file extension:" + fileName);
+                    }
+                }
+                else
+                {
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllToneServiceResponses = await ToneServices.RunAllPreferredToneServices(text)).Select(sr => sr.sr);
+                    r = await ToneServices.PreferredOrderToneServices[0].ToneServiceAsync(text);
+                }
+            }
+            else
+            {
+                fileName = operandStack.Pop();
+                if (fileName.EndsWith(".txt"))
+                {
+                    text = await Helpers.ReadTextFromFileAsync(fileName);
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllToneServiceResponses = await ToneServices.RunAllPreferredToneServices(text)).Select(sr => sr.sr);
+                    r = await ToneServices.PreferredOrderToneServices[0].ToneServiceAsync(text);
+                    Console.WriteLine("Tone result (text):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
+                }
+                else if (fileName.EndsWith(".wav"))
+                {
+                    bytes = await Helpers.ReadBytesFromFileAsync(fileName);
+                    int sampleRate = await Audio.GetSampleRateAsync(Options.options.tempFolderPath + fileName);
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllSpeechToTextServiceResponses = await SpeechToTextServices.RunAllPreferredSpeechToTextServices(bytes, sampleRate)).Select(sr => sr.sr);
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllToneServiceResponses = await ToneServices.RunAllPreferredToneServices(bytes, sampleRate)).Select(sr => sr.sr);
+                    r = await ToneServices.PreferredOrderToneServices[0].ToneServiceAsync(bytes, sampleRate);
+                    Console.WriteLine("Tone result (audio):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
+                }
+                else
+                {
+                    throw new Exception("Tone: Unknown file extension:" + fileName);
+                }
+            }
+            stackFileName = "stack" + (operandStack.Count + 1).ToString() + ".txt";
+            await Helpers.WriteTextToFileAsync(stackFileName, r.sr.ResponseResult);
+            operandStack.Push(stackFileName);
+            PreferredServiceResponse = r.sr;
+            return 0;
+        }
+
+        private static async System.Threading.Tasks.Task<int> verbTranslateAsync(string[] args, System.Collections.Generic.Stack<string> operatorStack, System.Collections.Generic.Stack<string> operandStack)
+        {
+            string text;
+            string fileName;
+            string stackFileName;
+            byte[] bytes;
+            TranslateServiceResponse r;
+            System.Collections.Generic.IEnumerable<TranslateServiceResponse> AllTranslateServiceResponses;
+            System.Collections.Generic.IEnumerable<SpeechToTextServiceResponse> AllSpeechToTextServiceResponses;
+
+            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek()))
+            {
+                text = fileName = operatorStack.Pop();
+                if (fileName.First() == '@')
+                {
+                    if (fileName.EndsWith(".txt")) // implement json same as Identify?
+                    {
+                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
+                        if (Options.options.debugLevel >= 4)
+                            AllServiceResponses = (AllTranslateServiceResponses = await TranslateServices.RunAllPreferredTranslateServices(text)).Select(sr => sr.sr);
+                        r = await TranslateServices.PreferredOrderTranslateServices[0].TranslateServiceAsync(text);
+                    }
+                    else if (fileName.EndsWith(".wav"))
+                    {
+                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // todo: implement local file scheme (non-tempFolder directory)
+                        int sampleRate = await Audio.GetSampleRateAsync(fileName.Substring(1));
+                        if (Options.options.debugLevel >= 4)
+                            AllServiceResponses = (AllSpeechToTextServiceResponses = await SpeechToTextServices.RunAllPreferredSpeechToTextServices(bytes, sampleRate)).Select(sr => sr.sr);
+                        if (Options.options.debugLevel >= 4)
+                            AllServiceResponses = (AllTranslateServiceResponses = await TranslateServices.RunAllPreferredTranslateServices(bytes, sampleRate)).Select(sr => sr.sr);
+                        r = await TranslateServices.PreferredOrderTranslateServices[0].TranslateServiceAsync(bytes, sampleRate);
+                        Console.WriteLine("Translate result (from audio):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
+                    }
+                    else
+                    {
+                        throw new Exception("Translate: Unknown file extension:" + fileName);
+                    }
+                }
+                else
+                {
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllTranslateServiceResponses = await TranslateServices.RunAllPreferredTranslateServices(text)).Select(sr => sr.sr);
+                    r = await TranslateServices.PreferredOrderTranslateServices[0].TranslateServiceAsync(text);
+                }
+            }
+            else
+            {
+                fileName = operandStack.Pop();
+                if (fileName.EndsWith(".txt"))
+                {
+                    text = await Helpers.ReadTextFromFileAsync(fileName);
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllTranslateServiceResponses = await TranslateServices.RunAllPreferredTranslateServices(text)).Select(sr => sr.sr);
+                    r = await TranslateServices.PreferredOrderTranslateServices[0].TranslateServiceAsync(text);
+                    Console.WriteLine("Translate result (text):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
+                }
+                else if (fileName.EndsWith(".wav"))
+                {
+                    bytes = await Helpers.ReadBytesFromFileAsync(fileName);
+                    int sampleRate = await Audio.GetSampleRateAsync(Options.options.tempFolderPath + fileName);
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllSpeechToTextServiceResponses = await SpeechToTextServices.RunAllPreferredSpeechToTextServices(bytes, sampleRate)).Select(sr => sr.sr);
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllTranslateServiceResponses = await TranslateServices.RunAllPreferredTranslateServices(bytes, sampleRate)).Select(sr => sr.sr);
+                    r = await TranslateServices.PreferredOrderTranslateServices[0].TranslateServiceAsync(bytes, sampleRate);
+                    Console.WriteLine("Translate result (audio):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
+                }
+                else
+                {
+                    throw new Exception("Translate: Unknown file extension:" + fileName);
+                }
+            }
+            stackFileName = "stack" + (operandStack.Count + 1).ToString() + ".txt";
+            await Helpers.WriteTextToFileAsync(stackFileName, r.sr.ResponseResult);
+            operandStack.Push(stackFileName);
+            PreferredServiceResponse = r.sr;
+            return 0;
+        }
+
         private static async System.Threading.Tasks.Task<int> verbWakeUpAsync(string[] args, System.Collections.Generic.Stack<string> operatorStack, System.Collections.Generic.Stack<string> operandStack)
         {
             string text;
             string fileName;
             string stackFileName;
             string[] WakeUpWords;
-            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek().ToUpper()))
+            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek()))
             {
                 text = fileName = operatorStack.Pop();
                 if (fileName.First() == '@')
