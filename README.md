@@ -1,5 +1,25 @@
 # Woundify
-Woundify is primarily a Windows client for the Houndify intent service, a cognitive comparision tool, a cognitive service scripting tool. Woundify is written in C# and is compatible with Console, WPF and UWP systems.
+Woundify is a cognitive services (AI) comparision tool, a benchmarking tool and a scripting tool. Woundify is written in C# and is compatible with Windows Console, WPF and UWP systems. Woundify supports AI services from Google, Houndify, IBM Watson, Microsoft (Bing), and Wit.ai. Woundify was originally developed as a Windows client for the Houndify intent service.
+
+## Requisites
+
+Tasks:
+1. Install Visual Studio 2015. The free Community Edition is fine.
+2. Load this repo into Visual Studio.
+3. Register for the AI services that you'll be using (Bing, Google, Houndify, IBM, etc.). URLs listed below.
+4. No API access keys are provided. You'll need to add your own API access keys to either `WoundifyDefaultSettings.json` or  `WoundifySettings.json`. If `WoundifySettings.json` does not exist, create it by copying `WoundifyDefaultSettings.json` to `WoundifySettings.json`. `WoundifyDefaultlSettings.json` is loaded first and then `WoundifySettings.json` is loaded overriding the defaults. Recommended practice is to modify `WoundifySettings.json` and never modifying `WoundifyDefaultlSettings.json`.
+
+The `WoundifyDefaultSettings.json` and `WoundifySettings.json` files contain properties used for each service such as API acccess keys. Services all use differing API access property names (e.g. Key, ClientID, Password, etc.). Register for the following services and insert their API access keys into the "services" section of the settings file. Be careful when modifying these files. Mistakes can cause unpredictable behaviors.
+
+1. https://www.houndify.com
+2. https://console.ng.bluemix.net/registration/?
+3. https://cloud.google.com/speech/
+4. https://cloud.google.com/translate/
+5. https://www.microsoft.com/cognitive-services/en-us/speech-api
+6. https://datamarket.azure.com/dataset/bing/microsofttranslatorspeech
+7. https://datamarket.azure.com/dataset/bing/speechoutput
+8. https://datamarket.azure.com/dataset/bing/microsofttranslator
+
 
 ## Console Application
 The woundify.exe is a console app tool for scripting audio, text and Houndify operations. There are commands for recording audio, converting text-to-speech (TTS), converting speech-to-text (STT), and invoking Houndify intent services.
@@ -12,7 +32,7 @@ Examples:
 
 > `woundify text "What's the weather in Paris?" intent speak`<br>Sends the text to Houndify and speaks the response.
   
-> `woundify listen intent speak`<br>Listens to the microphone (default timeout) and speaks the response.
+> `woundify listen intent speak`<br>Listens to the microphone (default timeout), calls intent service, speaks the response.
   
 > `woundify text @WeatherInParis.txt intent show`<br>Send the contents of file WeatherInParis.txt to Houndify and shows the stack.
   
@@ -34,9 +54,9 @@ There is no binary executable file available on this repos. You can create an ex
 Developers can use Woundify as a standalone tool, as a tool for integrating into projects, or make use of its class libraries to create a custom project. This repos contains the entire source code of Woundify.
 
 The source code for woundify is in C#. The classes contain a wealth of information. In particular, most operations are coded twice for maximum Windows support; Win32 vs WinRT, System.Speech vs Windows.Media, System.IO vs Windows.Storage, System.Net.HTTP vs Windows.Web, System.Security.Cryptography vs Windows.Security.Cryptography, Console and WPF vs UWP. The source code contains the following capabilities:
-* Authenticating to Bing (OAuth 2), Google (OAuth 2), Houndify services (propriatary), Wit (OAuth 2).
+* Authenticating to Bing (OAuth 2), Google (OAuth 2), Houndify services (propriatary), IBM Watson (basic) Wit (OAuth 2).
 * Invoking Houndify intent API.
-* Invoking speech-to-text APIs from Bing (Project Oxford), Google, Houndify, Wit.
+* Invoking speech-to-text APIs from Bing (Project Oxford), Google, Houndify, IBM Watson, Wit.
 * Parsing JSON responses from intent and STT services.
 * Recording audio from microphone and writing to a stream or file.
 * Playing audio from stream or file.
@@ -82,10 +102,12 @@ Woundify first tries to load WoundifyDefaultSettings.json file, followed by Woun
 | ----------------- | ---------------------------------------------------------------------------------------------------------- |
 | END | End program. Same as QUIT.
 | HELP | Show help.
-| INTENT | Pops stack and sends audio/text to Houndify's intent service. The response is pushed onto the stack.
+| IDENTIFY | Pops stack and sends audio/text to language identification service. The response is pushed onto the stack.
+| INTENT | Pops stack and sends audio/text to intent service. The response is pushed onto the stack.
 | LISTEN | Record audio and push utterance onto stack.
 | LOOP | Loop back to first command and continue execution.
 | PAUSE | Pause for seconds specified in argument (or uses default).
+| PERSONALITY | Pops stack and sends audio/text to personality characteristics service. The response is pushed onto the stack.
 | PRONOUNCE | Convert text at top of stack into spelled pronounciations.
 | QUIT | Quit program. Same as END.
 | REPLAY | Replay TOS. If TOS is text, display text. If audio, it plays the audio.
@@ -95,6 +117,8 @@ Woundify first tries to load WoundifyDefaultSettings.json file, followed by Woun
 | SPEAK | Pops stack and speaks it.
 | SPEECH | Push audio onto stack.
 | TEXT | Push text onto stack.
+| TONE | Pops stack and sends audio/text to tone of voice (happy, angry) service. The response is pushed onto the stack.
+| TRANSLATE | Pops stack and sends audio/text to language translation service. The response is pushed onto the stack.
 | WAKEUP | Wait for wakeup word(s), convert rest of audio to text, push as text onto stack.
 
 ## Chart of Command Actions Based on Arguments
@@ -103,11 +127,13 @@ Woundify first tries to load WoundifyDefaultSettings.json file, followed by Woun
 | ----------------- | ------------------- | ------------------- |  ------------------ | ------------------- | ------------------- |
 | END               |                     |                     |                     |                     |                     |
 | HELP              |                     |                     |                     |                     |                     |
+| IDENTIFY          | Pop, send text      | Pop, send audio     | Send text           | Send text           | Send audio          |
 | INTENT            | Pop, send text      | Pop, send audio     | Send text           | Send text           | Send audio          |
 | LISTEN            |                     |                     | TTS, push audio     | TTS, push audio     | Push audio          |
 | LOOP              |                     |                     |                     |                     |                     |
 | PARSE             | Pop, send text      | Pop, STT, send Text | Send text           | Send text           | STT, send text      |
 | PAUSE             |                     |                     | Seconds to pause    |                     |                     |
+| PERSONALITY       | Pop, send text      | Pop, send audio     | Send text           | Send text           | Send audio          |
 | PRONOUNCE         | Pop, push pronounce | Pop, STT, push pronounce | Push pronounce | Push pronounce      | STT, push pronounce |
 | QUIT              |                     |                     |                     |                     |                     |
 | REPLAY            | Display TOS text    | Play TOS audio      |                     |                     |                     |
@@ -117,6 +143,8 @@ Woundify first tries to load WoundifyDefaultSettings.json file, followed by Woun
 | SPEAK             | Pop, TTS, play audio | Pop, play audio    | TTS, play audio     | TTS, play audio     | Play audio          |
 | SPEECH            | Pop, TTS, push audio | no change          | TTS, push audio     | TTS, push audio     | Push audio          |
 | TEXT              | Push text           | Pop, STT, push text | Push text           | STT, push text      | STT, push text      |
+| TONE              | Pop, send text      | Pop, send audio     | Send text           | Send text           | Send audio          |
+| TRANSLATE         | Pop, send text      | Pop, send audio     | Send text           | Send text           | Send audio          |
 | WAKEUP            |                     |                     | Use as wakeup words | Use as wakeup words |                     |
 
 Table Notes:
