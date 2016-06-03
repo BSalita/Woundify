@@ -4,6 +4,7 @@ Woundify is a cognitive services (AI) tool used to compare, benchmark and script
 ## Requisites
 
 Tasks:
+
 1. Install Visual Studio 2015. The free Community Edition is fine.
 2. Load this repo into Visual Studio.
 3. Register for the AI services that you'll be using (Bing, Google, Houndify, IBM, etc.). URLs listed below.
