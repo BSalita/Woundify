@@ -1,5 +1,5 @@
 # Woundify
-Woundify is primarily a Windows client for the Houndify intent service, a cognitive comparision tool, a cognitive service scripting tool. Woundify is written in C# and is compatible with Console, WPF and UWP systems.
+Woundify is a cognitive services (AI) comparision tool, an AI benchmarking tool and a scripting tool. Woundify is written in C# and is compatible with Windows Console, WPF and UWP systems. Woundify supports AI services from Google, Houndify, IBM Watson, Microsoft (Bing), and Wit.ai. Woundify was originally developed as a Windows client for the Houndify intent service, 
 
 ## Console Application
 The woundify.exe is a console app tool for scripting audio, text and Houndify operations. There are commands for recording audio, converting text-to-speech (TTS), converting speech-to-text (STT), and invoking Houndify intent services.
