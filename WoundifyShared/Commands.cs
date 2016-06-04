@@ -28,6 +28,7 @@ namespace WoundifyShared
                 { "HELP", new verbAction() { actionFunc = verbHelpAsync, stackChange = 0, helpTip = "Show help." } },
                 { "IDENTIFY", new verbAction() { actionFunc = verbIdentifyAsync, stackChange = 0, helpTip = "Pop stack passing to identify language service, push response." } },
                 { "INTENT", new verbAction() { actionFunc = verbIntentAsync, stackChange = 0, helpTip = "Pop stack passing to intent service, push response." } },
+                { "JSONPATH", new verbAction() { actionFunc = verbJsonPathAsync, stackChange = 0, helpTip = "Pop stack apply JsonPath, push result." } },
                 { "LISTEN",new verbAction() { actionFunc = verbListenAsync, stackChange = +1, helpTip = "Listen and push utterance." } },
                 { "LOOP", new verbAction() { actionFunc = verbLoopAsync, stackChange = 0, helpTip = "Loop to first command and repeat." } },
                 { "PARSE", new verbAction() { actionFunc = verbParseAsync, stackChange = 0, helpTip = "Parse into phrase types. Show constituency tree." } },
@@ -305,6 +306,32 @@ namespace WoundifyShared
             await Helpers.WriteTextToFileAsync(stackFileName, r.sr.ResponseResult);
             operandStack.Push(stackFileName);
             PreferredServiceResponse = r.sr;
+            return 0;
+        }
+
+        private static async System.Threading.Tasks.Task<int> verbJsonPathAsync(string[] args, System.Collections.Generic.Stack<string> operatorStack, System.Collections.Generic.Stack<string> operandStack)
+        {
+            if (operatorStack.Count > 0)
+            {
+                string fileName = operandStack.Pop();
+                if (fileName.EndsWith(".txt"))
+                {
+                    string jsonPath = operatorStack.Pop();
+                    string text = await Helpers.ReadTextFromFileAsync(fileName);
+#if true // which to use? stack or PreferredServiceResponse?
+                    Newtonsoft.Json.Linq.JToken tokResult = PreferredServiceResponse.ResponseBodyToken.SelectToken(jsonPath);
+#else
+                    Newtonsoft.Json.Linq.JToken tokResult = text.ResponseBodyToken.SelectToken(jsonPath);
+#endif
+                    string stackFileName = "stack" + (operandStack.Count + 1).ToString() + ".txt";
+                    await Helpers.WriteTextToFileAsync(stackFileName, tokResult.ToString());
+                    operandStack.Push(stackFileName);
+                }
+            }
+            else
+            {
+                Console.WriteLine("JsonPath has no arguement.");
+            }
             return 0;
         }
 

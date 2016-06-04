@@ -213,7 +213,7 @@
     },
     {
       "name": "BingSpeechToTextService",
-      "classInterface": "BingServices.ISpeechToTextService",
+      "classInterface": "BingServices.ITranslateService",
       "curl": "curl -X POST -u \"{username}:{password}\" --header \"Content-Type: application/json; charset=utf-8\" --data-binary @profile.json \"https://speech.platform.bing.com/recognize\"",
       "request": {
         "method": "post", // { "get" | "post" | <custom> }
@@ -244,6 +244,40 @@
         ],
         "data": {
           "type": "binary" // { ascii | base64 | binary | raw | string | urlencode }
+        }
+      },
+      "response": {
+        "missingResponse": "whatever",
+        "jsonPath": ""
+      }
+    },
+    {
+      "name": "BingTranslateService",
+      "classInterface": "BingServices.ITranslateService",
+      "curl": "curl -X POST -u \"{username}:{password}\" --header \"Content-Type: application/json; charset=utf-8\" --data-binary @profile.json \"http://api.microsofttranslator.com/V2/Http.svc/Translate\"",
+      "request": {
+        "method": "get", // { "get" | "post" | <custom> }
+        "preferChunkedEncodedRequests": false,
+        "uri": {
+          "scheme": "https",
+          "host": "http://api.microsofttranslator.com",
+          "path": "V2/Http.svc/Translate",
+          "query": "text={text}&from={source}&to={target}"
+        },
+        "headers": [
+          {
+            "Name": "BearerAuthentication",
+            "BearerAuthentication": {
+              "type": "bearer", // { basic | bearer | <custom> }
+              "key": ""
+            }
+          }
+        ],
+        "data": {
+          "type": "binary", // { ascii | base64 | binary | raw | string | urlencode }
+          "value": "{'language' : 'en', 'analyzerIds' : [{AnalyzerStringized}], 'text' :'{text}'}",
+          "source": "en", // from
+          "target": "es" // to
         }
       },
       "response": {

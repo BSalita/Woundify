@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <StartArguments>translate "es=en" "hi i%27m at hack the office" show</StartArguments>
+    <StartArguments>tone "hello world" jsonpath "document_tone.tone_categories[0].tones[0]" show</StartArguments>
     <StartWorkingDirectory>c:\sw\ai\tests</StartWorkingDirectory>
   </PropertyGroup>
 </Project>
