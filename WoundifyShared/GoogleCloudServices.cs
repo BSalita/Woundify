@@ -39,6 +39,54 @@ namespace WoundifyShared
             return response;
         }
 
+        public override async System.Threading.Tasks.Task<TranslateServiceResponse> TranslateServiceAsync(string text)
+        {
+            TranslateServiceResponse response = new TranslateServiceResponse();
+            Log.WriteLine("text:" + text);
+
+            stopWatch.Start();
+
+            UriBuilder ub = new UriBuilder();
+            ub.Scheme = service.request.uri.scheme;
+            ub.Host = service.request.uri.host;
+            ub.Path = service.request.uri.path;
+            string query = service.request.uri.query;
+            query = query.Replace("{key}", service.request.headers[0].BearerAuthentication.key);// todo: replace [0] with dictionary lookup
+            query = query.Replace("{text}", System.Uri.EscapeDataString(text.Trim()));
+            query = query.Replace("{source}", service.request.data.source);
+            query = query.Replace("{target}", service.request.data.target);
+            ub.Query = query; 
+#if WINDOWS_UWP
+            if (Options.options.Services.APIs.PreferSystemNet)
+               response.sr = await PostAsyncSystemNet(ub.Uri, audioBytes, sampleRate);
+            else
+                response.sr = await PostAsyncWindowsWeb(ub.Uri, audioBytes, sampleRate);
+#else
+            System.Collections.Generic.List<Tuple<string, string>> Headers = new System.Collections.Generic.List<Tuple<string, string>>()
+            {
+                // nothing to new for now
+            };
+            response.sr = await GetAsyncSystemNet(ub.Uri, Headers);
+            Newtonsoft.Json.Linq.JToken tokResult = response.sr.ResponseBodyToken.SelectToken("data.translations[0].translatedText"); // service.response.jsonPath);
+            if (tokResult == null || string.IsNullOrEmpty(tokResult.ToString()))
+            {
+                response.sr.ResponseResult = Options.services["GoogleCloudTranslateService"].response.missingResponse;
+                if (Options.options.debugLevel >= 3)
+                    Log.WriteLine(response.sr.ResponseResult);
+            }
+            else
+            {
+                response.sr.ResponseResult = tokResult.ToString();
+                if (Options.options.debugLevel >= 3)
+                    Log.WriteLine(tokResult.Path + ": " + response.sr.ResponseResult);
+            }
+#endif
+            stopWatch.Stop();
+            response.sr.TotalElapsedMilliseconds = stopWatch.ElapsedMilliseconds;
+            Log.WriteLine("Total: Elapsed milliseconds:" + stopWatch.ElapsedMilliseconds);
+            return response;
+        }
+
 #if WINDOWS_UWP
         public async System.Threading.Tasks.Task<IServiceResponse> PostAsyncWindowsWeb(Uri uri, byte[] audioBytes, int sampleRate)
         {
@@ -121,6 +169,37 @@ namespace WoundifyShared
         return response;
         }
 #endif
+
+        public async System.Threading.Tasks.Task<ServiceResponse> GetAsyncSystemNet(Uri uri, System.Collections.Generic.List<Tuple<string, string>> Headers)
+        {
+            ServiceResponse response = new ServiceResponse(this.ToString());
+            using (System.Net.Http.HttpClient httpClient = new System.Net.Http.HttpClient())
+            {
+                try
+                {
+                    foreach (Tuple<string, string> h in Headers)
+                    {
+                        httpClient.DefaultRequestHeaders.Add(h.Item1, h.Item2);
+                    }
+                    response.ResponseJson = await httpClient.GetStringAsync(uri);
+                    if (response.ResponseJson == null) // todo: not right for Parse
+                        Log.WriteLine("Fail! - Response is null");
+                    else
+                    {
+                        if (response.ResponseJson[0] != '{')
+                            throw new FormatException("Invalid JSON response: not an object:" + response.ResponseJson);
+                        response.ResponseBodyToken = Newtonsoft.Json.Linq.JObject.Parse(response.ResponseJson);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.WriteLine("Google.GetSystemNetAsync: Exception:" + ex.Message);
+                    if (ex.InnerException != null)
+                        Log.WriteLine("InnerException:" + ex.InnerException);
+                }
+            }
+            return response;
+        }
 
         public async System.Threading.Tasks.Task<ServiceResponse> PostAsyncSystemNet(Uri uri, byte[] audioBytes, int sampleRate)
         {

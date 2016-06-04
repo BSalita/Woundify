@@ -141,7 +141,8 @@
       "key": "Translate",
       "name": "TranslateService",
       "preferredServices": [
-        "IbmWatsonTranslateService"
+        "GoogleCloudTranslateService"
+        "IbmWatsonTranslateService",
       ]
     }
   ],
@@ -314,6 +315,40 @@
         ],
         "data": {
           "type": "binary" // { ascii | base64 | binary | raw | string | urlencode }
+        }
+      },
+      "response": {
+        "missingResponse": "whatever",
+        "jsonPath": ""
+      }
+    },
+    // https://www.googleapis.com/language/translate/v2?key=YOUR_API_KEY&q=hello%20world&source=en&target=de
+    {
+      "name": "GoogleCloudTranslateService",
+      "classInterface": "GoogleCloudServices.ITranslateService",
+      "curl": "curl \"https://www.googleapis.com/language/translate/v2?key={key}&q={text}&source={source}&target={target}\"",
+      "request": {
+        "method": "get", // { "get" | "post" | <custom> }
+        "preferChunkedEncodedRequests": false,
+        "uri": {
+          "scheme": "https",
+          "host": "www.googleapis.com",
+          "path": "language/translate/v2",
+          "query": "key={key}&q={text}&source={source}&target={target}"
+        },
+        "headers": [
+          {
+            "Name": "BearerAuthentication",
+            "BearerAuthentication": {
+              "type": "bearer", // { basic | bearer | <custom> }
+              "key": ""
+            }
+          }
+        ],
+        "data": {
+          "type": "binary", // { ascii | base64 | binary | raw | string | urlencode }
+          "source": "en",
+          "target": "es"
         }
       },
       "response": {
