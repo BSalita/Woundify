@@ -124,7 +124,7 @@
       "name": "TextToSpeechService",
       "preferredServices": [
         "WindowsTextToSpeechService",
-        "IbmWatsonTextToSpeechService" // produces bad wav file? bing, houndify and windows won't recognize "hello world". google is ok.
+        "IbmWatsonTextToSpeechService"
       ],
       "voiceAge": 0,
       "voiceGender": 0,
@@ -618,7 +618,7 @@
           "scheme": "https",
           "host": "gateway.watsonplatform.net",
           "path": "language-translation/api/v2/translate",
-          "query": "source=en&target=es"
+          "query": "source={source}&target={target}"
         },
         "headers": [
           {
@@ -640,7 +640,9 @@
         ],
         "data": {
           "type": "string", // { ascii | base64 | binary | raw | string | urlencode }
-          "value": "{ \"text\":\"{text}\" }" // can also use "text={text}" (text/plain multipart)
+          "value": "{ \"text\":\"{text}\" }", // can also use "text={text}" (text/plain multipart)
+          "source": "en",
+          "target": "es"
         }
       },
       "response": {

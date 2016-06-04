@@ -430,8 +430,8 @@ namespace WoundifyShared
                 {
                     bytes = await Helpers.ReadBytesFromFileAsync(fileName);
                     int sampleRate = await Audio.GetSampleRateAsync(Options.options.tempFolderPath + fileName);
-//                    if (Options.options.debugLevel >= 4)
-//                        AllServiceResponses = (AllParseServiceResponses = await ParseServices.RunAllPreferredParseServicesAsync(bytes, sampleRate)).Select(sr => sr.sr);
+                    //                    if (Options.options.debugLevel >= 4)
+                    //                        AllServiceResponses = (AllParseServiceResponses = await ParseServices.RunAllPreferredParseServicesAsync(bytes, sampleRate)).Select(sr => sr.sr);
                     r = await ParseServices.PreferredOrderingParseServices[0].ParseServiceAsync(bytes, sampleRate);
                 }
                 else
@@ -755,7 +755,7 @@ namespace WoundifyShared
                 {
                     Log.WriteLine("Playing wav file.");
                     await Audio.PlayFileAsync(Options.options.tempFolderPath + fileName);
-                 }
+                }
                 else
                 {
                     throw new Exception("Speak: Unknown file extension:" + fileName);
@@ -986,6 +986,27 @@ namespace WoundifyShared
             byte[] bytes;
             TranslateServiceResponse r;
             System.Collections.Generic.IEnumerable<TranslateServiceResponse> AllTranslateServiceResponses;
+
+            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek()))
+            {
+                text = operatorStack.Pop();
+                if (text.Contains("="))
+                {
+                    // need cross-API solution for specifying language pairs.
+                    Settings.Service service = Options.services["IbmWatsonTranslateService"];
+                    string[] languagePairs = text.Split('=');
+                    if (languagePairs.Length == 2)
+                    {
+                        service.request.data.source = languagePairs[0];
+                        service.request.data.target = languagePairs[1];
+                        Console.WriteLine("Using language pair:" + languagePairs[0] + "=" + languagePairs[1]);
+                    }
+                    else
+                        Console.WriteLine("Invalid language pair:" + text + ". Try en-es.");
+                }
+                else
+                    operatorStack.Push(text);
+            }
 
             if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek()))
             {

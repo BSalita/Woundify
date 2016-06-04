@@ -124,6 +124,8 @@ namespace WoundifyShared
         {
             public string type { get; set; }
             public string value { get; set; }
+            public string source { get; set; }
+            public string target { get; set; }
         }
 
         public class Header

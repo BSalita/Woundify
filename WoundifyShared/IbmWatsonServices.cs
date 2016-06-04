@@ -347,7 +347,7 @@ namespace WoundifyShared
             ub.Scheme = service.request.uri.scheme;
             ub.Host = service.request.uri.host;
             ub.Path = service.request.uri.path;
-            ub.Query = service.request.uri.query;
+            ub.Query = service.request.uri.query.Replace("{source}", service.request.data.source).Replace("{target}", service.request.data.target);
             System.Net.Http.HttpContent requestContent = null;
             List<Tuple<string, string>> DefaultRequestHeaders = new List<Tuple<string, string>>();
             switch (service.request.data.type)
