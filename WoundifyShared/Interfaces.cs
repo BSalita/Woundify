@@ -40,6 +40,7 @@ namespace WoundifyShared
     public interface IParseService
     {
         System.Threading.Tasks.Task<ParseServiceResponse> ParseServiceAsync(string text);
+        System.Threading.Tasks.Task<ParseServiceResponse> ParseServiceAsync(byte[] audioBytes, int sampleRate);
     }
     public class ParseServiceResponse
     {
@@ -88,6 +89,7 @@ namespace WoundifyShared
     {
         public ServiceResponse sr;
     }
+#if false
     public class GenericService
     {
         public Settings.Service service { get; set; }
@@ -118,6 +120,10 @@ namespace WoundifyShared
             this.service = service;
         }
         public virtual System.Threading.Tasks.Task<ParseServiceResponse> ParseServiceAsync(string text)
+        {
+            return null;
+        }
+        public virtual System.Threading.Tasks.Task<ParseServiceResponse> ParseServiceAsync(byte[] audioBytes, int sampleRate)
         {
             return null;
         }
@@ -159,6 +165,7 @@ namespace WoundifyShared
             return null;
         }
     }
+#endif
 
 #if true
     public class WoundifyServices : IIdentifyLanguageService, IIntentService, IParseService, IPersonalityService, ISpeechToTextService, ITextToSpeechService, IToneService, ITranslateService
@@ -168,61 +175,67 @@ namespace WoundifyShared
         {
             this.service = service;
         }
-        public virtual System.Threading.Tasks.Task<IdentifyLanguageServiceResponse> IdentifyLanguageServiceAsync(string text)
+        public virtual async System.Threading.Tasks.Task<IdentifyLanguageServiceResponse> IdentifyLanguageServiceAsync(string text)
         {
             return null;
         }
-        public virtual System.Threading.Tasks.Task<IdentifyLanguageServiceResponse> IdentifyLanguageServiceAsync(byte[] audioBytes, int sampleRate)
+        public virtual async System.Threading.Tasks.Task<IdentifyLanguageServiceResponse> IdentifyLanguageServiceAsync(byte[] audioBytes, int sampleRate)
+        {
+            SpeechToTextServiceResponse sttr = await SpeechToTextServices.PreferredOrderingSpeechToTextServices[0].SpeechToTextServiceAsync(audioBytes, sampleRate);
+            return await IdentifyLanguageServices.PreferredOrderingIdentifyLanguageServices[0].IdentifyLanguageServiceAsync(sttr.sr.ResponseResult);
+        }
+        public virtual async System.Threading.Tasks.Task<IntentServiceResponse> IntentServiceAsync(string text)
         {
             return null;
         }
-        public virtual System.Threading.Tasks.Task<IntentServiceResponse> IntentServiceAsync(string text)
+        public virtual async System.Threading.Tasks.Task<IntentServiceResponse> IntentServiceAsync(byte[] audioBytes, int sampleRate)
+        {
+            SpeechToTextServiceResponse sttr = await SpeechToTextServices.PreferredOrderingSpeechToTextServices[0].SpeechToTextServiceAsync(audioBytes, sampleRate);
+            return await IntentServices.PreferredOrderingIntentServices[0].IntentServiceAsync(sttr.sr.ResponseResult);
+        }
+        public virtual async System.Threading.Tasks.Task<ParseServiceResponse> ParseServiceAsync(string text)
         {
             return null;
         }
-        public virtual System.Threading.Tasks.Task<IntentServiceResponse> IntentServiceAsync(byte[] audioBytes, int sampleRate)
+        public virtual async System.Threading.Tasks.Task<ParseServiceResponse> ParseServiceAsync(byte[] audioBytes, int sampleRate)
+        {
+            SpeechToTextServiceResponse sttr = await SpeechToTextServices.PreferredOrderingSpeechToTextServices[0].SpeechToTextServiceAsync(audioBytes, sampleRate);
+            return await ParseServices.PreferredOrderingParseServices[0].ParseServiceAsync(sttr.sr.ResponseResult);
+        }
+        public virtual async System.Threading.Tasks.Task<PersonalityServiceResponse> PersonalityServiceAsync(string text)
         {
             return null;
         }
-        public virtual System.Threading.Tasks.Task<ParseServiceResponse> ParseServiceAsync(string text)
+        public virtual async System.Threading.Tasks.Task<PersonalityServiceResponse> PersonalityServiceAsync(byte[] audioBytes, int sampleRate)
+        {
+            SpeechToTextServiceResponse sttr = await SpeechToTextServices.PreferredOrderingSpeechToTextServices[0].SpeechToTextServiceAsync(audioBytes, sampleRate);
+            return await PersonalityServices.PreferredOrderingPersonalityServices[0].PersonalityServiceAsync(sttr.sr.ResponseResult);
+        }
+        public virtual async System.Threading.Tasks.Task<SpeechToTextServiceResponse> SpeechToTextServiceAsync(byte[] audioBytes, int sampleRate)
         {
             return null;
         }
-        public virtual System.Threading.Tasks.Task<ParseServiceResponse> ParseServiceAsync(byte[] audioBytes, int sampleRate)
+        public virtual async System.Threading.Tasks.Task<TextToSpeechServiceResponse> TextToSpeechServiceAsync(string text, int sampleRate)
         {
             return null;
         }
-        public virtual System.Threading.Tasks.Task<PersonalityServiceResponse> PersonalityServiceAsync(string text)
+        public virtual async System.Threading.Tasks.Task<ToneServiceResponse> ToneServiceAsync(string text)
         {
             return null;
         }
-        public virtual System.Threading.Tasks.Task<PersonalityServiceResponse> PersonalityServiceAsync(byte[] audioBytes, int sampleRate)
+        public virtual async System.Threading.Tasks.Task<ToneServiceResponse> ToneServiceAsync(byte[] audioBytes, int sampleRate)
+        {
+            SpeechToTextServiceResponse sttr = await SpeechToTextServices.PreferredOrderingSpeechToTextServices[0].SpeechToTextServiceAsync(audioBytes, sampleRate);
+            return await ToneServices.PreferredOrderingToneServices[0].ToneServiceAsync(sttr.sr.ResponseResult);
+        }
+        public virtual async System.Threading.Tasks.Task<TranslateServiceResponse> TranslateServiceAsync(string text)
         {
             return null;
         }
-        public virtual System.Threading.Tasks.Task<SpeechToTextServiceResponse> SpeechToTextServiceAsync(byte[] audioBytes, int sampleRate)
+        public virtual async System.Threading.Tasks.Task<TranslateServiceResponse> TranslateServiceAsync(byte[] audioBytes, int sampleRate)
         {
-            return null;
-        }
-        public virtual System.Threading.Tasks.Task<TextToSpeechServiceResponse> TextToSpeechServiceAsync(string text, int sampleRate)
-        {
-            return null;
-        }
-        public virtual System.Threading.Tasks.Task<ToneServiceResponse> ToneServiceAsync(string text)
-        {
-            return null;
-        }
-        public virtual System.Threading.Tasks.Task<ToneServiceResponse> ToneServiceAsync(byte[] audioBytes, int sampleRate)
-        {
-            return null;
-        }
-        public virtual System.Threading.Tasks.Task<TranslateServiceResponse> TranslateServiceAsync(string text)
-        {
-            return null;
-        }
-        public virtual System.Threading.Tasks.Task<TranslateServiceResponse> TranslateServiceAsync(byte[] audioBytes, int sampleRate)
-        {
-            return null;
+            SpeechToTextServiceResponse sttr = await SpeechToTextServices.PreferredOrderingSpeechToTextServices[0].SpeechToTextServiceAsync(audioBytes, sampleRate);
+            return await TranslateServices.PreferredOrderingTranslateServices[0].TranslateServiceAsync(sttr.sr.ResponseResult);
         }
     }
 #endif

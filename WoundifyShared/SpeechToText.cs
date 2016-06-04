@@ -44,7 +44,7 @@ namespace WoundifyShared
 
         public static async System.Threading.Tasks.Task<string> SpeechToTextAsync(System.IO.MemoryStream stream)
         {
-            foreach (ISpeechToTextService STT in SpeechToTextServices.PreferredOrderedISpeechToTextServices)
+            foreach (ISpeechToTextService STT in SpeechToTextServices.PreferredOrderingSpeechToTextServices)
             {
                 string text;
                 ISpeechToTextServiceResponse r = await STT.SpeechToTextAsync(stream.ToArray(), await Audio.GetSampleRateAsync(Options.options.tempFolderPath + Options.options.audio.speechSynthesisFileName));
@@ -89,7 +89,7 @@ namespace WoundifyShared
 #endif
                 System.IO.MemoryStream stream = new System.IO.MemoryStream(bytes);
                 string text = WakeUpWordResult.Text;
-                foreach (ISpeechToTextService STT in SpeechToTextServices.PreferredOrderedISpeechToTextServices)
+                foreach (ISpeechToTextService STT in SpeechToTextServices.PreferredOrderingSpeechToTextServices)
                 {
                     // ISpeechToTextService STT = (ISpeechToTextService)constructor.Invoke(Type.EmptyTypes);
                     SpeechToTextServiceResponse r = await STT.SpeechToTextServiceAsync(bytes, await Audio.GetSampleRateAsync(Options.options.tempFolderPath + Options.options.audio.speechSynthesisFileName));
@@ -168,7 +168,7 @@ namespace WoundifyShared
 #endif
                         System.IO.MemoryStream stream = new System.IO.MemoryStream(bytes);
                         string text = WakeUpWordResult.Text;
-                        foreach (ISpeechToTextService STT in SpeechToTextServices.PreferredOrderedISpeechToTextServices)
+                        foreach (ISpeechToTextService STT in SpeechToTextServices.PreferredOrderingSpeechToTextServices)
                         {
                             // ISpeechToTextService STT = (ISpeechToTextService)constructor.Invoke(Type.EmptyTypes);
                             SpeechToTextServiceResponse r = await STT.SpeechToTextServiceAsync(bytes, await Audio.GetSampleRateAsync(Options.options.tempFolderPath + Options.options.audio.speechSynthesisFileName));

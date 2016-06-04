@@ -6,42 +6,36 @@ namespace WoundifyShared
 {
     public class IdentifyLanguageServices
     {
-        public static System.Collections.Generic.List<IIdentifyLanguageService> PreferredOrderIdentifyLanguageServices = new FindServices<IIdentifyLanguageService>(Options.commandservices["Identify"].preferredServices).PreferredOrderingOfServices;
+        public static System.Collections.Generic.List<IIdentifyLanguageService> PreferredOrderingIdentifyLanguageServices = new FindServices<IIdentifyLanguageService>(Options.commandservices["Identify"].preferredServices).PreferredOrderingOfServices;
+        public static System.Collections.Generic.List<IdentifyLanguageServiceResponse> responses = new System.Collections.Generic.List<IdentifyLanguageServiceResponse>();
 
-        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<IdentifyLanguageServiceResponse>> RunAllPreferredIdentifyLanguageServices(string text)
+        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<IdentifyLanguageServiceResponse>> RunAllPreferredIdentifyLanguageServicesAsync(string fileName)
         {
-            System.Collections.Generic.List<IdentifyLanguageServiceResponse> responses = new System.Collections.Generic.List<IdentifyLanguageServiceResponse>();
-            // invoke each IIdentifyLanguageService and show what it can do.
-            foreach (IIdentifyLanguageService STT in PreferredOrderIdentifyLanguageServices)
-            {
-                responses.Add(await STT.IdentifyLanguageServiceAsync(text).ContinueWith<IdentifyLanguageServiceResponse>((c) =>
-                {
-                    ServiceResponse r = c.Result.sr;
-                    if (string.IsNullOrEmpty(r.ResponseResult) || r.StatusCode != 200)
-                        Console.WriteLine(r.ServiceName + " STT (async): Failed with StatusCode of " + r.StatusCode);
-                    else
-                        Console.WriteLine(r.ServiceName + " STT (async):\"" + r.ResponseResult + "\" Total " + r.TotalElapsedMilliseconds + "ms Request " + r.RequestElapsedMilliseconds + "ms");
-                    return c.Result;
-                }));
-            }
-            return responses;
+            byte[] bytes = await Helpers.ReadBytesFromFileAsync(fileName);
+            int sampleRate = await Audio.GetSampleRateAsync(Options.options.tempFolderPath + fileName);
+            return RunAllPreferredIdentifyLanguageServicesRun(bytes, sampleRate);
         }
 
-        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<IdentifyLanguageServiceResponse>> RunAllPreferredIdentifyLanguageServices(byte[] bytes, int sampleRate)
+        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<IdentifyLanguageServiceResponse>> RunAllPreferredIdentifyLanguageServicesAsync(byte[] bytes, int sampleRate)
         {
-            System.Collections.Generic.List<IdentifyLanguageServiceResponse> responses = new System.Collections.Generic.List<IdentifyLanguageServiceResponse>();
+            return RunAllPreferredIdentifyLanguageServicesRun(bytes, sampleRate);
+        }
+
+        public static System.Collections.Generic.List<IdentifyLanguageServiceResponse> RunAllPreferredIdentifyLanguageServicesRun(byte[] bytes, int sampleRate)
+        {
+            responses = new System.Collections.Generic.List<IdentifyLanguageServiceResponse>();
             // invoke each IIdentifyLanguageService and show what it can do.
-            foreach (IIdentifyLanguageService STT in PreferredOrderIdentifyLanguageServices)
+            foreach (IIdentifyLanguageService STT in PreferredOrderingIdentifyLanguageServices)
             {
-                responses.Add(await STT.IdentifyLanguageServiceAsync(bytes, sampleRate).ContinueWith<IdentifyLanguageServiceResponse>((c) =>
+                System.Threading.Tasks.Task.Run(() => STT.IdentifyLanguageServiceAsync(bytes, sampleRate)).ContinueWith((c) =>
                 {
                     ServiceResponse r = c.Result.sr;
                     if (string.IsNullOrEmpty(r.ResponseResult) || r.StatusCode != 200)
                         Console.WriteLine(r.ServiceName + " STT (async): Failed with StatusCode of " + r.StatusCode);
                     else
                         Console.WriteLine(r.ServiceName + " STT (async):\"" + r.ResponseResult + "\" Total " + r.TotalElapsedMilliseconds + "ms Request " + r.RequestElapsedMilliseconds + "ms");
-                    return c.Result;
-                }));
+                    responses.Add(c.Result);
+                });
             }
             return responses;
         }

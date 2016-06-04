@@ -6,42 +6,36 @@ namespace WoundifyShared
 {
     public class TranslateServices
     {
-        public static System.Collections.Generic.List<ITranslateService> PreferredOrderTranslateServices = new FindServices<ITranslateService>(Options.commandservices["Translate"].preferredServices).PreferredOrderingOfServices;
+        public static System.Collections.Generic.List<ITranslateService> PreferredOrderingTranslateServices = new FindServices<ITranslateService>(Options.commandservices["Translate"].preferredServices).PreferredOrderingOfServices;
+        public static System.Collections.Generic.List<TranslateServiceResponse> responses = new System.Collections.Generic.List<TranslateServiceResponse>();
 
-        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<TranslateServiceResponse>> RunAllPreferredTranslateServices(string text)
+        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<TranslateServiceResponse>> RunAllPreferredTranslateServicesAsync(string fileName)
         {
-            System.Collections.Generic.List<TranslateServiceResponse> responses = new System.Collections.Generic.List<TranslateServiceResponse>();
-            // invoke each ITranslateService and show what it can do.
-            foreach (ITranslateService STT in PreferredOrderTranslateServices)
-            {
-                responses.Add(await STT.TranslateServiceAsync(text).ContinueWith<TranslateServiceResponse>((c) =>
-                {
-                    ServiceResponse r = c.Result.sr;
-                    if (string.IsNullOrEmpty(r.ResponseResult) || r.StatusCode != 200)
-                        Console.WriteLine(r.ServiceName + " STT (async): Failed with StatusCode of " + r.StatusCode);
-                    else
-                        Console.WriteLine(r.ServiceName + " STT (async):\"" + r.ResponseResult + "\" Total " + r.TotalElapsedMilliseconds + "ms Request " + r.RequestElapsedMilliseconds + "ms");
-                    return c.Result;
-                }));
-            }
-            return responses;
+            byte[] bytes = await Helpers.ReadBytesFromFileAsync(fileName);
+            int sampleRate = await Audio.GetSampleRateAsync(Options.options.tempFolderPath + fileName);
+            return RunAllPreferredTranslateServicesRun(bytes, sampleRate);
         }
 
-        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<TranslateServiceResponse>> RunAllPreferredTranslateServices(byte[] bytes, int sampleRate)
+        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<TranslateServiceResponse>> RunAllPreferredTranslateServicesAsync(byte[] bytes, int sampleRate)
         {
-            System.Collections.Generic.List<TranslateServiceResponse> responses = new System.Collections.Generic.List<TranslateServiceResponse>();
+            return RunAllPreferredTranslateServicesRun(bytes, sampleRate);
+        }
+
+        public static System.Collections.Generic.List<TranslateServiceResponse> RunAllPreferredTranslateServicesRun(byte[] bytes, int sampleRate)
+        {
+            responses = new System.Collections.Generic.List<TranslateServiceResponse>();
             // invoke each ITranslateService and show what it can do.
-            foreach (ITranslateService STT in PreferredOrderTranslateServices)
+            foreach (ITranslateService STT in PreferredOrderingTranslateServices)
             {
-                responses.Add(await STT.TranslateServiceAsync(bytes, sampleRate).ContinueWith<TranslateServiceResponse>((c) =>
+                System.Threading.Tasks.Task.Run(() => STT.TranslateServiceAsync(bytes, sampleRate)).ContinueWith((c) =>
                 {
                     ServiceResponse r = c.Result.sr;
                     if (string.IsNullOrEmpty(r.ResponseResult) || r.StatusCode != 200)
                         Console.WriteLine(r.ServiceName + " STT (async): Failed with StatusCode of " + r.StatusCode);
                     else
                         Console.WriteLine(r.ServiceName + " STT (async):\"" + r.ResponseResult + "\" Total " + r.TotalElapsedMilliseconds + "ms Request " + r.RequestElapsedMilliseconds + "ms");
-                    return c.Result;
-                }));
+                    responses.Add(c.Result);
+                });
             }
             return responses;
         }

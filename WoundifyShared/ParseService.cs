@@ -6,23 +6,36 @@ namespace WoundifyShared
 {
     public class ParseServices
     {
-        public static System.Collections.Generic.List<IParseService> PreferredOrderedParseServices = new FindServices<IParseService>(Options.commandservices["Parse"].preferredServices).PreferredOrderingOfServices;
+        public static System.Collections.Generic.List<IParseService> PreferredOrderingParseServices = new FindServices<IParseService>(Options.commandservices["Parse"].preferredServices).PreferredOrderingOfServices;
+        public static System.Collections.Generic.List<ParseServiceResponse> responses = new System.Collections.Generic.List<ParseServiceResponse>();
 
-        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<ParseServiceResponse>> RunAllPreferredParseServices(string text)
+        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<ParseServiceResponse>> RunAllPreferredParseServicesAsync(string fileName)
         {
-            System.Collections.Generic.List<ParseServiceResponse> responses = new System.Collections.Generic.List<ParseServiceResponse>();
+            byte[] bytes = await Helpers.ReadBytesFromFileAsync(fileName);
+            int sampleRate = await Audio.GetSampleRateAsync(Options.options.tempFolderPath + fileName);
+            return RunAllPreferredParseServicesRun(bytes, sampleRate);
+        }
+
+        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<ParseServiceResponse>> RunAllPreferredParseServicesAsync(byte[] bytes, int sampleRate)
+        {
+            return RunAllPreferredParseServicesRun(bytes, sampleRate);
+        }
+
+        public static System.Collections.Generic.List<ParseServiceResponse> RunAllPreferredParseServicesRun(byte[] bytes, int sampleRate)
+        {
+            responses = new System.Collections.Generic.List<ParseServiceResponse>();
             // invoke each IParseService and show what it can do.
-            foreach (IParseService STT in PreferredOrderedParseServices)
+            foreach (IParseService STT in PreferredOrderingParseServices)
             {
-                responses.Add(await STT.ParseServiceAsync(text).ContinueWith<ParseServiceResponse>((c) =>
+                System.Threading.Tasks.Task.Run(() => STT.ParseServiceAsync(bytes, sampleRate)).ContinueWith((c) =>
                 {
                     ServiceResponse r = c.Result.sr;
                     if (string.IsNullOrEmpty(r.ResponseResult) || r.StatusCode != 200)
                         Console.WriteLine(r.ServiceName + " STT (async): Failed with StatusCode of " + r.StatusCode);
                     else
                         Console.WriteLine(r.ServiceName + " STT (async):\"" + r.ResponseResult + "\" Total " + r.TotalElapsedMilliseconds + "ms Request " + r.RequestElapsedMilliseconds + "ms");
-                    return c.Result;
-                }));
+                    responses.Add(c.Result);
+                });
             }
             return responses;
         }

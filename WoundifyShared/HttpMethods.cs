@@ -4,7 +4,7 @@ using System.Text;
 
 namespace WoundifyShared
 {
-    public class HttpMethods
+    public class IbmWatsonHttpServices
     {
         private System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
 

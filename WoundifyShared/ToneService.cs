@@ -6,42 +6,36 @@ namespace WoundifyShared
 {
     public class ToneServices
     {
-        public static System.Collections.Generic.List<IToneService> PreferredOrderToneServices = new FindServices<IToneService>(Options.commandservices["Tone"].preferredServices).PreferredOrderingOfServices;
+        public static System.Collections.Generic.List<IToneService> PreferredOrderingToneServices = new FindServices<IToneService>(Options.commandservices["Tone"].preferredServices).PreferredOrderingOfServices;
+        public static System.Collections.Generic.List<ToneServiceResponse> responses = new System.Collections.Generic.List<ToneServiceResponse>();
 
-        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<ToneServiceResponse>> RunAllPreferredToneServices(string text)
+        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<ToneServiceResponse>> RunAllPreferredToneServicesAsync(string fileName)
         {
-            System.Collections.Generic.List<ToneServiceResponse> responses = new System.Collections.Generic.List<ToneServiceResponse>();
-            // invoke each IToneService and show what it can do.
-            foreach (IToneService STT in PreferredOrderToneServices)
-            {
-                responses.Add(await STT.ToneServiceAsync(text).ContinueWith<ToneServiceResponse>((c) =>
-                {
-                    ServiceResponse r = c.Result.sr;
-                    if (string.IsNullOrEmpty(r.ResponseResult) || r.StatusCode != 200)
-                        Console.WriteLine(r.ServiceName + " STT (async): Failed with StatusCode of " + r.StatusCode);
-                    else
-                        Console.WriteLine(r.ServiceName + " STT (async):\"" + r.ResponseResult + "\" Total " + r.TotalElapsedMilliseconds + "ms Request " + r.RequestElapsedMilliseconds + "ms");
-                    return c.Result;
-                }));
-            }
-            return responses;
+            byte[] bytes = await Helpers.ReadBytesFromFileAsync(fileName);
+            int sampleRate = await Audio.GetSampleRateAsync(Options.options.tempFolderPath + fileName);
+            return RunAllPreferredToneServicesRun(bytes, sampleRate);
         }
 
-        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<ToneServiceResponse>> RunAllPreferredToneServices(byte[] bytes, int sampleRate)
+        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<ToneServiceResponse>> RunAllPreferredToneServicesAsync(byte[] bytes, int sampleRate)
         {
-            System.Collections.Generic.List<ToneServiceResponse> responses = new System.Collections.Generic.List<ToneServiceResponse>();
+            return RunAllPreferredToneServicesRun(bytes, sampleRate);
+        }
+
+        public static System.Collections.Generic.List<ToneServiceResponse> RunAllPreferredToneServicesRun(byte[] bytes, int sampleRate)
+        {
+            responses = new System.Collections.Generic.List<ToneServiceResponse>();
             // invoke each IToneService and show what it can do.
-            foreach (IToneService STT in PreferredOrderToneServices)
+            foreach (IToneService STT in PreferredOrderingToneServices)
             {
-                responses.Add(await STT.ToneServiceAsync(bytes, sampleRate).ContinueWith<ToneServiceResponse>((c) =>
+                System.Threading.Tasks.Task.Run(() => STT.ToneServiceAsync(bytes, sampleRate)).ContinueWith((c) =>
                 {
                     ServiceResponse r = c.Result.sr;
                     if (string.IsNullOrEmpty(r.ResponseResult) || r.StatusCode != 200)
                         Console.WriteLine(r.ServiceName + " STT (async): Failed with StatusCode of " + r.StatusCode);
                     else
                         Console.WriteLine(r.ServiceName + " STT (async):\"" + r.ResponseResult + "\" Total " + r.TotalElapsedMilliseconds + "ms Request " + r.RequestElapsedMilliseconds + "ms");
-                    return c.Result;
-                }));
+                    responses.Add(c.Result);
+                });
             }
             return responses;
         }

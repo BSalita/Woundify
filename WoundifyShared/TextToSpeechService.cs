@@ -4,30 +4,38 @@ namespace WoundifyShared
 {
     public class TextToSpeechServices
     {
-        public static System.Collections.Generic.List<ITextToSpeechService> PreferredOrderedTextToSpeechServices = new FindServices<ITextToSpeechService>(Options.commandservices["TextToSpeech"].preferredServices).PreferredOrderingOfServices;
+        public static System.Collections.Generic.List<ITextToSpeechService> PreferredOrderingTextToSpeechServices = new FindServices<ITextToSpeechService>(Options.commandservices["TextToSpeech"].preferredServices).PreferredOrderingOfServices;
+        public static System.Collections.Generic.List<TextToSpeechServiceResponse> responses = new System.Collections.Generic.List<TextToSpeechServiceResponse>();
 
-        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<TextToSpeechServiceResponse>> RunAllPreferredTextToSpeechServices(string fileName)
+        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<TextToSpeechServiceResponse>> RunAllPreferredTextToSpeechServicesAsync(string fileName)
         {
             string text = await Helpers.ReadTextFromFileAsync(fileName);
             int sampleRate = await Audio.GetSampleRateAsync(Options.options.tempFolderPath + fileName);
-            return await RunAllPreferredTextToSpeechServices(text, sampleRate);
+            return RunAllPreferredTextToSpeechServicesRun(text, sampleRate);
         }
 
-        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<TextToSpeechServiceResponse>> RunAllPreferredTextToSpeechServices(string text, int sampleRate)
+#if false // not implemented
+        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<TextToSpeechServiceResponse>> RunAllPreferredTextToSpeechServicesAsync(byte[] bytes, int sampleRate)
         {
-            System.Collections.Generic.List<TextToSpeechServiceResponse> responses = new System.Collections.Generic.List<TextToSpeechServiceResponse>();
+            return RunAllPreferredTextToSpeechServicesRun(bytes, sampleRate);
+        }
+#endif
+
+        public static System.Collections.Generic.List<TextToSpeechServiceResponse> RunAllPreferredTextToSpeechServicesRun(string text, int sampleRate)
+        {
+            responses = new System.Collections.Generic.List<TextToSpeechServiceResponse>();
             // invoke each ITextToSpeechService and show what it can do.
-            foreach (ITextToSpeechService TTS in PreferredOrderedTextToSpeechServices)
+            foreach (ITextToSpeechService STT in PreferredOrderingTextToSpeechServices)
             {
-                responses.Add(await TTS.TextToSpeechServiceAsync(text, sampleRate).ContinueWith<TextToSpeechServiceResponse>((c) =>
+                System.Threading.Tasks.Task.Run(() => STT.TextToSpeechServiceAsync(text, sampleRate)).ContinueWith((c) =>
                 {
                     ServiceResponse r = c.Result.sr;
                     if (string.IsNullOrEmpty(r.ResponseResult) || r.StatusCode != 200)
-                        Console.WriteLine(r.ServiceName + " TTS (async): Failed with StatusCode of " + r.StatusCode);
+                        Console.WriteLine(r.ServiceName + " STT (async): Failed with StatusCode of " + r.StatusCode);
                     else
-                        Console.WriteLine(r.ServiceName + " TTS (async):\"" + r.ResponseResult + "\" Total " + r.TotalElapsedMilliseconds + "ms Request " + r.RequestElapsedMilliseconds + "ms");
-                    return c.Result;
-                }));
+                        Console.WriteLine(r.ServiceName + " STT (async):\"" + r.ResponseResult + "\" Total " + r.TotalElapsedMilliseconds + "ms Request " + r.RequestElapsedMilliseconds + "ms");
+                    responses.Add(c.Result);
+                });
             }
             return responses;
         }

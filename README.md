@@ -85,8 +85,8 @@ Development Notes:
 Recommended Settings File Customization:
 * It's best to create a WoundifySettings.json file to contain your customizations. The file will override any settings obtained from the WoundifyDefaultSettings.json file. Use the SETTINGS command to verify that your settings are correct.
 * Geolocation is only implemented in UWP, and not implmented in Console and WPF app. To create a default geolocation, enter your location into the WoundifySettings.json file.
-* Recommended to add authorizations for Google into the SpeechToText Google section of the settings file. Google provides the fastest and arguably the best STT. See http://stackoverflow.com/questions/23608863/google-speech-recognition-api
-* Sign up at http://www.projectoxford.ai to get a subscription key. Use the subscription key, called Primary Key, as the ClientSecret in SpeechToText Bing section of the settings file.
+* Recommended to add authorizations for Google into the IdentifyLanguage Google section of the settings file. Google provides the fastest and arguably the best STT. See http://stackoverflow.com/questions/23608863/google-speech-recognition-api
+* Sign up at http://www.projectoxford.ai to get a subscription key. Use the subscription key, called Primary Key, as the ClientSecret in IdentifyLanguage Bing section of the settings file.
 
 Program Usage:
 Woundify first tries to load WoundifyDefaultSettings.json file, followed by WoundifySettings.json. Settings files can be either in the same directory as the executable or the local directory. The first settings file loaded will initialize setting values. Subbsequent loading of settings files will override existing values. 

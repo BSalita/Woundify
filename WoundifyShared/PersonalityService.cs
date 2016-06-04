@@ -6,42 +6,36 @@ namespace WoundifyShared
 {
     public class PersonalityServices
     {
-        public static System.Collections.Generic.List<IPersonalityService> PreferredOrderPersonalityServices = new FindServices<IPersonalityService>(Options.commandservices["Personality"].preferredServices).PreferredOrderingOfServices;
+        public static System.Collections.Generic.List<IPersonalityService> PreferredOrderingPersonalityServices = new FindServices<IPersonalityService>(Options.commandservices["Personality"].preferredServices).PreferredOrderingOfServices;
+        public static System.Collections.Generic.List<PersonalityServiceResponse> responses = new System.Collections.Generic.List<PersonalityServiceResponse>();
 
-        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<PersonalityServiceResponse>> RunAllPreferredPersonalityServices(string text)
+        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<PersonalityServiceResponse>> RunAllPreferredPersonalityServicesAsync(string fileName)
         {
-            System.Collections.Generic.List<PersonalityServiceResponse> responses = new System.Collections.Generic.List<PersonalityServiceResponse>();
-            // invoke each IPersonalityService and show what it can do.
-            foreach (IPersonalityService STT in PreferredOrderPersonalityServices)
-            {
-                responses.Add(await STT.PersonalityServiceAsync(text).ContinueWith<PersonalityServiceResponse>((c) =>
-                {
-                    ServiceResponse r = c.Result.sr;
-                    if (string.IsNullOrEmpty(r.ResponseResult) || r.StatusCode != 200)
-                        Console.WriteLine(r.ServiceName + " STT (async): Failed with StatusCode of " + r.StatusCode);
-                    else
-                        Console.WriteLine(r.ServiceName + " STT (async):\"" + r.ResponseResult + "\" Total " + r.TotalElapsedMilliseconds + "ms Request " + r.RequestElapsedMilliseconds + "ms");
-                    return c.Result;
-                }));
-            }
-            return responses;
+            byte[] bytes = await Helpers.ReadBytesFromFileAsync(fileName);
+            int sampleRate = await Audio.GetSampleRateAsync(Options.options.tempFolderPath + fileName);
+            return RunAllPreferredPersonalityServicesRun(bytes, sampleRate);
         }
 
-        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<PersonalityServiceResponse>> RunAllPreferredPersonalityServices(byte[] bytes, int sampleRate)
+        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<PersonalityServiceResponse>> RunAllPreferredPersonalityServicesAsync(byte[] bytes, int sampleRate)
         {
-            System.Collections.Generic.List<PersonalityServiceResponse> responses = new System.Collections.Generic.List<PersonalityServiceResponse>();
+            return RunAllPreferredPersonalityServicesRun(bytes, sampleRate);
+        }
+
+        public static System.Collections.Generic.List<PersonalityServiceResponse> RunAllPreferredPersonalityServicesRun(byte[] bytes, int sampleRate)
+        {
+            responses = new System.Collections.Generic.List<PersonalityServiceResponse>();
             // invoke each IPersonalityService and show what it can do.
-            foreach (IPersonalityService STT in PreferredOrderPersonalityServices)
+            foreach (IPersonalityService STT in PreferredOrderingPersonalityServices)
             {
-                responses.Add(await STT.PersonalityServiceAsync(bytes, sampleRate).ContinueWith<PersonalityServiceResponse>((c) =>
+                System.Threading.Tasks.Task.Run(() => STT.PersonalityServiceAsync(bytes, sampleRate)).ContinueWith((c) =>
                 {
                     ServiceResponse r = c.Result.sr;
                     if (string.IsNullOrEmpty(r.ResponseResult) || r.StatusCode != 200)
                         Console.WriteLine(r.ServiceName + " STT (async): Failed with StatusCode of " + r.StatusCode);
                     else
                         Console.WriteLine(r.ServiceName + " STT (async):\"" + r.ResponseResult + "\" Total " + r.TotalElapsedMilliseconds + "ms Request " + r.RequestElapsedMilliseconds + "ms");
-                    return c.Result;
-                }));
+                    responses.Add(c.Result);
+                });
             }
             return responses;
         }

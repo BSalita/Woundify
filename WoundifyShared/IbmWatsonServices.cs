@@ -53,7 +53,7 @@ namespace WoundifyShared
                         throw new MissingFieldException();
                 }
             }
-            HttpMethods http = new HttpMethods();
+            IbmWatsonHttpServices http = new IbmWatsonHttpServices();
             response.sr = await http.PostSystemNet(ub.Uri, DefaultRequestHeaders, requestContent);
             Newtonsoft.Json.Linq.JToken tokResult = response.sr.ResponseBodyToken.SelectToken(service.response.jsonPath);
             if (tokResult == null || string.IsNullOrEmpty(tokResult.ToString()))
@@ -112,7 +112,7 @@ namespace WoundifyShared
                         throw new MissingFieldException();
                 }
             }
-            HttpMethods http = new HttpMethods();
+            IbmWatsonHttpServices http = new IbmWatsonHttpServices();
             response.sr = await http.PostSystemNet(ub.Uri, DefaultRequestHeaders, requestContent);
             Newtonsoft.Json.Linq.JToken tokResult = response.sr.ResponseBodyToken.SelectToken(service.response.jsonPath);
             if (tokResult == null || string.IsNullOrEmpty(tokResult.ToString()))
@@ -179,7 +179,7 @@ namespace WoundifyShared
                         throw new MissingFieldException();
                 }
             }
-            HttpMethods http = new HttpMethods();
+            IbmWatsonHttpServices http = new IbmWatsonHttpServices();
             response.sr = await http.PostSystemNet(ub.Uri, DefaultRequestHeaders, requestContent);
             Newtonsoft.Json.Linq.JToken tokResult = ProcessResponse(response.sr.ResponseBodyToken);
             if (tokResult == null || string.IsNullOrEmpty(tokResult.ToString()))
@@ -269,7 +269,7 @@ namespace WoundifyShared
                         throw new MissingFieldException();
                 }
             }
-            HttpMethods http = new HttpMethods();
+            IbmWatsonHttpServices http = new IbmWatsonHttpServices();
             response.sr = await http.PostSystemNet(ub.Uri, DefaultRequestHeaders, requestContent, true);
 
             return response;
@@ -318,7 +318,7 @@ namespace WoundifyShared
                         throw new MissingFieldException();
                 }
             }
-            HttpMethods http = new HttpMethods();
+            IbmWatsonHttpServices http = new IbmWatsonHttpServices();
             response.sr = await http.PostSystemNet(ub.Uri, DefaultRequestHeaders, requestContent);
             Newtonsoft.Json.Linq.JToken tokResult = response.sr.ResponseBodyToken.SelectToken(service.response.jsonPath);
             if (tokResult == null || string.IsNullOrEmpty(tokResult.ToString()))
@@ -379,7 +379,7 @@ namespace WoundifyShared
                         throw new MissingFieldException();
                 }
             }
-            HttpMethods http = new HttpMethods();
+            IbmWatsonHttpServices http = new IbmWatsonHttpServices();
             response.sr = await http.PostSystemNet(ub.Uri, DefaultRequestHeaders, requestContent);
 #if false
             response.sr.ResponseResult = response.sr.ResponseBodyBlob; // text/plain return

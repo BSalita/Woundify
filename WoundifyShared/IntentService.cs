@@ -6,42 +6,36 @@ namespace WoundifyShared
 {
     public class IntentServices
     {
-        public static System.Collections.Generic.List<IIntentService> PreferredOrderIntentServices = new FindServices<IIntentService>(Options.commandservices["Intent"].preferredServices).PreferredOrderingOfServices;
+        public static System.Collections.Generic.List<IIntentService> PreferredOrderingIntentServices = new FindServices<IIntentService>(Options.commandservices["Intent"].preferredServices).PreferredOrderingOfServices;
+        public static System.Collections.Generic.List<IntentServiceResponse> responses = new System.Collections.Generic.List<IntentServiceResponse>();
 
-        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<IntentServiceResponse>> RunAllPreferredIntentServices(string text)
+        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<IntentServiceResponse>> RunAllPreferredIntentServicesAsync(string fileName)
         {
-            System.Collections.Generic.List<IntentServiceResponse> responses = new System.Collections.Generic.List<IntentServiceResponse>();
-            // invoke each IIntentService and show what it can do.
-            foreach (IIntentService STT in PreferredOrderIntentServices)
-            {
-                responses.Add(await STT.IntentServiceAsync(text).ContinueWith<IntentServiceResponse>((c) =>
-                {
-                    ServiceResponse r = c.Result.sr;
-                    if (string.IsNullOrEmpty(r.ResponseResult) || r.StatusCode != 200)
-                        Console.WriteLine(r.ServiceName + " STT (async): Failed with StatusCode of " + r.StatusCode);
-                    else
-                        Console.WriteLine(r.ServiceName + " STT (async):\"" + r.ResponseResult + "\" Total " + r.TotalElapsedMilliseconds + "ms Request " + r.RequestElapsedMilliseconds + "ms");
-                    return c.Result;
-                }));
-            }
-            return responses;
+            byte[] bytes = await Helpers.ReadBytesFromFileAsync(fileName);
+            int sampleRate = await Audio.GetSampleRateAsync(Options.options.tempFolderPath + fileName);
+            return RunAllPreferredIntentServicesRun(bytes, sampleRate);
         }
 
-        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<IntentServiceResponse>> RunAllPreferredIntentServices(byte[] bytes, int sampleRate)
+        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<IntentServiceResponse>> RunAllPreferredIntentServicesAsync(byte[] bytes, int sampleRate)
         {
-            System.Collections.Generic.List<IntentServiceResponse> responses = new System.Collections.Generic.List<IntentServiceResponse>();
+            return RunAllPreferredIntentServicesRun(bytes, sampleRate);
+        }
+
+        public static System.Collections.Generic.List<IntentServiceResponse> RunAllPreferredIntentServicesRun(byte[] bytes, int sampleRate)
+        {
+            responses = new System.Collections.Generic.List<IntentServiceResponse>();
             // invoke each IIntentService and show what it can do.
-            foreach (IIntentService STT in PreferredOrderIntentServices)
+            foreach (IIntentService STT in PreferredOrderingIntentServices)
             {
-                responses.Add(await STT.IntentServiceAsync(bytes, sampleRate).ContinueWith<IntentServiceResponse>((c) =>
+                System.Threading.Tasks.Task.Run(() => STT.IntentServiceAsync(bytes, sampleRate)).ContinueWith((c) =>
                 {
                     ServiceResponse r = c.Result.sr;
                     if (string.IsNullOrEmpty(r.ResponseResult) || r.StatusCode != 200)
                         Console.WriteLine(r.ServiceName + " STT (async): Failed with StatusCode of " + r.StatusCode);
                     else
                         Console.WriteLine(r.ServiceName + " STT (async):\"" + r.ResponseResult + "\" Total " + r.TotalElapsedMilliseconds + "ms Request " + r.RequestElapsedMilliseconds + "ms");
-                    return c.Result;
-                }));
+                    responses.Add(c.Result);
+                });
             }
             return responses;
         }
@@ -65,5 +59,5 @@ namespace WoundifyShared
             return responses;
         }
 #endif
-        }
     }
+}
