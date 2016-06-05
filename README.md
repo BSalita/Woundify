@@ -105,6 +105,7 @@ Woundify first tries to load WoundifyDefaultSettings.json file, followed by Woun
 | HELP | Show help.
 | IDENTIFY | Pops stack and sends audio/text to language identification service. The response is pushed onto the stack.
 | INTENT | Pops stack and sends audio/text to intent service. The response is pushed onto the stack.
+| JSONPATH | Apply a JsonPath to the previous response.
 | LISTEN | Record audio and push utterance onto stack.
 | LOOP | Loop back to first command and continue execution.
 | PAUSE | Pause for seconds specified in argument (or uses default).
@@ -130,6 +131,7 @@ Woundify first tries to load WoundifyDefaultSettings.json file, followed by Woun
 | HELP              |                     |                     |                     |                     |                     |
 | IDENTIFY          | Pop, send text      | Pop, send audio     | Send text           | Send text           | Send audio          |
 | INTENT            | Pop, send text      | Pop, send audio     | Send text           | Send text           | Send audio          |
+| JSONPATH          |                     |                     | Apply JsonPath push |                     |                     |
 | LISTEN            |                     |                     | TTS, push audio     | TTS, push audio     | Push audio          |
 | LOOP              |                     |                     |                     |                     |                     |
 | PARSE             | Pop, send text      | Pop, STT, send Text | Send text           | Send text           | STT, send text      |
