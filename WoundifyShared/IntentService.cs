@@ -9,25 +9,23 @@ namespace WoundifyShared
         public static System.Collections.Generic.List<IIntentService> PreferredOrderingIntentServices = new FindServices<IIntentService>(Options.commandservices["Intent"].preferredServices).PreferredOrderingOfServices;
         public static System.Collections.Generic.List<IntentServiceResponse> responses = new System.Collections.Generic.List<IntentServiceResponse>();
 
-        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<IntentServiceResponse>> RunAllPreferredIntentServicesAsync(string fileName)
+        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<IntentServiceResponse>> RunAllPreferredIntentServicesAsync(string text)
         {
-            byte[] bytes = await Helpers.ReadBytesFromFileAsync(fileName);
-            int sampleRate = await Audio.GetSampleRateAsync(Options.options.tempFolderPath + fileName);
-            return RunAllPreferredIntentServicesRun(bytes, sampleRate);
+            return RunAllPreferredIntentServicesRun(text);
         }
 
         public static async System.Threading.Tasks.Task<System.Collections.Generic.List<IntentServiceResponse>> RunAllPreferredIntentServicesAsync(byte[] bytes, int sampleRate)
         {
-            return RunAllPreferredIntentServicesRun(bytes, sampleRate);
+            return null;
         }
 
-        public static System.Collections.Generic.List<IntentServiceResponse> RunAllPreferredIntentServicesRun(byte[] bytes, int sampleRate)
+        public static System.Collections.Generic.List<IntentServiceResponse> RunAllPreferredIntentServicesRun(string text)
         {
             responses = new System.Collections.Generic.List<IntentServiceResponse>();
             // invoke each IIntentService and show what it can do.
             foreach (IIntentService STT in PreferredOrderingIntentServices)
             {
-                System.Threading.Tasks.Task.Run(() => STT.IntentServiceAsync(bytes, sampleRate)).ContinueWith((c) =>
+                System.Threading.Tasks.Task.Run(() => STT.IntentServiceAsync(text)).ContinueWith((c) =>
                 {
                     ServiceResponse r = c.Result.sr;
                     if (string.IsNullOrEmpty(r.ResponseResult) || r.StatusCode != 200)

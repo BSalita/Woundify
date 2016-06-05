@@ -1043,7 +1043,7 @@ namespace WoundifyShared
                     if (fileName.EndsWith(".txt")) // implement json same as Identify?
                     {
                         text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
-                        if (Options.options.debugLevel >= 4)
+                        if (Options.options.debugLevel >= 3)
                             AllServiceResponses = (AllTranslateServiceResponses = await TranslateServices.RunAllPreferredTranslateServicesAsync(text)).Select(sr => sr.sr);
                         r = await TranslateServices.PreferredOrderingTranslateServices[0].TranslateServiceAsync(text);
                     }
@@ -1064,7 +1064,7 @@ namespace WoundifyShared
                 }
                 else
                 {
-                    if (Options.options.debugLevel >= 4)
+                    if (Options.options.debugLevel >= 3)
                         AllServiceResponses = (AllTranslateServiceResponses = await TranslateServices.RunAllPreferredTranslateServicesAsync(text)).Select(sr => sr.sr);
                     r = await TranslateServices.PreferredOrderingTranslateServices[0].TranslateServiceAsync(text);
                 }
@@ -1075,7 +1075,7 @@ namespace WoundifyShared
                 if (fileName.EndsWith(".txt"))
                 {
                     text = await Helpers.ReadTextFromFileAsync(fileName);
-                    if (Options.options.debugLevel >= 4)
+                    if (Options.options.debugLevel >= 3)
                         AllServiceResponses = (AllTranslateServiceResponses = await TranslateServices.RunAllPreferredTranslateServicesAsync(text)).Select(sr => sr.sr);
                     r = await TranslateServices.PreferredOrderingTranslateServices[0].TranslateServiceAsync(text);
                     if (Options.options.debugLevel >= 4)

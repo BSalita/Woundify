@@ -9,25 +9,23 @@ namespace WoundifyShared
         public static System.Collections.Generic.List<IPersonalityService> PreferredOrderingPersonalityServices = new FindServices<IPersonalityService>(Options.commandservices["Personality"].preferredServices).PreferredOrderingOfServices;
         public static System.Collections.Generic.List<PersonalityServiceResponse> responses = new System.Collections.Generic.List<PersonalityServiceResponse>();
 
-        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<PersonalityServiceResponse>> RunAllPreferredPersonalityServicesAsync(string fileName)
+        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<PersonalityServiceResponse>> RunAllPreferredPersonalityServicesAsync(string text)
         {
-            byte[] bytes = await Helpers.ReadBytesFromFileAsync(fileName);
-            int sampleRate = await Audio.GetSampleRateAsync(Options.options.tempFolderPath + fileName);
-            return RunAllPreferredPersonalityServicesRun(bytes, sampleRate);
+            return RunAllPreferredPersonalityServicesRun(text);
         }
 
         public static async System.Threading.Tasks.Task<System.Collections.Generic.List<PersonalityServiceResponse>> RunAllPreferredPersonalityServicesAsync(byte[] bytes, int sampleRate)
         {
-            return RunAllPreferredPersonalityServicesRun(bytes, sampleRate);
+            return null;
         }
 
-        public static System.Collections.Generic.List<PersonalityServiceResponse> RunAllPreferredPersonalityServicesRun(byte[] bytes, int sampleRate)
+        public static System.Collections.Generic.List<PersonalityServiceResponse> RunAllPreferredPersonalityServicesRun(string text)
         {
             responses = new System.Collections.Generic.List<PersonalityServiceResponse>();
             // invoke each IPersonalityService and show what it can do.
             foreach (IPersonalityService STT in PreferredOrderingPersonalityServices)
             {
-                System.Threading.Tasks.Task.Run(() => STT.PersonalityServiceAsync(bytes, sampleRate)).ContinueWith((c) =>
+                System.Threading.Tasks.Task.Run(() => STT.PersonalityServiceAsync(text)).ContinueWith((c) =>
                 {
                     ServiceResponse r = c.Result.sr;
                     if (string.IsNullOrEmpty(r.ResponseResult) || r.StatusCode != 200)

@@ -55,7 +55,7 @@ namespace WoundifyShared
             query = query.Replace("{text}", System.Uri.EscapeDataString(text.Trim()));
             query = query.Replace("{source}", service.request.data.source);
             query = query.Replace("{target}", service.request.data.target);
-            ub.Query = query; 
+            ub.Query = query;
 #if WINDOWS_UWP
             if (Options.options.Services.APIs.PreferSystemNet)
                response.sr = await PostAsyncSystemNet(ub.Uri, audioBytes, sampleRate);
@@ -173,30 +173,78 @@ namespace WoundifyShared
         public async System.Threading.Tasks.Task<ServiceResponse> GetAsyncSystemNet(Uri uri, System.Collections.Generic.List<Tuple<string, string>> Headers)
         {
             ServiceResponse response = new ServiceResponse(this.ToString());
-            using (System.Net.Http.HttpClient httpClient = new System.Net.Http.HttpClient())
+            try
             {
-                try
+                using (System.Net.Http.HttpClient httpClient = new System.Net.Http.HttpClient())
                 {
                     foreach (Tuple<string, string> h in Headers)
                     {
                         httpClient.DefaultRequestHeaders.Add(h.Item1, h.Item2);
                     }
-                    response.ResponseJson = await httpClient.GetStringAsync(uri);
-                    if (response.ResponseJson == null) // todo: not right for Parse
-                        Log.WriteLine("Fail! - Response is null");
-                    else
+                    Log.WriteLine("Before Get: Elapsed milliseconds:" + stopWatch.ElapsedMilliseconds);
+                    response.RequestElapsedMilliseconds = stopWatch.ElapsedMilliseconds;
+                    using (System.Net.Http.HttpResponseMessage rm = await httpClient.GetAsync(uri))
                     {
-                        if (response.ResponseJson[0] != '{')
-                            throw new FormatException("Invalid JSON response: not an object:" + response.ResponseJson);
-                        response.ResponseBodyToken = Newtonsoft.Json.Linq.JObject.Parse(response.ResponseJson);
+                        response.RequestElapsedMilliseconds = stopWatch.ElapsedMilliseconds - response.RequestElapsedMilliseconds;
+                        response.StatusCode = (int)rm.StatusCode;
+                        Log.WriteLine("After Get: StatusCode:" + response.StatusCode + " Total milliseconds:" + stopWatch.ElapsedMilliseconds + " Request milliseconds:" + response.RequestElapsedMilliseconds);
+                        if (rm.StatusCode == System.Net.HttpStatusCode.OK)
+                        {
+                            using (System.IO.Stream rr = await rm.Content.ReadAsStreamAsync())
+                            {
+                                using (System.IO.StreamReader r = new System.IO.StreamReader(rr)) // if needed, there is a constructor which will leave the stream open
+                                {
+                                    string ResponseBodyBlob = string.Empty;
+                                    // Google Cloud partial results are incomplete json strings while Google Web's are complete json of initial results
+                                    while (!r.EndOfStream) // todo: is this best way of handling chunked? Seems too syncronous.
+                                    {
+                                        ResponseBodyBlob += r.ReadLine();
+                                        if (Options.options.debugLevel >= 4)
+                                            Log.WriteLine("ResponseBodyBlob:" + ResponseBodyBlob);
+                                    }
+                                    string ResponseBodyString = string.Empty;
+                                    Newtonsoft.Json.Linq.JToken ResponseBodyToken = null;
+                                    try
+                                    {
+                                        ResponseBodyToken = Newtonsoft.Json.Linq.JObject.Parse(ResponseBodyBlob);
+                                        ResponseBodyString = ResponseBodyBlob;
+                                    }
+                                    // todo: obsolete?
+                                    catch (Newtonsoft.Json.JsonReaderException ex) when (ex.HResult == -2146233088)
+                                    {
+                                        Log.WriteLine(ex.Message);
+                                        ResponseBodyString = ResponseBodyBlob.Substring(0, ex.LinePosition);
+                                        ResponseBodyToken = Newtonsoft.Json.Linq.JObject.Parse(ResponseBodyString);
+                                    }
+                                    response.ResponseJson = ResponseBodyBlob; // = ResponseBodyBlob.Substring(ResponseBodyString.Length);
+                                    response.ResponseJsonFormatted = Newtonsoft.Json.JsonConvert.SerializeObject(ResponseBodyToken, new Newtonsoft.Json.JsonSerializerSettings() { Formatting = Newtonsoft.Json.Formatting.Indented });
+                                    if (Options.options.debugLevel >= 4)
+                                        Log.WriteLine(response.ResponseJsonFormatted);
+                                    //Newtonsoft.Json.Linq.JToken tokResult = ProcessResponse(ResponseBodyToken);
+                                    if (response.ResponseJson == null) // todo: not right for Parse
+                                        Log.WriteLine("Fail! - Response is null");
+                                    else
+                                    {
+                                        if (response.ResponseJson[0] != '{')
+                                            throw new FormatException("Invalid JSON response: not an object:" + response.ResponseJson);
+                                        response.ResponseBodyToken = Newtonsoft.Json.Linq.JObject.Parse(response.ResponseJson);
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            response.ResponseResult = rm.ReasonPhrase;
+                            Log.WriteLine("GetAsync Failed: StatusCode:" + rm.ReasonPhrase + "(" + response.StatusCode.ToString() + ")");
+                        }
                     }
                 }
-                catch (Exception ex)
-                {
-                    Log.WriteLine("Google.GetSystemNetAsync: Exception:" + ex.Message);
-                    if (ex.InnerException != null)
-                        Log.WriteLine("InnerException:" + ex.InnerException);
-                }
+            }
+            catch (Exception ex)
+            {
+                Log.WriteLine("Exception:" + ex.Message);
+                if (ex.InnerException != null)
+                    Log.WriteLine("InnerException:" + ex.InnerException);
             }
             return response;
         }

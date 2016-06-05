@@ -6,6 +6,14 @@ using System.Runtime.InteropServices.WindowsRuntime; // AsBuffer()
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
+// References for Translate API
+using System.Text;
+using System.IO;
+using System.Runtime.Serialization.Json;
+using System.Runtime.Serialization;
+using System.Web;
+
+
 namespace WoundifyShared
 {
     class BingServices : WoundifyServices
@@ -60,7 +68,7 @@ namespace WoundifyShared
             {
                 new Tuple<string, string>("Ocp-Apim-Subscription-Key", service.request.headers[2].OcpApimSubscriptionKey) // todo: get from settings
             };
-            return await GetAsyncSystemNet(ub.Uri, Headers);
+            return await GetAsyncAnalysersSystemNet(ub.Uri, Headers);
         }
 
         public override async System.Threading.Tasks.Task<ParseServiceResponse> ParseServiceAsync(byte[] audioBytes, int sampleRate)
@@ -143,7 +151,7 @@ namespace WoundifyShared
             return response;
         }
 
-        public async System.Threading.Tasks.Task<ServiceResponse> GetAsyncSystemNet(Uri uri, System.Collections.Generic.List<Tuple<string, string>> Headers)
+        public async System.Threading.Tasks.Task<ServiceResponse> GetAsyncAnalysersSystemNet(Uri uri, System.Collections.Generic.List<Tuple<string, string>> Headers)
         {
             ServiceResponse response = new ServiceResponse(this.ToString());
             using (System.Net.Http.HttpClient httpClient = new System.Net.Http.HttpClient())
@@ -290,7 +298,7 @@ namespace WoundifyShared
                             break;
                         default:
                             request.Headers[h.Item1] = h.Item2;
-                        break;
+                            break;
                     }
                 }
 
@@ -388,7 +396,7 @@ namespace WoundifyShared
                             break;
                         default:
                             request.Headers[h.Item1] = h.Item2;
-                        break;
+                            break;
                     }
                 }
 
@@ -688,6 +696,186 @@ namespace WoundifyShared
                 }
                 return null;
             }
+        }
+
+        public override async System.Threading.Tasks.Task<TranslateServiceResponse> TranslateServiceAsync(string text)
+        {
+            TranslateServiceResponse response = new TranslateServiceResponse();
+            Log.WriteLine("Bing: Translate:" + text);
+            stopWatch.Start();
+            UriBuilder ub = new UriBuilder();
+            ub.Scheme = service.request.uri.scheme;
+            ub.Host = service.request.uri.host;
+            ub.Path = service.request.uri.path;
+            string query = service.request.uri.query;
+            query = query.Replace("{text}", System.Uri.EscapeDataString(text.Trim())).Replace("{source}", service.request.data.source).Replace("{target}", service.request.data.target);
+            ub.Query = query;
+            // todo: maybe a dictionary of headers should be passed including content-type. Then PostAsync can do if (dict.Contains("Content-Type")) headers.add(dict...)
+            // todo: maybe should init a header class, add values and pass to Post?
+            Authentication auth = new Authentication();
+#if false
+            string clientID = service.request.headers[0].BearerAuthentication.clientID; // TODO: remove hardcoded [0]
+            string clientSecret = service.request.headers[0].BearerAuthentication.clientSecret; // TODO: remove hardcoded [0]
+            await auth.PerformAuthenticationAsync(clientID, clientSecret);
+#else
+            string clientID = "Hackathon"; // TODO: remove hardcoded [0]
+            string clientSecret = "vrbE92fuvXfFLFcjxOoxg/3Y1adVc8nF1Zmc39LDw2c="; // TODO: remove hardcoded [0]
+            using (System.Net.Http.HttpClient httpClient = new System.Net.Http.HttpClient())
+            {
+                //If clientid or client secret has special characters, encode before sending request
+                string request = string.Format("grant_type=client_credentials&client_id={0}&client_secret={1}&scope=http://api.microsofttranslator.com", HttpUtility.UrlEncode(clientID), HttpUtility.UrlEncode(clientSecret));
+                AdmAccessToken token = HttpPost("https://datamarket.accesscontrol.windows.net/v2/OAuth2-13", request);
+#endif
+
+                try
+                {
+                    // AccessTokenInfo token = auth.GetAccessToken();
+                    if (token == null)
+                    {
+                        Log.WriteLine("Invalid authentication token");
+                        return response;
+                    }
+                    Log.WriteLine("Token: {0}\n" + token.access_token);
+
+                    System.Collections.Generic.List<Tuple<string, string>> Headers = new System.Collections.Generic.List<Tuple<string, string>>()
+                {
+                    new Tuple<string, string>("Authorization", "Bearer " + token.access_token),
+                    //new Tuple<string, string>("Accept", "application/json"),
+                    //new Tuple<string, string>("Content-Type", "text/plain") // todo: need dictionary lookup instead of hardcoding
+                };
+
+                    if (Options.options.debugLevel >= 4)
+                        Log.WriteLine("Request Uri: " + ub.Uri);
+                    response.sr = await GetAsyncTranslateSystemNet(ub.Uri, Headers);
+                }
+                catch (Exception ex)
+                {
+                    Log.WriteLine("Bing.Translate: Exception:" + ex.Message);
+                    if (ex.InnerException != null)
+                        Log.WriteLine("InnerException:" + ex.InnerException);
+                }
+                stopWatch.Stop();
+                response.sr.TotalElapsedMilliseconds = stopWatch.ElapsedMilliseconds;
+                Log.WriteLine("Total: Elapsed milliseconds:" + stopWatch.ElapsedMilliseconds);
+                return response;
+            }
+        }
+
+        // following are required for support Bing Translate. Bing services have rather archaic APIs. However, Microsoft Oxford is more normal.
+        [DataContract]
+        public class AdmAccessToken
+        {
+            [DataMember]
+            public string access_token { get; set; }
+            [DataMember]
+            public string token_type { get; set; }
+            [DataMember]
+            public string expires_in { get; set; }
+            [DataMember]
+            public string scope { get; set; }
+        }
+
+        private AdmAccessToken HttpPost(string DatamarketAccessUri, string requestDetails)
+        {
+            //Prepare OAuth request 
+            WebRequest webRequest = WebRequest.Create(DatamarketAccessUri);
+            webRequest.ContentType = "application/x-www-form-urlencoded";
+            webRequest.Method = "POST";
+            byte[] bytes = Encoding.ASCII.GetBytes(requestDetails);
+            webRequest.ContentLength = bytes.Length;
+            using (Stream outputStream = webRequest.GetRequestStream())
+            {
+                outputStream.Write(bytes, 0, bytes.Length);
+            }
+            using (WebResponse webResponse = webRequest.GetResponse())
+            {
+                DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(AdmAccessToken));
+                //Get deserialized object from JSON stream
+                AdmAccessToken token = (AdmAccessToken)serializer.ReadObject(webResponse.GetResponseStream());
+                return token;
+            }
+        }
+
+        public async System.Threading.Tasks.Task<ServiceResponse> GetAsyncAccessTokenSystemNet(Uri uri, System.Collections.Generic.List<Tuple<string, string>> Headers)
+        {
+            ServiceResponse response = new ServiceResponse(this.ToString());
+            using (System.Net.Http.HttpClient httpClient = new System.Net.Http.HttpClient())
+            {
+                try
+                {
+                    foreach (Tuple<string, string> h in Headers)
+                    {
+#if true
+                        httpClient.DefaultRequestHeaders.Add(h.Item1, h.Item2);
+#else
+                        switch (h.Item1)
+                        {
+                            case "Content-Type":
+                                request.ContentType = h.Item2;
+                                break;
+                            default:
+                                request.Headers.Add(h.Item1, h.Item2);
+                                break;
+
+#endif
+                    }
+#if false
+                    response.ResponseJson = await httpClient.GetStringAsync(uri);
+#else
+                    var stream = await httpClient.GetStreamAsync(uri);
+#endif
+                    System.Runtime.Serialization.DataContractSerializer dcs = new System.Runtime.Serialization.DataContractSerializer(Type.GetType("System.String"));
+                    response.ResponseResult = (string)dcs.ReadObject(stream);
+                    if (response.ResponseJson == null) // todo: not right for Parse
+                        Log.WriteLine("Fail! - Response is null");
+                    else
+                    {
+                        if (response.ResponseJson[0] != '[')
+                            throw new FormatException("Expecting array:" + response.ResponseJson);
+                        JArray ResponseBodyToken = JArray.Parse(response.ResponseJson);
+                        foreach (JToken tokAnalyzerResult in ResponseBodyToken)
+                        {
+                            Analyzers.Add(tokAnalyzerResult["id"].ToString());
+                            AnalyzerStringized += "'" + tokAnalyzerResult["id"].ToString() + "', ";
+                        }
+                        AnalyzerStringized = AnalyzerStringized.Substring(0, AnalyzerStringized.Length - 2); // remove trailing "', "
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.WriteLine("Bing.GetAnalyzers: Exception:" + ex.Message);
+                    if (ex.InnerException != null)
+                        Log.WriteLine("InnerException:" + ex.InnerException);
+                }
+            }
+            return response;
+        }
+
+        public async System.Threading.Tasks.Task<ServiceResponse> GetAsyncTranslateSystemNet(Uri uri, System.Collections.Generic.List<Tuple<string, string>> Headers)
+        {
+            ServiceResponse response = new ServiceResponse(this.ToString());
+            try
+            {
+                HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(uri);
+                foreach (Tuple<string, string> h in Headers)
+                {
+                    httpWebRequest.Headers.Add(h.Item1, h.Item2);
+                }
+                WebResponse wresponse = httpWebRequest.GetResponse();
+                using (Stream stream = wresponse.GetResponseStream())
+                {
+                    System.Runtime.Serialization.DataContractSerializer dcs = new System.Runtime.Serialization.DataContractSerializer(Type.GetType("System.String"));
+                    response.ResponseResult = (string)dcs.ReadObject(stream);
+                }
+                response.StatusCode = 200; // need to use other API to retrieve status without relying on catch
+            }
+            catch (Exception ex)
+            {
+                Log.WriteLine("Bing.GetAnalyzers: Exception:" + ex.Message);
+                if (ex.InnerException != null)
+                    Log.WriteLine("InnerException:" + ex.InnerException);
+            }
+            return response;
         }
     }
 }

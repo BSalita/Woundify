@@ -9,25 +9,23 @@ namespace WoundifyShared
         public static System.Collections.Generic.List<IToneService> PreferredOrderingToneServices = new FindServices<IToneService>(Options.commandservices["Tone"].preferredServices).PreferredOrderingOfServices;
         public static System.Collections.Generic.List<ToneServiceResponse> responses = new System.Collections.Generic.List<ToneServiceResponse>();
 
-        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<ToneServiceResponse>> RunAllPreferredToneServicesAsync(string fileName)
+        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<ToneServiceResponse>> RunAllPreferredToneServicesAsync(string text)
         {
-            byte[] bytes = await Helpers.ReadBytesFromFileAsync(fileName);
-            int sampleRate = await Audio.GetSampleRateAsync(Options.options.tempFolderPath + fileName);
-            return RunAllPreferredToneServicesRun(bytes, sampleRate);
+            return RunAllPreferredToneServicesRun(text);
         }
 
         public static async System.Threading.Tasks.Task<System.Collections.Generic.List<ToneServiceResponse>> RunAllPreferredToneServicesAsync(byte[] bytes, int sampleRate)
         {
-            return RunAllPreferredToneServicesRun(bytes, sampleRate);
+            return null;
         }
 
-        public static System.Collections.Generic.List<ToneServiceResponse> RunAllPreferredToneServicesRun(byte[] bytes, int sampleRate)
+        public static System.Collections.Generic.List<ToneServiceResponse> RunAllPreferredToneServicesRun(string text)
         {
             responses = new System.Collections.Generic.List<ToneServiceResponse>();
             // invoke each IToneService and show what it can do.
             foreach (IToneService STT in PreferredOrderingToneServices)
             {
-                System.Threading.Tasks.Task.Run(() => STT.ToneServiceAsync(bytes, sampleRate)).ContinueWith((c) =>
+                System.Threading.Tasks.Task.Run(() => STT.ToneServiceAsync(text)).ContinueWith((c) =>
                 {
                     ServiceResponse r = c.Result.sr;
                     if (string.IsNullOrEmpty(r.ResponseResult) || r.StatusCode != 200)

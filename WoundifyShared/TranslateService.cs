@@ -9,25 +9,23 @@ namespace WoundifyShared
         public static System.Collections.Generic.List<ITranslateService> PreferredOrderingTranslateServices = new FindServices<ITranslateService>(Options.commandservices["Translate"].preferredServices).PreferredOrderingOfServices;
         public static System.Collections.Generic.List<TranslateServiceResponse> responses = new System.Collections.Generic.List<TranslateServiceResponse>();
 
-        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<TranslateServiceResponse>> RunAllPreferredTranslateServicesAsync(string fileName)
+        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<TranslateServiceResponse>> RunAllPreferredTranslateServicesAsync(string text)
         {
-            byte[] bytes = await Helpers.ReadBytesFromFileAsync(fileName);
-            int sampleRate = await Audio.GetSampleRateAsync(Options.options.tempFolderPath + fileName);
-            return RunAllPreferredTranslateServicesRun(bytes, sampleRate);
+            return RunAllPreferredTranslateServicesRun(text);
         }
 
         public static async System.Threading.Tasks.Task<System.Collections.Generic.List<TranslateServiceResponse>> RunAllPreferredTranslateServicesAsync(byte[] bytes, int sampleRate)
         {
-            return RunAllPreferredTranslateServicesRun(bytes, sampleRate);
+            return null;
         }
 
-        public static System.Collections.Generic.List<TranslateServiceResponse> RunAllPreferredTranslateServicesRun(byte[] bytes, int sampleRate)
+        public static System.Collections.Generic.List<TranslateServiceResponse> RunAllPreferredTranslateServicesRun(string text)
         {
             responses = new System.Collections.Generic.List<TranslateServiceResponse>();
             // invoke each ITranslateService and show what it can do.
             foreach (ITranslateService STT in PreferredOrderingTranslateServices)
             {
-                System.Threading.Tasks.Task.Run(() => STT.TranslateServiceAsync(bytes, sampleRate)).ContinueWith((c) =>
+                System.Threading.Tasks.Task.Run(() => STT.TranslateServiceAsync(text)).ContinueWith((c) =>
                 {
                     ServiceResponse r = c.Result.sr;
                     if (string.IsNullOrEmpty(r.ResponseResult) || r.StatusCode != 200)

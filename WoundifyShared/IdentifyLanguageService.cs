@@ -9,25 +9,23 @@ namespace WoundifyShared
         public static System.Collections.Generic.List<IIdentifyLanguageService> PreferredOrderingIdentifyLanguageServices = new FindServices<IIdentifyLanguageService>(Options.commandservices["Identify"].preferredServices).PreferredOrderingOfServices;
         public static System.Collections.Generic.List<IdentifyLanguageServiceResponse> responses = new System.Collections.Generic.List<IdentifyLanguageServiceResponse>();
 
-        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<IdentifyLanguageServiceResponse>> RunAllPreferredIdentifyLanguageServicesAsync(string fileName)
+        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<IdentifyLanguageServiceResponse>> RunAllPreferredIdentifyLanguageServicesAsync(string text)
         {
-            byte[] bytes = await Helpers.ReadBytesFromFileAsync(fileName);
-            int sampleRate = await Audio.GetSampleRateAsync(Options.options.tempFolderPath + fileName);
-            return RunAllPreferredIdentifyLanguageServicesRun(bytes, sampleRate);
+            return RunAllPreferredIdentifyLanguageServicesRun(text);
         }
 
         public static async System.Threading.Tasks.Task<System.Collections.Generic.List<IdentifyLanguageServiceResponse>> RunAllPreferredIdentifyLanguageServicesAsync(byte[] bytes, int sampleRate)
         {
-            return RunAllPreferredIdentifyLanguageServicesRun(bytes, sampleRate);
+            return null;
         }
 
-        public static System.Collections.Generic.List<IdentifyLanguageServiceResponse> RunAllPreferredIdentifyLanguageServicesRun(byte[] bytes, int sampleRate)
+        public static System.Collections.Generic.List<IdentifyLanguageServiceResponse> RunAllPreferredIdentifyLanguageServicesRun(string text)
         {
             responses = new System.Collections.Generic.List<IdentifyLanguageServiceResponse>();
             // invoke each IIdentifyLanguageService and show what it can do.
             foreach (IIdentifyLanguageService STT in PreferredOrderingIdentifyLanguageServices)
             {
-                System.Threading.Tasks.Task.Run(() => STT.IdentifyLanguageServiceAsync(bytes, sampleRate)).ContinueWith((c) =>
+                System.Threading.Tasks.Task.Run(() => STT.IdentifyLanguageServiceAsync(text)).ContinueWith((c) =>
                 {
                     ServiceResponse r = c.Result.sr;
                     if (string.IsNullOrEmpty(r.ResponseResult) || r.StatusCode != 200)

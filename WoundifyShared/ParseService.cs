@@ -9,25 +9,23 @@ namespace WoundifyShared
         public static System.Collections.Generic.List<IParseService> PreferredOrderingParseServices = new FindServices<IParseService>(Options.commandservices["Parse"].preferredServices).PreferredOrderingOfServices;
         public static System.Collections.Generic.List<ParseServiceResponse> responses = new System.Collections.Generic.List<ParseServiceResponse>();
 
-        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<ParseServiceResponse>> RunAllPreferredParseServicesAsync(string fileName)
+        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<ParseServiceResponse>> RunAllPreferredParseServicesAsync(string text)
         {
-            byte[] bytes = await Helpers.ReadBytesFromFileAsync(fileName);
-            int sampleRate = await Audio.GetSampleRateAsync(Options.options.tempFolderPath + fileName);
-            return RunAllPreferredParseServicesRun(bytes, sampleRate);
+            return RunAllPreferredParseServicesRun(text);
         }
 
         public static async System.Threading.Tasks.Task<System.Collections.Generic.List<ParseServiceResponse>> RunAllPreferredParseServicesAsync(byte[] bytes, int sampleRate)
         {
-            return RunAllPreferredParseServicesRun(bytes, sampleRate);
+            return null;
         }
 
-        public static System.Collections.Generic.List<ParseServiceResponse> RunAllPreferredParseServicesRun(byte[] bytes, int sampleRate)
+        public static System.Collections.Generic.List<ParseServiceResponse> RunAllPreferredParseServicesRun(string text)
         {
             responses = new System.Collections.Generic.List<ParseServiceResponse>();
             // invoke each IParseService and show what it can do.
             foreach (IParseService STT in PreferredOrderingParseServices)
             {
-                System.Threading.Tasks.Task.Run(() => STT.ParseServiceAsync(bytes, sampleRate)).ContinueWith((c) =>
+                System.Threading.Tasks.Task.Run(() => STT.ParseServiceAsync(text)).ContinueWith((c) =>
                 {
                     ServiceResponse r = c.Result.sr;
                     if (string.IsNullOrEmpty(r.ResponseResult) || r.StatusCode != 200)
