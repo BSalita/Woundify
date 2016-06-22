@@ -102,7 +102,9 @@ Woundify first tries to load WoundifyDefaultSettings.json file, followed by Woun
 ## Description of commands
 | Command           | Description |
 | ----------------- | ---------------------------------------------------------------------------------------------------------- |
+| ANNOTATE | Pops stack and sends audio/text to annotate service. The response is pushed onto the stack.
 | END | End program. Same as QUIT.
+| ENTITIES | Pops stack and sends audio/text to entities service. The response is pushed onto the stack.
 | HELP | Show help.
 | IDENTIFY | Pops stack and sends audio/text to language identification service. The response is pushed onto the stack.
 | INTENT | Pops stack and sends audio/text to intent service. The response is pushed onto the stack.
@@ -110,6 +112,7 @@ Woundify first tries to load WoundifyDefaultSettings.json file, followed by Woun
 | LISTEN | Record audio and push utterance onto stack.
 | LOOP | Loop back to first command and continue execution.
 | PAUSE | Pause for seconds specified in argument (or uses default).
+| PARSE | Pops stack and sends audio/text to parse service. The response is pushed onto the stack.
 | PERSONALITY | Pops stack and sends audio/text to personality characteristics service. The response is pushed onto the stack.
 | PRONOUNCE | Convert text at top of stack into spelled pronounciations.
 | QUIT | Quit program. Same as END.
@@ -128,7 +131,9 @@ Woundify first tries to load WoundifyDefaultSettings.json file, followed by Woun
 
 | Command           | No args TOS is .txt | No args TOS is .wav | Text arg            | @File.txt arg       | @File.wav Argument  |
 | ----------------- | ------------------- | ------------------- |  ------------------ | ------------------- | ------------------- |
+| ANNOTATE          | Pop, send text      | Pop, send audio     | Send text           | Send text           | Send audio          |
 | END               |                     |                     |                     |                     |                     |
+| ENTITIES          | Pop, send text      | Pop, send audio     | Send text           | Send text           | Send audio          |
 | HELP              |                     |                     |                     |                     |                     |
 | IDENTIFY          | Pop, send text      | Pop, send audio     | Send text           | Send text           | Send audio          |
 | INTENT            | Pop, send text      | Pop, send audio     | Send text           | Send text           | Send audio          |
