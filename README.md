@@ -70,6 +70,7 @@ The source code for woundify is in C#. The classes contain a wealth of informati
 * Using reflection to obtain a list of classes implementing a specific interface.
 * Specifying a preferred ordering of API calls via a JSON settings file.
 * Parse text into Penn Treebank using Linguistic API from Microsoft Cognitive Services
+* No vendor SDKs used. Explicit HTTP calls only.
 
 Dependencies:
 * Windows 7+ for Console and WPF. Windows 10+ for UWP.
