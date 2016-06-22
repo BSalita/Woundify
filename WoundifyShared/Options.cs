@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace WoundifyShared
 {
@@ -8,7 +9,8 @@ namespace WoundifyShared
         public static Settings.Rootobject options;
         public static Dictionary<string, Settings.Command> commands = new Dictionary<string, Settings.Command>(StringComparer.OrdinalIgnoreCase);
         public static Dictionary<string, Settings.Commandservice> commandservices = new Dictionary<string, Settings.Commandservice>(StringComparer.OrdinalIgnoreCase);
-        public static Dictionary<string, Settings.Service> services = new Dictionary<string, Settings.Service>(StringComparer.OrdinalIgnoreCase);
+        //public static Dictionary<string, Settings.Service> services = new Dictionary<string, Settings.Service>(StringComparer.OrdinalIgnoreCase);
+        public static Dictionary<string, WoundifyServices> services = new Dictionary<string, WoundifyServices>(StringComparer.OrdinalIgnoreCase);
 #if false
         public static BingServices bing;
         public static GoogleServices google;
@@ -87,16 +89,27 @@ namespace WoundifyShared
                 System.IO.Directory.CreateDirectory(options.tempFolderPath);
             if (string.IsNullOrEmpty(options.logFilePath))
                 options.logFilePath = options.tempFolderPath + "log.txt";
-            await Log.LogFileInitAsync();
             Console.WriteLine("Log file:" + options.logFilePath);
+            await Log.LogFileInitAsync();
+            if (string.IsNullOrEmpty(options.curlFilePath))
+                options.curlFilePath = options.tempFolderPath + "curls.txt";
+            Console.WriteLine("curl file:" + options.curlFilePath);
 #if WINDOWS_UWP
 #else
             Log.logFile = new System.IO.StreamWriter(options.logFilePath);
             Log.logFile.AutoFlush = true; // flush after every write
 #endif
+#if false
+            System.Collections.Generic.Dictionary<string, Type> ServiceTypes = AppDomain
+                    .CurrentDomain
+                    .GetAssemblies()
+                    .SelectMany(assembly => assembly.GetTypes())
+                    .Where(type => type.IsClass && typeof(IService).IsAssignableFrom(type))
+                    .ToDictionary(k => k.Name + "." + typeof(IService).Name, v => v, StringComparer.OrdinalIgnoreCase); // create key of Class+Interface
+#endif
             foreach (Settings.Service service in Options.options.services)
             {
-                services.Add(service.name, service);
+                services.Add(service.name, new WoundifyServices(service));
             }
             foreach (Settings.Command command in Options.options.commands)
             {

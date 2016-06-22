@@ -83,10 +83,6 @@ namespace WoundifyShared
                     waveStream.Close();
                 }
                 byte[] bytes = await Helpers.ReadBytesFromFileAsync(Options.options.audio.speechSynthesisFileName);
-#if false // for testing
-                await windows.SpeechToTextAsync(bytes, await Audio.GetSampleRateAsync(Options.options.tempFolderPath + Options.options.audio.speechSynthesisFileName));
-                Console.WriteLine("Windows STT (demo):\"" + windows.ResponseResult + "\" Total Elapsed ms:" + windows.TotalElapsedMilliseconds + " Request Elapsed ms:" + windows.RequestElapsedMilliseconds);
-#endif
                 System.IO.MemoryStream stream = new System.IO.MemoryStream(bytes);
                 string text = WakeUpWordResult.Text;
                 foreach (ISpeechToTextService STT in SpeechToTextServices.PreferredOrderingSpeechToTextServices)

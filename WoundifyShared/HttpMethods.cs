@@ -4,12 +4,19 @@ using System.Text;
 
 namespace WoundifyShared
 {
-    public class IbmWatsonHttpServices
+    public class HttpMethods
     {
-        private System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
+        private static ulong httpCallCount = 0;
+        static HttpMethods()
+        {
+            foreach (string f in System.IO.Directory.EnumerateFiles(".", "curl-*.*"))
+            {
+                System.IO.File.Delete(f);
+            }
+        }
 
-#if WINDOWS_UWP
-        public async System.Threading.Tasks.Task<IServiceResponse> PostAsyncWindowsWeb(Uri uri, byte[] audioBytes, int sampleRate)
+#if WINDOWS_UWP // major bit rot
+        public virtual async System.Threading.Tasks.Task<IServiceResponse> PostAsyncWindowsWeb(Uri uri, byte[] audioBytes, int sampleRate)
         {
         IServiceResponse response = new IServiceResponse();
             try
@@ -90,104 +97,324 @@ namespace WoundifyShared
         return response;
         }
 #endif
-
-        public async System.Threading.Tasks.Task<ServiceResponse> PostSystemNet(Uri uri, List<Tuple<string, string>> DefaultRequestHeaders, System.Net.Http.HttpContent requestContent, bool binaryOnly = false)
+        public Uri MakeUri(Settings.Service service, List<Tuple<string, string>> uriSubstitutes)
         {
-            ServiceResponse response = new ServiceResponse(this.ToString());
-            using (System.Net.Http.HttpClient httpClient = new System.Net.Http.HttpClient())
+            UriBuilder ub = new UriBuilder();
+            string scheme = service.request.uri.scheme;
+            string host = service.request.uri.host;
+            string path = service.request.uri.path;
+            string query = service.request.uri.query;
+            if (uriSubstitutes != null)
             {
-                foreach (Tuple<string, string> t in DefaultRequestHeaders)
+                foreach (Tuple<string, string> r in uriSubstitutes)
                 {
-#if true
-                    httpClient.DefaultRequestHeaders.Add(t.Item1, t.Item2);
-#else
-                    switch (t.Item1)
-                    {
-                        case "Accept":
-                            httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-                            break;
-                        case "BasicAuthentication":
-                            httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", t.Item2);
-                            break;
-                        default:
-                            throw new NotImplementedException();
-                    }
-#endif
+                    // so far only query needs substitutes
+                    scheme = scheme.Replace(r.Item1, r.Item2);
+                    host = host.Replace(r.Item1, r.Item2);
+                    path = path.Replace(r.Item1, r.Item2);
+                    query = query.Replace(r.Item1, r.Item2);
                 }
-                // Using HttpClient to grab chunked encoding (partial) responses.
-                if (Options.options.APIs.preferChunkedEncodedRequests)
-                {
-                    Log.WriteLine("Using chunked encoding");
-                    httpClient.DefaultRequestHeaders.TransferEncodingChunked = true;
-                    if (httpClient.DefaultRequestHeaders.TransferEncodingChunked.Value)
-                        Log.WriteLine("attempt to add chunked to header failed. Ignoring chunked.");
-                    else
-                        requestContent.Headers.ContentLength = 0;
-                }
-                Log.WriteLine("Before post: Elapsed milliseconds:" + stopWatch.ElapsedMilliseconds);
-                response.RequestElapsedMilliseconds = stopWatch.ElapsedMilliseconds;
-                using (System.Net.Http.HttpResponseMessage rm = await httpClient.PostAsync(uri, requestContent))
-                {
-                    response.RequestElapsedMilliseconds = stopWatch.ElapsedMilliseconds - response.RequestElapsedMilliseconds;
-                    response.StatusCode = (int)rm.StatusCode;
-                    Log.WriteLine("After Post: StatusCode:" + response.StatusCode + " Total milliseconds:" + stopWatch.ElapsedMilliseconds + " Request milliseconds:" + response.RequestElapsedMilliseconds);
-                    if (rm.StatusCode == System.Net.HttpStatusCode.OK)
-                    {
-                        using (System.IO.Stream rr = await rm.Content.ReadAsStreamAsync())
-                        {
-                            if (binaryOnly)
-                                await PostAsyncSystemNetBinaryReader(rr, response);
-                            else
-                                await PostAsyncSystemNetStreamReader(rr, response);
-                        }
-                    }
-                    else
-                    {
-                        response.ResponseResult = rm.ReasonPhrase;
-                        Log.WriteLine("PostAsync Failed: StatusCode:" + rm.ReasonPhrase + "(" + response.StatusCode.ToString() + ")");
-                    }
-                }
-                stopWatch.Stop();
-                response.TotalElapsedMilliseconds = stopWatch.ElapsedMilliseconds;
-                Log.WriteLine("After response: Elapsed milliseconds:" + stopWatch.ElapsedMilliseconds);
             }
+            ub.Scheme = scheme;
+            ub.Host = host;
+            ub.Path = path;
+            ub.Query = query;
+            return ub.Uri;
+        }
+
+        private string MakePostDataSubstitutes(Settings.Service service, string text, byte[] bytes, List<Tuple<string, string>> postDataSubstitutes)
+        {
+            if (service == null)
+                return text;
+
+            string data = service.request.data.value;
+            if (data == null)
+                data = text;
+            else if (postDataSubstitutes != null)
+            {
+                foreach (Tuple<string, string> r in postDataSubstitutes)
+                {
+                    data = data.Replace(r.Item1, r.Item2);
+                }
+            }
+            switch (service.request.data.type)
+            {
+                case "ascii":
+                    return data;
+                case "base64":
+                    return data.Replace("{text}", Convert.ToBase64String(bytes));
+                case "binary":
+                    return null;
+                case "json":
+                    return data.Replace("{text}", text);
+                case "raw":
+                    return data;
+                case "string":
+                    return data;
+                case "urlencode":
+                    data = data.Replace("{text}", text);
+                    if (data.Contains("="))
+                    {
+                        string[] namecontent = data.Split('=');
+                        if (namecontent.Length != 2)
+                            throw new FormatException();
+                        return namecontent[0] + "=" + System.Web.HttpUtility.UrlEncode(namecontent[1]); // name is expected to already be urlencoded
+                    }
+                    else
+                    {
+                        return System.Web.HttpUtility.UrlEncode(data);
+                    }
+                default:
+                    throw new MissingFieldException();
+            }
+        }
+
+        private List<Tuple<string, string>> MakeHeaders(Settings.Service service)
+        {
+            List<Tuple<string, string>> headers = new List<Tuple<string, string>>();
+            if (service == null)
+                return headers;
+            foreach (Settings.Header h in service.request.headers)
+            {
+                // TODO: need to expand request headers to include any header. Use Value instead of concrete name (Accept, ContentType)
+                switch (h.Name)
+                {
+                    case "Accept":
+                        headers.Add(new Tuple<string, string>("Accept", h.Accept));
+                        break;
+                    case "BearerAuthentication":
+                        // contained within uriSubstitutes
+                        break;
+                    case "BasicAuthentication":
+                        string userpass = Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes(string.Format("{0}:{1}", h.BasicAuthentication.username, h.BasicAuthentication.password).Replace('+', '-').Replace('/', '_')));
+                        headers.Add(new Tuple<string, string>("Authorization", "Basic " + userpass));
+                        break;
+                    case "Content-Type":
+                        headers.Add(new Tuple<string, string>("Content-Type", h.ContentType));
+                        break;
+                    default:
+                        throw new MissingFieldException();
+                }
+            }
+            return headers;
+        }
+
+        public virtual async System.Threading.Tasks.Task<ServiceResponse> GetAsync(Settings.Service service)
+        {
+            return await GetAsync(service, null, null, null);
+        }
+
+        public virtual async System.Threading.Tasks.Task<ServiceResponse> GetAsync(Settings.Service service, List<Tuple<string, string>> uriSubstitutes, List<Tuple<string, string>> headers)
+        {
+            return await GetAsync(service, null, uriSubstitutes, headers);
+        }
+
+        public virtual async System.Threading.Tasks.Task<ServiceResponse> GetAsync(Settings.Service service, Uri uri, List<Tuple<string, string>> uriSubstitutes, List<Tuple<string, string>> headers)
+        {
+            if (uri == null)
+                uri = MakeUri(service, uriSubstitutes);
+            if (headers == null)
+                headers = MakeHeaders(service);
+            await MakeGetCurl(uri, headers);
+#if WINDOWS_UWP
+            ServiceResponse response;
+            if (Options.options.Services.APIs.PreferSystemNet)
+                response = await SystemNetAsync("GET", uri, headers, new System.Net.Http.ByteArrayContent(requestContent), binaryResponse, maxResponseLength);
+            else
+                response = await WindowsWebAsync("GET", new Uri(requestUri), audioBytes, sampleRate, contentType, headerValue);
+#else
+            ServiceResponse response = await SystemNetAsync("GET", uri, headers);
+#endif
             return response;
         }
 
-#if false
-        public async System.Threading.Tasks.Task<ServiceResponse> PostSystemNet(Uri uri, System.Net.Http.Headers.AuthenticationHeaderValue authentication, System.Net.Http.StringContent requestContent)
+        public virtual async System.Threading.Tasks.Task<ServiceResponse> PostAsync(Settings.Service service, byte[] bytes)
         {
-            using (System.Net.Http.HttpClient httpClient = new System.Net.Http.HttpClient())
+            return await PostAsync(service, null, null, null, null, bytes);
+        }
+
+        public virtual async System.Threading.Tasks.Task<ServiceResponse> PostAsync(Settings.Service service, string text)
+        {
+            return await PostAsync(service, null, null, null, null, text);
+        }
+
+        public virtual async System.Threading.Tasks.Task<ServiceResponse> PostAsync(Uri uri, byte[] bytes)
+        {
+            return await PostAsync(null, uri, null, null, null, bytes);
+        }
+
+        public virtual async System.Threading.Tasks.Task<ServiceResponse> PostAsync(Uri uri, string text)
+        {
+            return await PostAsync(null, uri, null, null, null, text);
+        }
+
+        public virtual async System.Threading.Tasks.Task<ServiceResponse> PostAsync(Uri uri, byte[] bytes, List<Tuple<string, string>> headers)
+        {
+            return await PostAsync(null, uri, null, headers, null, bytes);
+        }
+
+        public virtual async System.Threading.Tasks.Task<ServiceResponse> PostAsync(Uri uri, string text, List<Tuple<string, string>> headers)
+        {
+            return await PostAsync(null, uri, null, headers, null, text);
+        }
+
+        public virtual async System.Threading.Tasks.Task<ServiceResponse> PostAsync(Settings.Service service, List<Tuple<string, string>> UriSubstitutes, List<Tuple<string, string>> headers, List<Tuple<string, string>> postDataSubstitutes, byte[] bytes, bool binaryResponse = false, int maxResponseLength = 10000000)
+        {
+            return await PostAsync(service, null, UriSubstitutes, headers, postDataSubstitutes, bytes);
+        }
+
+        public virtual async System.Threading.Tasks.Task<ServiceResponse> PostAsync(Settings.Service service, List<Tuple<string, string>> UriSubstitutes, List<Tuple<string, string>> headers, List<Tuple<string, string>> postDataSubstitutes, string text, bool binaryResponse = false, int maxResponseLength = 10000000)
+        {
+            return await PostAsync(service, null, UriSubstitutes, headers, postDataSubstitutes, text);
+        }
+
+        internal async System.Threading.Tasks.Task<ServiceResponse> PostAsync(Settings.Service service, Uri uri, List<Tuple<string, string>> UriSubstitutes, List<Tuple<string, string>> headers, List<Tuple<string, string>> postDataSubstitutes, byte[] bytes, bool binaryResponse = false, int maxResponseLength = 10000000)
+        {
+            if (uri == null)
+                uri = MakeUri(service, UriSubstitutes);
+            if (headers == null)
+                headers = MakeHeaders(service);
+            string text = MakePostDataSubstitutes(service, null, bytes, postDataSubstitutes);
+            System.Net.Http.HttpContent requestContent;
+            if (text == null)
             {
-                httpClient.DefaultRequestHeaders.Authorization = authentication;
-                // Using HttpClient to grab chunked encoding (partial) responses.
-                if (Options.options.APIs.preferChunkedEncodedRequests)
+                await MakePostCurl(uri, headers, bytes, binaryResponse);
+                requestContent = new System.Net.Http.ByteArrayContent(bytes);
+            }
+            else
+            {
+                await MakePostCurl(uri, headers, text, binaryResponse);
+                requestContent = new System.Net.Http.StringContent(text);
+            }
+#if WINDOWS_UWP
+            ServiceResponse response;
+            if (Options.options.Services.APIs.PreferSystemNet)
+                response = await SystemNetAsync("POST", uri, headers, new System.Net.Http.ByteArrayContent(requestContent), binaryResponse, maxResponseLength);
+            else
+                response = await WindowsWebAsync("POST", new Uri(requestUri), audioBytes, sampleRate, contentType, headerValue);
+#else
+            ServiceResponse response = await SystemNetAsync("POST", uri, headers, requestContent, binaryResponse, maxResponseLength);
+#endif
+            return response;
+        }
+
+        internal async System.Threading.Tasks.Task<ServiceResponse> PostAsync(Settings.Service service, Uri uri, List<Tuple<string, string>> UriSubstitutes, List<Tuple<string, string>> headers, List<Tuple<string, string>> postDataSubstitutes, string text, bool binaryResponse = false, int maxResponseLength = 10000000)
+        {
+            if (uri == null)
+                uri = MakeUri(service, UriSubstitutes);
+            if (headers == null)
+                headers = MakeHeaders(service);
+            string data = MakePostDataSubstitutes(service, text, null, postDataSubstitutes);
+            await MakePostCurl(uri, headers, data, binaryResponse);
+            System.Net.Http.HttpContent requestContent = new System.Net.Http.StringContent(data);
+#if WINDOWS_UWP
+            ServiceResponse response;
+            if (Options.options.Services.APIs.PreferSystemNet)
+                response = await SystemNetAsync("POST", uri, headers, new System.Net.Http.ByteArrayContent(requestContent), binaryResponse, maxResponseLength);
+            else
+                response = await WindowsWebAsync("POST", new Uri(requestUri), audioBytes, sampleRate, contentType, headerValue);
+#else
+            ServiceResponse response = await SystemNetAsync("POST", uri, headers, requestContent, binaryResponse, maxResponseLength);
+#endif
+            return response;
+        }
+
+        internal async System.Threading.Tasks.Task<ServiceResponse> SystemNetAsync(string method, Uri uri, List<Tuple<string, string>> headers, System.Net.Http.HttpContent requestContent = null, bool binaryResponse = false, int maxResponseLength = 10000000)
+        {
+            ServiceResponse response = new ServiceResponse(this.ToString());
+            long t = 0;
+            response.stopWatch.Start();
+            try
+            {
+                System.Net.HttpWebRequest request = (System.Net.HttpWebRequest)System.Net.HttpWebRequest.Create(uri);
+
+                request.Method = method;
+
+                if (requestContent != null)
                 {
-                    Log.WriteLine("Using chunked encoding");
-                    httpClient.DefaultRequestHeaders.TransferEncodingChunked = true;
-                    if (httpClient.DefaultRequestHeaders.TransferEncodingChunked.Value)
-                        Log.WriteLine("attempt to add chunked to header failed. Ignoring chunked.");
-                    else
-                        requestContent.Headers.ContentLength = 0;
+                    using (System.IO.Stream requestStream = await request.GetRequestStreamAsync())
+                    {
+#if false
+                        System.IO.Stream s = await requestContent.ReadAsStreamAsync();
+                        long? l = requestContent.Headers.ContentLength;
+                        if (l > int.MaxValue)
+                            throw new ArgumentOutOfRangeException();
+                        int i = (int)l;
+                        byte[] buffer = new byte[i];
+                        int len = await s.ReadAsync(buffer, 0, i);
+                        //System.IO.StreamReader sr = new System.IO.StreamReader(requestContent.ReadAsStreamAsync());
+                        //await requestContent.CopyToAsync(sr);
+#endif
+                        await requestContent.CopyToAsync(requestStream);
+                    }
                 }
-                Log.WriteLine("Before post: Elapsed milliseconds:" + stopWatch.ElapsedMilliseconds);
-                ServiceResponse response = new ServiceResponse(this.ToString());
-                response.RequestElapsedMilliseconds = stopWatch.ElapsedMilliseconds;
-                using (System.Net.Http.HttpResponseMessage rm = await httpClient.PostAsync(uri, requestContent))
+
+                if (headers != null)
                 {
-                    return await PostAsyncSystemNet(rm, response);
+                    foreach (Tuple<string, string> h in headers)
+                    {
+                        switch (h.Item1)
+                        {
+                            case "Accept":
+                                request.Accept = h.Item2;
+                                break;
+                            case "Content-Type":
+                                request.ContentType = h.Item2;
+                                break;
+                            default:
+                                request.Headers[h.Item1] = h.Item2;
+                                break;
+                        }
+                    }
+                }
+
+                t = response.stopWatch.ElapsedMilliseconds;
+                using (System.Net.WebResponse wr = await request.GetResponseAsync())
+                {
+                    response.RequestElapsedMilliseconds = response.stopWatch.ElapsedMilliseconds - t;
+                    Log.WriteLine("Request Elapsed milliseconds:" + response.RequestElapsedMilliseconds);
+                    using (System.Net.HttpWebResponse hwr = (System.Net.HttpWebResponse)wr)
+                    {
+                        response.StatusCode = (int)hwr.StatusCode;
+                        Log.WriteLine("Request StatusCode:" + response.StatusCode);
+                        if (hwr.StatusCode == System.Net.HttpStatusCode.OK)
+                        {
+                            response.ResponseJson = null;
+                            using (System.IO.Stream rr = wr.GetResponseStream())
+                            {
+                                if (binaryResponse)
+                                    await PostSystemNetAsyncBinaryReader(rr, maxResponseLength, response);
+                                else
+                                    await PostSystemNetAsyncStreamReader(rr, response);
+                            }
+                        }
+                        else
+                        {
+                            response.ResponseResult = hwr.StatusDescription;
+                            Log.WriteLine("PostAsync Failed: StatusCode:" + hwr.StatusDescription + "(" + response.StatusCode.ToString() + ")");
+                        }
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                Log.WriteLine("Exception:" + ex.Message);
+                if (ex.InnerException != null)
+                    Log.WriteLine("InnerException:" + ex.InnerException);
+            }
+            response.stopWatch.Stop();
+            response.TotalElapsedMilliseconds = response.stopWatch.ElapsedMilliseconds;
+            Log.WriteLine("Total Elapsed milliseconds:" + response.TotalElapsedMilliseconds);
+            return response;
         }
-#endif
 
-        public async System.Threading.Tasks.Task PostAsyncSystemNetBinaryReader(System.IO.Stream rr, ServiceResponse response)
+        public virtual async System.Threading.Tasks.Task PostSystemNetAsyncBinaryReader(System.IO.Stream rr, int maxResponseLength, ServiceResponse response)
         {
             try
             {
                 using (System.IO.BinaryReader r = new System.IO.BinaryReader(rr)) // if needed, there is a constructor which will leave the stream open
                 {
-                    response.ResponseBytes = r.ReadBytes(1000000);
+                    response.ResponseBytes = r.ReadBytes(maxResponseLength);
                 }
             }
             catch (Exception ex)
@@ -198,36 +425,27 @@ namespace WoundifyShared
             }
         }
 
-        public async System.Threading.Tasks.Task PostAsyncSystemNetStreamReader(System.IO.Stream rr, ServiceResponse response)
+        public virtual async System.Threading.Tasks.Task PostSystemNetAsyncStreamReader(System.IO.Stream rr, ServiceResponse response)
         {
             try
             {
                 using (System.IO.StreamReader r = new System.IO.StreamReader(rr)) // if needed, there is a constructor which will leave the stream open
                 {
                     // Google Cloud partial results are incomplete json strings while Google Web's are complete json of initial results
-                    string ResponseBodyBlob = await r.ReadToEndAsync();
+                    response.ResponseString = await r.ReadToEndAsync();
                     if (Options.options.debugLevel >= 4)
-                        Log.WriteLine("ResponseBodyBlob:" + ResponseBodyBlob);
-                    response.ResponseBodyBlob = ResponseBodyBlob;
-                    string ResponseBodyString = string.Empty;
-                    Newtonsoft.Json.Linq.JToken ResponseBodyToken = null;
-                    try
-                    {
-                        ResponseBodyToken = Newtonsoft.Json.Linq.JObject.Parse(ResponseBodyBlob);
-                        ResponseBodyString = ResponseBodyBlob;
-                    }
-                    // todo: obsolete?
-                    catch (Newtonsoft.Json.JsonReaderException ex) when (ex.HResult == -2146233088)
-                    {
-                        Log.WriteLine(ex.Message);
-                        ResponseBodyString = ResponseBodyBlob.Substring(0, ex.LinePosition);
-                        ResponseBodyToken = Newtonsoft.Json.Linq.JObject.Parse(ResponseBodyString);
-                    }
-                    response.ResponseBodyToken = ResponseBodyToken;
-                    response.ResponseJson = ResponseBodyBlob.Substring(ResponseBodyString.Length);
-                    response.ResponseJsonFormatted = Newtonsoft.Json.JsonConvert.SerializeObject(ResponseBodyToken, new Newtonsoft.Json.JsonSerializerSettings() { Formatting = Newtonsoft.Json.Formatting.Indented });
+                        Log.WriteLine("ResponseString:" + response.ResponseString);
+                    if (string.IsNullOrWhiteSpace(response.ResponseString))
+                        throw new MissingFieldException();
+                    if (response.ResponseString[0] == '{')
+                        response.ResponseJToken = Newtonsoft.Json.Linq.JObject.Parse(response.ResponseString);
+                    else if (response.ResponseString[0] == '[')
+                        response.ResponseJToken = Newtonsoft.Json.Linq.JArray.Parse(response.ResponseString);
+                    else
+                        throw new MissingFieldException();
+                    response.ResponseJsonFormatted = Newtonsoft.Json.JsonConvert.SerializeObject(response.ResponseJToken, new Newtonsoft.Json.JsonSerializerSettings() { Formatting = Newtonsoft.Json.Formatting.Indented });
                     if (Options.options.debugLevel >= 4)
-                        Log.WriteLine(response.ResponseJsonFormatted);
+                        Log.WriteLine("ResponseJsonFormatted:" + response.ResponseJsonFormatted);
                 }
             }
             catch (Exception ex)
@@ -236,6 +454,90 @@ namespace WoundifyShared
                 if (ex.InnerException != null)
                     Log.WriteLine("InnerException:" + ex.InnerException);
             }
+        }
+
+        public virtual async System.Threading.Tasks.Task ExtractResultAsync(Settings.Service service, ServiceResponse response)
+        {
+            if (response.ResponseJToken == null || string.IsNullOrEmpty(response.ResponseJToken.ToString()))
+            {
+                response.ResponseResult = service.response.missingResponse;
+                if (Options.options.debugLevel >= 3)
+                    Log.WriteLine(response.ResponseResult);
+            }
+            else
+            {
+                response.ResponseResult = response.ResponseJToken.SelectToken(service.response.jsonPath).ToString();
+                if (Options.options.debugLevel >= 3)
+                    Log.WriteLine(response.ResponseJToken.Path + ": " + response.ResponseResult);
+            }
+        }
+
+        // determine if get or post. if post, is data string, json, binary, urlencoded?
+        public virtual async System.Threading.Tasks.Task<string> MakeGetCurl(Uri uri, List<Tuple<string, string>> headers)
+        {
+            string fileName = "curl-" + ++httpCallCount;
+            return await MakeCurl(fileName, uri, headers);
+        }
+
+        public virtual async System.Threading.Tasks.Task<string> MakePostCurl(Uri uri, List<Tuple<string, string>> headers, byte[] bytes, bool binaryResponse = false)
+        {
+            string fileName = "curl-" + ++httpCallCount;
+            System.IO.File.WriteAllBytes(fileName + ".bin", bytes);
+            string data = "--data-binary \"@" + fileName + ".bin\""; // create unique filename with data for reuse? use original text/file? what about data-ascii, data-raw, data-urlencode?
+            return await MakeCurl(fileName, uri, headers, data);
+        }
+
+        public virtual async System.Threading.Tasks.Task<string> MakePostCurl(Uri uri, List<Tuple<string, string>> headers, string text, bool binaryResponse = false)
+        {
+            string fileName = "curl-" + ++httpCallCount;
+            System.IO.File.WriteAllText(fileName + ".txt", text);
+            string data = "--data \"@" + fileName + ".txt\""; // create unique filename with data for reuse? use original text/file? what about data-ascii, data-raw, data-urlencode?
+            return await MakeCurl(fileName, uri, headers, data);
+        }
+
+        public virtual async System.Threading.Tasks.Task<string> MakeCurl(string fileName, Uri uri, List<Tuple<string, string>> headers, string data = null)
+        {
+            try
+            {
+                string curl;
+                if (string.IsNullOrWhiteSpace(Options.options.curlDefaults))
+                    curl = "curl";
+                else
+                    curl = Options.options.curlDefaults; // e.g. - x 127.0.0.1:8888 - k - v--libcurl<filename>.curl
+                if (data != null)
+                    curl += " " + data;
+                if (headers != null)
+                {
+                    foreach (Tuple<string, string> t in headers)
+                    {
+                        switch (t.Item1) // some headers must be specified as curl switches
+                        {
+                            case "BearerAuthentication": // e.g. IBM Watson
+                                curl += " -u \"" + t.Item1 + ": " + t.Item2.Replace("\"", "\\\"") + "\"";
+                                break;
+                            default:
+                                curl += " -H \"" + t.Item1 + ": " + t.Item2.Replace("\"", "\\\"") + "\"";
+                                break;
+                        }
+                    }
+                }
+                curl += " \"" + uri.AbsoluteUri + "\"";
+                Log.WriteLine(curl);
+                //Console.WriteLine(curl);
+                System.IO.File.WriteAllText(fileName + ".bat", curl.Replace("%", "%%"));
+                //System.IO.File.AppendAllText(Options.options.curlFilePath, curl);
+
+                return curl;
+            }
+            catch (Exception ex)
+            {
+                do
+                {
+                    Console.WriteLine("WoundifyConsole: Exception:" + ex.Message);
+                }
+                while ((ex = ex.InnerException) != null);
+            }
+            return null;
         }
     }
 }

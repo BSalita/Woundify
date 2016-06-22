@@ -9,10 +9,12 @@
     <Import_RootNamespace>WoundifyShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AnnotateServices.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Audio.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AudioUtilitiesUWP.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BingServices.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Commands.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entities.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GeoLocation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GoogleCloudServices.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GoogleServices.cs" />
@@ -25,7 +27,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)IntentService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Log.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OAuthHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Options.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ParaphraseService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParseHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParseService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PersonalityService.cs" />
@@ -33,6 +37,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Settings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SpeechToText.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SpeechToTextService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SpellService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TextToSpeech.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TextToSpeechService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToneService.cs" />

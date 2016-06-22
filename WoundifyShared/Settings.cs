@@ -6,7 +6,8 @@ namespace WoundifyShared
 {
     public class Settings
     {
-        // this class is a concrete implementation of the settings file. It is converted automatically by copying WoundifyDefaultSettings.json to clipboard, then in Visual Studio: Edit->Paste Special->Paste JSON as Classes.
+        // this class is a concrete implementation of the settings json file. It is converted automatically by copying WoundifyDefaultSettings.json to clipboard, then in Visual Studio: Edit->Paste Special->Paste JSON as Classes.
+        // comments within the json file seem to be causing "object" data type where it should be a concrete type ("services", "response", ...). This needs looking into.
 #if true
 
         public class Rootobject
@@ -15,6 +16,8 @@ namespace WoundifyShared
             public int debugLevel { get; set; }
             public string tempFolderPath { get; set; }
             public string logFilePath { get; set; }
+            public string curlFilePath { get; set; }
+            public string curlDefaults { get; set; }
             public float pauseSecondsDefault { get; set; }
             public Audio audio { get; set; }
             public Command[] commands { get; set; }
@@ -82,6 +85,8 @@ namespace WoundifyShared
             public string name { get; set; }
             public string help { get; set; }
             public string commandService { get; set; }
+            public string source { get; set; }
+            public string target { get; set; }
         }
 
         public class Commandservice
@@ -98,7 +103,6 @@ namespace WoundifyShared
         {
             public string name { get; set; }
             public string classInterface { get; set; }
-            public string curl { get; set; }
             public Request request { get; set; }
             public Response response { get; set; }
         }
@@ -134,16 +138,19 @@ namespace WoundifyShared
             public string Accept { get; set; }
             public string ContentType { get; set; }
             public string OcpApimSubscriptionKey { get; set; }
-            public Bearerauthentication BearerAuthentication { get; set; }
+            public BearerAuthentication BearerAuthentication { get; set; }
             public Houndifyauthentication HoundifyAuthentication { get; set; }
             public Basicauthentication BasicAuthentication { get; set; }
         }
 
-        public class Bearerauthentication
+        public class BearerAuthentication
         {
             public string type { get; set; }
             public string clientID { get; set; }
             public string clientSecret { get; set; }
+            public string scope { get; set; }
+            public string grant { get; set; }
+            public string uri { get; set; }
             public string key { get; set; }
             public string bearer { get; set; }
         }

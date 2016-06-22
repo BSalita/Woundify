@@ -25,12 +25,15 @@ namespace WoundifyShared
             new System.Collections.Generic.Dictionary<string, verbAction>(StringComparer.OrdinalIgnoreCase)
             {
                 { "END", new verbAction() { actionFunc = verbEndAsync, stackChange = 0, helpTip = "End program. Same as QUIT." } },
+                { "ANNOTATE", new verbAction() { actionFunc = verbAnnotateAsync, stackChange = 0, helpTip = "Pop stack passing to annotate service, push response." } },
+                { "ENTITIES", new verbAction() { actionFunc = verbEntitiesAsync, stackChange = 0, helpTip = "Pop stack passing to entities service, push response." } },
                 { "HELP", new verbAction() { actionFunc = verbHelpAsync, stackChange = 0, helpTip = "Show help." } },
                 { "IDENTIFY", new verbAction() { actionFunc = verbIdentifyAsync, stackChange = 0, helpTip = "Pop stack passing to identify language service, push response." } },
                 { "INTENT", new verbAction() { actionFunc = verbIntentAsync, stackChange = 0, helpTip = "Pop stack passing to intent service, push response." } },
                 { "JSONPATH", new verbAction() { actionFunc = verbJsonPathAsync, stackChange = 0, helpTip = "Pop stack apply JsonPath, push result." } },
                 { "LISTEN",new verbAction() { actionFunc = verbListenAsync, stackChange = +1, helpTip = "Listen and push utterance." } },
                 { "LOOP", new verbAction() { actionFunc = verbLoopAsync, stackChange = 0, helpTip = "Loop to first command and repeat." } },
+                //{ "PARAPHRASE", new verbAction() { actionFunc = verbParaphraseAsync, stackChange = 0, helpTip = "[Deprecated. No service available.] Pop stack passing to paraphrase service, push response." } },
                 { "PARSE", new verbAction() { actionFunc = verbParseAsync, stackChange = 0, helpTip = "Parse into phrase types. Show constituency tree." } },
                 { "PAUSE", new verbAction() { actionFunc = verbPauseAsync, stackChange = 0, helpTip = "Pause for specified seconds." } },
                 { "PERSONALITY", new verbAction() { actionFunc = verbPersonalityAsync, stackChange = 0, helpTip = "Pop stack passing to personality service, push response." } },
@@ -42,6 +45,7 @@ namespace WoundifyShared
                 { "SHOW", new verbAction() { actionFunc = verbShowAsync, stackChange = 0, helpTip = "Show stack." } },
                 { "SPEAK", new verbAction() { actionFunc = verbSpeakAsync, stackChange = -1, helpTip = "Pop stack (text or speech) and speak." } },
                 { "SPEECH", new verbAction() { actionFunc = verbSpeechAsync, stackChange = +1, helpTip = "Push argument as speech." } },
+                { "SPELL", new verbAction() { actionFunc = verbSpellAsync, stackChange = +1, helpTip = "Spell check argument." } },
                 { "TEXT", new verbAction() { actionFunc = verbTextAsync, stackChange = +1, helpTip = "Push argument as text." } },
                 { "TONE", new verbAction() { actionFunc = verbToneAsync, stackChange = 0, helpTip = "Pop stack passing to tone service, push response." } },
                 { "TRANSLATE", new verbAction() { actionFunc = verbTranslateAsync, stackChange = 0, helpTip = "Pop stack passing to translate service, push response." } },
@@ -139,10 +143,164 @@ namespace WoundifyShared
             operandStack = new System.Collections.Generic.Stack<string>();
         }
 
+        private static async System.Threading.Tasks.Task<int> verbAnnotateAsync(string[] args, System.Collections.Generic.Stack<string> operatorStack, System.Collections.Generic.Stack<string> operandStack)
+        {
+            string text;
+            string fileName;
+            string stackFileName;
+            byte[] bytes;
+            AnnotateServiceResponse r;
+            System.Collections.Generic.IEnumerable<AnnotateServiceResponse> AllAnnotateServiceResponses;
+
+            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek()))
+            {
+                text = fileName = operatorStack.Pop();
+                if (fileName.First() == '@')
+                {
+                    if (fileName.EndsWith(".txt")) // todo: implement json same as Translate?
+                    {
+                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
+                        if (Options.options.debugLevel >= 4)
+                            AllServiceResponses = (AllAnnotateServiceResponses = await AnnotateServices.RunAllPreferredAnnotateServicesAsync(text)).Select(sr => sr.sr);
+                        r = await AnnotateServices.PreferredOrderingAnnotateServices[0].AnnotateServiceAsync(text);
+                    }
+                    else if (fileName.EndsWith(".wav"))
+                    {
+                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // todo: implement local file scheme (non-tempFolder directory)
+                        int sampleRate = await Audio.GetSampleRateAsync(fileName.Substring(1));
+                        if (Options.options.debugLevel >= 4)
+                            AllServiceResponses = (AllAnnotateServiceResponses = await AnnotateServices.RunAllPreferredAnnotateServicesAsync(bytes, sampleRate)).Select(sr => sr.sr);
+                        r = await AnnotateServices.PreferredOrderingAnnotateServices[0].AnnotateServiceAsync(bytes, sampleRate);
+                        if (Options.options.debugLevel >= 4)
+                            Console.WriteLine("Annotate result (from audio):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
+                    }
+                    else
+                    {
+                        throw new Exception("Annotate: Unknown file extension:" + fileName);
+                    }
+                }
+                else
+                {
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllAnnotateServiceResponses = await AnnotateServices.RunAllPreferredAnnotateServicesAsync(text)).Select(sr => sr.sr);
+                    r = await AnnotateServices.PreferredOrderingAnnotateServices[0].AnnotateServiceAsync(text);
+                }
+            }
+            else
+            {
+                fileName = operandStack.Pop();
+                if (fileName.EndsWith(".txt"))
+                {
+                    text = await Helpers.ReadTextFromFileAsync(fileName);
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllAnnotateServiceResponses = await AnnotateServices.RunAllPreferredAnnotateServicesAsync(text)).Select(sr => sr.sr);
+                    r = await AnnotateServices.PreferredOrderingAnnotateServices[0].AnnotateServiceAsync(text);
+                    if (Options.options.debugLevel >= 4)
+                        Console.WriteLine("Annotate result (text):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
+                }
+                else if (fileName.EndsWith(".wav"))
+                {
+                    bytes = await Helpers.ReadBytesFromFileAsync(fileName);
+                    int sampleRate = await Audio.GetSampleRateAsync(Options.options.tempFolderPath + fileName);
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllAnnotateServiceResponses = await AnnotateServices.RunAllPreferredAnnotateServicesAsync(bytes, sampleRate)).Select(sr => sr.sr);
+                    r = await AnnotateServices.PreferredOrderingAnnotateServices[0].AnnotateServiceAsync(bytes, sampleRate);
+                    if (Options.options.debugLevel >= 4)
+                        Console.WriteLine("Annotate result (audio):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
+                }
+                else
+                {
+                    throw new Exception("Annotate: Unknown file extension:" + fileName);
+                }
+            }
+            stackFileName = "stack" + (operandStack.Count + 1).ToString() + ".txt";
+            await Helpers.WriteTextToFileAsync(stackFileName, r.sr.ResponseResult);
+            operandStack.Push(stackFileName);
+            PreferredServiceResponse = r.sr;
+            return 0;
+        }
+
         private static async System.Threading.Tasks.Task<int> verbEndAsync(string[] args, System.Collections.Generic.Stack<string> operatorStack, System.Collections.Generic.Stack<string> operandStack)
         {
             operatorStack.Clear();
             return 1;
+        }
+
+        private static async System.Threading.Tasks.Task<int> verbEntitiesAsync(string[] args, System.Collections.Generic.Stack<string> operatorStack, System.Collections.Generic.Stack<string> operandStack)
+        {
+            string text;
+            string fileName;
+            string stackFileName;
+            byte[] bytes;
+            EntitiesServiceResponse r;
+            System.Collections.Generic.IEnumerable<EntitiesServiceResponse> AllEntitiesServiceResponses;
+
+            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek()))
+            {
+                text = fileName = operatorStack.Pop();
+                if (fileName.First() == '@')
+                {
+                    if (fileName.EndsWith(".txt")) // todo: implement json same as Translate?
+                    {
+                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
+                        if (Options.options.debugLevel >= 4)
+                            AllServiceResponses = (AllEntitiesServiceResponses = await EntitiesServices.RunAllPreferredEntitiesServicesAsync(text)).Select(sr => sr.sr);
+                        r = await EntitiesServices.PreferredOrderingEntitiesServices[0].EntitiesServiceAsync(text);
+                    }
+                    else if (fileName.EndsWith(".wav"))
+                    {
+                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // todo: implement local file scheme (non-tempFolder directory)
+                        int sampleRate = await Audio.GetSampleRateAsync(fileName.Substring(1));
+                        if (Options.options.debugLevel >= 4)
+                            AllServiceResponses = (AllEntitiesServiceResponses = await EntitiesServices.RunAllPreferredEntitiesServicesAsync(bytes, sampleRate)).Select(sr => sr.sr);
+                        r = await EntitiesServices.PreferredOrderingEntitiesServices[0].EntitiesServiceAsync(bytes, sampleRate);
+                        if (Options.options.debugLevel >= 4)
+                            Console.WriteLine("Entities result (from audio):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
+                    }
+                    else
+                    {
+                        throw new Exception("Entities: Unknown file extension:" + fileName);
+                    }
+                }
+                else
+                {
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllEntitiesServiceResponses = await EntitiesServices.RunAllPreferredEntitiesServicesAsync(text)).Select(sr => sr.sr);
+                    r = await EntitiesServices.PreferredOrderingEntitiesServices[0].EntitiesServiceAsync(text);
+                }
+            }
+            else
+            {
+                fileName = operandStack.Pop();
+                if (fileName.EndsWith(".txt"))
+                {
+                    text = await Helpers.ReadTextFromFileAsync(fileName);
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllEntitiesServiceResponses = await EntitiesServices.RunAllPreferredEntitiesServicesAsync(text)).Select(sr => sr.sr);
+                    r = await EntitiesServices.PreferredOrderingEntitiesServices[0].EntitiesServiceAsync(text);
+                    if (Options.options.debugLevel >= 4)
+                        Console.WriteLine("Entities result (text):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
+                }
+                else if (fileName.EndsWith(".wav"))
+                {
+                    bytes = await Helpers.ReadBytesFromFileAsync(fileName);
+                    int sampleRate = await Audio.GetSampleRateAsync(Options.options.tempFolderPath + fileName);
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllEntitiesServiceResponses = await EntitiesServices.RunAllPreferredEntitiesServicesAsync(bytes, sampleRate)).Select(sr => sr.sr);
+                    r = await EntitiesServices.PreferredOrderingEntitiesServices[0].EntitiesServiceAsync(bytes, sampleRate);
+                    if (Options.options.debugLevel >= 4)
+                        Console.WriteLine("Entities result (audio):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
+                }
+                else
+                {
+                    throw new Exception("Entities: Unknown file extension:" + fileName);
+                }
+            }
+            stackFileName = "stack" + (operandStack.Count + 1).ToString() + ".txt";
+            await Helpers.WriteTextToFileAsync(stackFileName, r.sr.ResponseResult);
+            operandStack.Push(stackFileName);
+            PreferredServiceResponse = r.sr;
+            return 0;
         }
 
         private static async System.Threading.Tasks.Task<int> verbHelpAsync(string[] args, System.Collections.Generic.Stack<string> operatorStack, System.Collections.Generic.Stack<string> operandStack)
@@ -193,7 +351,7 @@ namespace WoundifyShared
                 }
                 else
                 {
-                    if (Options.options.debugLevel >= 4)
+                    if (Options.options.debugLevel >= 3)
                         AllServiceResponses = (AllIdentifyLanguageServiceResponses = await IdentifyLanguageServices.RunAllPreferredIdentifyLanguageServicesAsync(text)).Select(sr => sr.sr);
                     r = await IdentifyLanguageServices.PreferredOrderingIdentifyLanguageServices[0].IdentifyLanguageServiceAsync(text);
                 }
@@ -319,7 +477,7 @@ namespace WoundifyShared
                     string jsonPath = operatorStack.Pop();
                     string text = await Helpers.ReadTextFromFileAsync(fileName);
 #if true // which to use? stack or PreferredServiceResponse?
-                    Newtonsoft.Json.Linq.JToken tokResult = PreferredServiceResponse.ResponseBodyToken.SelectToken(jsonPath);
+                    Newtonsoft.Json.Linq.JToken tokResult = PreferredServiceResponse.ResponseJToken.SelectToken(jsonPath);
 #else
                     Newtonsoft.Json.Linq.JToken tokResult = text.ResponseBodyToken.SelectToken(jsonPath);
 #endif
@@ -399,6 +557,105 @@ namespace WoundifyShared
             operatorStack.Clear();
             foreach (string a in args.Reverse())
                 operatorStack.Push(a);
+            return 0;
+        }
+
+        private static async System.Threading.Tasks.Task<int> verbTranslateAsync(string[] args, System.Collections.Generic.Stack<string> operatorStack, System.Collections.Generic.Stack<string> operandStack)
+        {
+            string text;
+            string fileName;
+            string stackFileName;
+            byte[] bytes;
+            TranslateServiceResponse r;
+            System.Collections.Generic.IEnumerable<TranslateServiceResponse> AllTranslateServiceResponses;
+            string source = Options.commands["Translate"].source;
+            string target = Options.commands["Translate"].target;
+
+            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek()))
+            {
+                text = operatorStack.Pop();
+                if (text.Contains("="))
+                {
+                    // need cross-API solution for specifying language pairs. Use both Commands and every TranslateService?
+                    string[] languagePairs = text.Split('=');
+                    if (languagePairs.Length == 2)
+                    {
+                        source = languagePairs[0];
+                        target = languagePairs[1];
+                        Console.WriteLine("Using language pair:" + languagePairs[0] + "=" + languagePairs[1]);
+                    }
+                    else
+                        Console.WriteLine("Invalid language pair:" + text + ". Try en-es.");
+                }
+                else
+                    operatorStack.Push(text);
+            }
+
+            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek()))
+            {
+                text = fileName = operatorStack.Pop();
+                if (fileName.First() == '@')
+                {
+                    if (fileName.EndsWith(".txt")) // implement json same as Identify?
+                    {
+                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
+                        if (Options.options.debugLevel >= 3)
+                            AllServiceResponses = (AllTranslateServiceResponses = await TranslateServices.RunAllPreferredTranslateServicesAsync(text, source, target)).Select(sr => sr.sr);
+                        r = await TranslateServices.PreferredOrderingTranslateServices[0].TranslateServiceAsync(text, source, target);
+                    }
+                    else if (fileName.EndsWith(".wav"))
+                    {
+                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // todo: implement local file scheme (non-tempFolder directory)
+                        int sampleRate = await Audio.GetSampleRateAsync(fileName.Substring(1));
+                        if (Options.options.debugLevel >= 4)
+                            AllServiceResponses = (AllTranslateServiceResponses = await TranslateServices.RunAllPreferredTranslateServicesAsync(bytes, sampleRate, source, target)).Select(sr => sr.sr);
+                        r = await TranslateServices.PreferredOrderingTranslateServices[0].TranslateServiceAsync(bytes, sampleRate, source, target);
+                        if (Options.options.debugLevel >= 4)
+                            Console.WriteLine("Translate result (from audio):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
+                    }
+                    else
+                    {
+                        throw new Exception("Translate: Unknown file extension:" + fileName);
+                    }
+                }
+                else
+                {
+                    if (Options.options.debugLevel >= 3)
+                        AllServiceResponses = (AllTranslateServiceResponses = await TranslateServices.RunAllPreferredTranslateServicesAsync(text, source, target)).Select(sr => sr.sr);
+                    r = await TranslateServices.PreferredOrderingTranslateServices[0].TranslateServiceAsync(text, source, target);
+                }
+            }
+            else
+            {
+                fileName = operandStack.Pop();
+                if (fileName.EndsWith(".txt"))
+                {
+                    text = await Helpers.ReadTextFromFileAsync(fileName);
+                    if (Options.options.debugLevel >= 3)
+                        AllServiceResponses = (AllTranslateServiceResponses = await TranslateServices.RunAllPreferredTranslateServicesAsync(text, source, target)).Select(sr => sr.sr);
+                    r = await TranslateServices.PreferredOrderingTranslateServices[0].TranslateServiceAsync(text, source, target);
+                    if (Options.options.debugLevel >= 4)
+                        Console.WriteLine("Translate result (text):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
+                }
+                else if (fileName.EndsWith(".wav"))
+                {
+                    bytes = await Helpers.ReadBytesFromFileAsync(fileName);
+                    int sampleRate = await Audio.GetSampleRateAsync(Options.options.tempFolderPath + fileName);
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllTranslateServiceResponses = await TranslateServices.RunAllPreferredTranslateServicesAsync(bytes, sampleRate, source, target)).Select(sr => sr.sr);
+                    r = await TranslateServices.PreferredOrderingTranslateServices[0].TranslateServiceAsync(bytes, sampleRate, source, target);
+                    if (Options.options.debugLevel >= 4)
+                        Console.WriteLine("Translate result (audio):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
+                }
+                else
+                {
+                    throw new Exception("Translate: Unknown file extension:" + fileName);
+                }
+            }
+            stackFileName = "stack" + (operandStack.Count + 1).ToString() + ".txt";
+            await Helpers.WriteTextToFileAsync(stackFileName, r.sr.ResponseResult);
+            operandStack.Push(stackFileName);
+            PreferredServiceResponse = r.sr;
             return 0;
         }
 
@@ -867,6 +1124,83 @@ namespace WoundifyShared
             return 0;
         }
 
+        private static async System.Threading.Tasks.Task<int> verbSpellAsync(string[] args, System.Collections.Generic.Stack<string> operatorStack, System.Collections.Generic.Stack<string> operandStack)
+        {
+            string text;
+            string fileName;
+            string stackFileName;
+            byte[] bytes;
+            SpellServiceResponse r;
+            System.Collections.Generic.IEnumerable<SpellServiceResponse> AllSpellServiceResponses;
+
+            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek()))
+            {
+                text = fileName = operatorStack.Pop();
+                if (fileName.First() == '@')
+                {
+                    if (fileName.EndsWith(".txt"))
+                    {
+                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
+                        if (Options.options.debugLevel >= 4)
+                            AllServiceResponses = (AllSpellServiceResponses = await SpellServices.RunAllPreferredSpellServicesAsync(text)).Select(sr => sr.sr);
+                        r = await SpellServices.PreferredOrderingSpellServices[0].SpellServiceAsync(text);
+                    }
+                    else if (fileName.EndsWith(".wav"))
+                    {
+                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // todo: implement local file scheme (non-tempFolder directory)
+                        int sampleRate = await Audio.GetSampleRateAsync(fileName.Substring(1));
+                        if (Options.options.debugLevel >= 4)
+                            AllServiceResponses = (AllSpellServiceResponses = await SpellServices.RunAllPreferredSpellServicesAsync(bytes, sampleRate)).Select(sr => sr.sr);
+                        r = await SpellServices.PreferredOrderingSpellServices[0].SpellServiceAsync(bytes, sampleRate);
+                        if (Options.options.debugLevel >= 4)
+                            Console.WriteLine("Spell result (from audio):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
+                    }
+                    else
+                    {
+                        throw new Exception("Spell: Unknown file extension:" + fileName);
+                    }
+                }
+                else
+                {
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllSpellServiceResponses = await SpellServices.RunAllPreferredSpellServicesAsync(text)).Select(sr => sr.sr);
+                    r = await SpellServices.PreferredOrderingSpellServices[0].SpellServiceAsync(text);
+                }
+            }
+            else
+            {
+                fileName = operandStack.Pop();
+                if (fileName.EndsWith(".txt"))
+                {
+                    text = await Helpers.ReadTextFromFileAsync(fileName);
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllSpellServiceResponses = await SpellServices.RunAllPreferredSpellServicesAsync(text)).Select(sr => sr.sr);
+                    r = await SpellServices.PreferredOrderingSpellServices[0].SpellServiceAsync(text);
+                    if (Options.options.debugLevel >= 4)
+                        Console.WriteLine("Spell result (text):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
+                }
+                else if (fileName.EndsWith(".wav"))
+                {
+                    bytes = await Helpers.ReadBytesFromFileAsync(fileName);
+                    int sampleRate = await Audio.GetSampleRateAsync(Options.options.tempFolderPath + fileName);
+                    if (Options.options.debugLevel >= 4)
+                        AllServiceResponses = (AllSpellServiceResponses = await SpellServices.RunAllPreferredSpellServicesAsync(bytes, sampleRate)).Select(sr => sr.sr);
+                    r = await SpellServices.PreferredOrderingSpellServices[0].SpellServiceAsync(bytes, sampleRate);
+                    if (Options.options.debugLevel >= 4)
+                        Console.WriteLine("Spell result (audio):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
+                }
+                else
+                {
+                    throw new Exception("Spell: Unknown file extension:" + fileName);
+                }
+            }
+            stackFileName = "stack" + (operandStack.Count + 1).ToString() + ".txt";
+            await Helpers.WriteTextToFileAsync(stackFileName, r.sr.ResponseResult);
+            operandStack.Push(stackFileName);
+            PreferredServiceResponse = r.sr;
+            return 0;
+        }
+
         private static async System.Threading.Tasks.Task<int> verbTextAsync(string[] args, System.Collections.Generic.Stack<string> operatorStack, System.Collections.Generic.Stack<string> operandStack)
         {
             string text;
@@ -907,7 +1241,7 @@ namespace WoundifyShared
             else
             {
                 fileName = operandStack.Pop();
-                stackFileName = "stack" + (operandStack.Count + 1).ToString() + ".wav";
+                stackFileName = "stack" + (operandStack.Count + 1).ToString() + ".txt";
                 if (fileName.EndsWith(".txt"))
                 {
                     text = await Helpers.ReadTextFromFileAsync(fileName);
@@ -921,7 +1255,6 @@ namespace WoundifyShared
                 {
                     throw new Exception("Text: Unknown file extension:" + fileName);
                 }
-                operandStack.Push(stackFileName);
             }
             await Helpers.WriteTextToFileAsync(stackFileName, text);
             operandStack.Push(stackFileName);
@@ -966,7 +1299,7 @@ namespace WoundifyShared
                 }
                 else
                 {
-                    if (Options.options.debugLevel >= 4)
+                    if (Options.options.debugLevel >= 3)
                         AllServiceResponses = (AllToneServiceResponses = await ToneServices.RunAllPreferredToneServicesAsync(text)).Select(sr => sr.sr);
                     r = await ToneServices.PreferredOrderingToneServices[0].ToneServiceAsync(text);
                 }
@@ -1005,35 +1338,14 @@ namespace WoundifyShared
             return 0;
         }
 
-        private static async System.Threading.Tasks.Task<int> verbTranslateAsync(string[] args, System.Collections.Generic.Stack<string> operatorStack, System.Collections.Generic.Stack<string> operandStack)
+        private static async System.Threading.Tasks.Task<int> verbParaphraseAsync(string[] args, System.Collections.Generic.Stack<string> operatorStack, System.Collections.Generic.Stack<string> operandStack)
         {
             string text;
             string fileName;
             string stackFileName;
             byte[] bytes;
-            TranslateServiceResponse r;
-            System.Collections.Generic.IEnumerable<TranslateServiceResponse> AllTranslateServiceResponses;
-
-            if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek()))
-            {
-                text = operatorStack.Pop();
-                if (text.Contains("="))
-                {
-                    // need cross-API solution for specifying language pairs.
-                    Settings.Service service = Options.services["IbmWatsonTranslateService"];
-                    string[] languagePairs = text.Split('=');
-                    if (languagePairs.Length == 2)
-                    {
-                        service.request.data.source = languagePairs[0];
-                        service.request.data.target = languagePairs[1];
-                        Console.WriteLine("Using language pair:" + languagePairs[0] + "=" + languagePairs[1]);
-                    }
-                    else
-                        Console.WriteLine("Invalid language pair:" + text + ". Try en-es.");
-                }
-                else
-                    operatorStack.Push(text);
-            }
+            ParaphraseServiceResponse r;
+            System.Collections.Generic.IEnumerable<ParaphraseServiceResponse> AllParaphraseServiceResponses;
 
             if (operatorStack.Count > 0 && !verbActionsAsync.ContainsKey(operatorStack.Peek()))
             {
@@ -1044,29 +1356,29 @@ namespace WoundifyShared
                     {
                         text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
                         if (Options.options.debugLevel >= 3)
-                            AllServiceResponses = (AllTranslateServiceResponses = await TranslateServices.RunAllPreferredTranslateServicesAsync(text)).Select(sr => sr.sr);
-                        r = await TranslateServices.PreferredOrderingTranslateServices[0].TranslateServiceAsync(text);
+                            AllServiceResponses = (AllParaphraseServiceResponses = await ParaphraseServices.RunAllPreferredParaphraseServicesAsync(text)).Select(sr => sr.sr);
+                        r = await ParaphraseServices.PreferredOrderingParaphraseServices[0].ParaphraseServiceAsync(text);
                     }
                     else if (fileName.EndsWith(".wav"))
                     {
                         bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // todo: implement local file scheme (non-tempFolder directory)
                         int sampleRate = await Audio.GetSampleRateAsync(fileName.Substring(1));
                         if (Options.options.debugLevel >= 4)
-                            AllServiceResponses = (AllTranslateServiceResponses = await TranslateServices.RunAllPreferredTranslateServicesAsync(bytes, sampleRate)).Select(sr => sr.sr);
-                        r = await TranslateServices.PreferredOrderingTranslateServices[0].TranslateServiceAsync(bytes, sampleRate);
+                            AllServiceResponses = (AllParaphraseServiceResponses = await ParaphraseServices.RunAllPreferredParaphraseServicesAsync(bytes, sampleRate)).Select(sr => sr.sr);
+                        r = await ParaphraseServices.PreferredOrderingParaphraseServices[0].ParaphraseServiceAsync(bytes, sampleRate);
                         if (Options.options.debugLevel >= 4)
-                            Console.WriteLine("Translate result (from audio):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
+                            Console.WriteLine("Paraphrase result (from audio):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
                     }
                     else
                     {
-                        throw new Exception("Translate: Unknown file extension:" + fileName);
+                        throw new Exception("Paraphrase: Unknown file extension:" + fileName);
                     }
                 }
                 else
                 {
                     if (Options.options.debugLevel >= 3)
-                        AllServiceResponses = (AllTranslateServiceResponses = await TranslateServices.RunAllPreferredTranslateServicesAsync(text)).Select(sr => sr.sr);
-                    r = await TranslateServices.PreferredOrderingTranslateServices[0].TranslateServiceAsync(text);
+                        AllServiceResponses = (AllParaphraseServiceResponses = await ParaphraseServices.RunAllPreferredParaphraseServicesAsync(text)).Select(sr => sr.sr);
+                    r = await ParaphraseServices.PreferredOrderingParaphraseServices[0].ParaphraseServiceAsync(text);
                 }
             }
             else
@@ -1076,24 +1388,24 @@ namespace WoundifyShared
                 {
                     text = await Helpers.ReadTextFromFileAsync(fileName);
                     if (Options.options.debugLevel >= 3)
-                        AllServiceResponses = (AllTranslateServiceResponses = await TranslateServices.RunAllPreferredTranslateServicesAsync(text)).Select(sr => sr.sr);
-                    r = await TranslateServices.PreferredOrderingTranslateServices[0].TranslateServiceAsync(text);
+                        AllServiceResponses = (AllParaphraseServiceResponses = await ParaphraseServices.RunAllPreferredParaphraseServicesAsync(text)).Select(sr => sr.sr);
+                    r = await ParaphraseServices.PreferredOrderingParaphraseServices[0].ParaphraseServiceAsync(text);
                     if (Options.options.debugLevel >= 4)
-                        Console.WriteLine("Translate result (text):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
+                        Console.WriteLine("Paraphrase result (text):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
                 }
                 else if (fileName.EndsWith(".wav"))
                 {
                     bytes = await Helpers.ReadBytesFromFileAsync(fileName);
                     int sampleRate = await Audio.GetSampleRateAsync(Options.options.tempFolderPath + fileName);
                     if (Options.options.debugLevel >= 4)
-                        AllServiceResponses = (AllTranslateServiceResponses = await TranslateServices.RunAllPreferredTranslateServicesAsync(bytes, sampleRate)).Select(sr => sr.sr);
-                    r = await TranslateServices.PreferredOrderingTranslateServices[0].TranslateServiceAsync(bytes, sampleRate);
+                        AllServiceResponses = (AllParaphraseServiceResponses = await ParaphraseServices.RunAllPreferredParaphraseServicesAsync(bytes, sampleRate)).Select(sr => sr.sr);
+                    r = await ParaphraseServices.PreferredOrderingParaphraseServices[0].ParaphraseServiceAsync(bytes, sampleRate);
                     if (Options.options.debugLevel >= 4)
-                        Console.WriteLine("Translate result (audio):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
+                        Console.WriteLine("Paraphrase result (audio):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
                 }
                 else
                 {
-                    throw new Exception("Translate: Unknown file extension:" + fileName);
+                    throw new Exception("Paraphrase: Unknown file extension:" + fileName);
                 }
             }
             stackFileName = "stack" + (operandStack.Count + 1).ToString() + ".txt";

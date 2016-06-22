@@ -3,6 +3,8 @@
   "debugLevel": 3,
   "tempFolderPath": "",
   "logFilePath": "",
+  "curlFilePath": "",
+  "curlDefaults": "curl", // e.g. curl -x 127.0.0.1:8888 -k -v -i -L --libcurl <filename>.curl
   "pauseSecondsDefault": 2.0,
   "audio": {
     "transCodeFileName": "TransCode.wav",
@@ -21,6 +23,18 @@
       "key": "End",
       "name": "End",
       "help": "End execution."
+    },
+    {
+      "key": "Annotate",
+      "name": "Annotate",
+      "help": "Annotate the text.",
+      "commandService": "AnnotateService"
+    },
+    {
+      "key": "Entities",
+      "name": "Entities",
+      "help": "Analyze proper nouns within text.",
+      "commandService": "EntitiesService"
     },
     {
       "key": "Help",
@@ -46,6 +60,12 @@
       "commandService": "PersonalityService"
     },
     {
+      "key": "Paraphrase",
+      "name": "Paraphrase",
+      "help": "[Deprecated] Paraphrase a sentence.",
+      "commandService": "ParaphraseService"
+    },
+    {
       "key": "Parse",
       "name": "Parse",
       "help": "Parse text.",
@@ -56,6 +76,12 @@
       "name": "Speech",
       "help": "Speech to text.",
       "commandService": "SpeechToTextService"
+    },
+    {
+      "key": "Spell",
+      "name": "Spell",
+      "help": "Spell check text.",
+      "commandService": "SpellService"
     },
     {
       "key": "TextToSpeech",
@@ -73,14 +99,32 @@
       "key": "Translate",
       "name": "Translate",
       "help": "Translation of text.",
-      "commandService": "TranslateService"
+      "commandService": "TranslateService",
+      "source": "en", // from
+      "target": "es" // to
     }
   ],
   "commandServices": [
     {
+      "key": "Annotate",
+      "name": "AnnotateService",
+      "preferredServices": [
+        "GoogleCloudAnnotateTextService"
+      ]
+    },
+    {
+      "key": "Entities",
+      "name": "EntitiesService",
+      "preferredServices": [
+        "GoogleCloudAnalyzeEntitiesService"
+      ]
+    },
+    {
       "key": "Identify",
       "name": "IdentifyLanguageService",
       "preferredServices": [
+        "BingDetectLanguageService",
+        "GoogleCloudDetectLanguageService",
         "IbmWatsonIdentifyLanguageService"
       ]
     },
@@ -90,6 +134,13 @@
       "preferredServices": [
         "HoundifyIntentAudioService",
         "HoundifyIntentTextService"
+      ]
+    },
+    {
+      "key": "Paraphrase",
+      "name": "ParaphraseService",
+      "preferredServices": [
+      // no Paraphrase service available. Microsoft Paraphrase API has been withdrawn.
       ]
     },
     {
@@ -112,11 +163,18 @@
       "preferredServices": [
         "GoogleCloudSpeechToTextService",
         "BingSpeechToTextService",
-        "GoogleSpeechToTextService",
+        //"GoogleSpeechToTextService",
         "HoundifySpeechToTextService",
         "IbmWatsonSpeechToTextService",
         "WindowsSpeechToTextService",
         "WitSpeechToTextService"
+      ]
+    },
+    {
+      "key": "Spell",
+      "name": "SpellService",
+      "preferredServices": [
+        "BingSpellService"
       ]
     },
     {
@@ -134,6 +192,8 @@
       "key": "Tone",
       "name": "ToneService",
       "preferredServices": [
+        "BingSentimentService",
+        "GoogleCloudAnalyzeSentimentService",
         "IbmWatsonToneService"
       ]
     },
@@ -141,8 +201,9 @@
       "key": "Translate",
       "name": "TranslateService",
       "preferredServices": [
-        "GoogleCloudTranslateService"
+        "GoogleCloudTranslateService",
         "IbmWatsonTranslateService",
+        "BingTranslateService"
       ]
     }
   ],
@@ -175,9 +236,94 @@
   },
   "services": [
     {
+      "name": "BingDetectLanguageService",
+      "classInterface": "BingServices.IIdentifyLanguageService",
+      "request": {
+        "method": "post", // { "get" | "post" | <custom> }
+        "preferChunkedEncodedRequests": false,
+        "uri": {
+          "scheme": "https",
+          "host": "westus.api.cognitive.microsoft.com",
+          "path": "text/analytics/v2.0/languages",
+          "query": "numberOfLanguagesToDetect=1"
+        },
+        "headers": [
+          {
+            "Name": "Content-Type",
+            "ContentType": "application/json"
+          },
+          {
+            "Name": "OcpApimSubscriptionKey",
+            "OcpApimSubscriptionKey": ""
+          }
+        ],
+        "data": {
+          "type": "json", // { ascii | base64 | binary | json | raw | string | urlencode }
+          "value": "{ 'documents': [ { 'id': '{guid}', 'text': '{text}' } ] }"
+        }
+      },
+      "response": {
+        "missingResponse": "whatever",
+        "jsonPath": "documents[0].detectedLanguages[0].name"
+      }
+    },
+    {
+      "name": "BingParaphraseService",
+      "classInterface": "BingServices.IParaphraseService",
+      "request": {
+        "method": "get", // { "get" | "post" | <custom> }
+        "preferChunkedEncodedRequests": false,
+        "uri": {
+          "scheme": "https",
+          "host": "api.microsofttranslator.com",
+          "path": "v3/json/paraphrase",
+          "query": "sentence={text}&language={language}&category={catagory}&maxParaphrases={maxParaphrases}"
+        },
+        "headers": [
+          {
+            "Name": "BearerAuthentication",
+            "BearerAuthentication": {
+              "type": "bearer", // { basic | bearer | <custom> }
+              "clientID": "Hackathon",
+              "clientSecret": "vrbE92fuvXfFLFcjxOoxg/3Y1adVc8nF1Zmc39LDw2c="
+            }
+          }
+        ]
+        // no "data" property for GET methods
+      },
+      "response": {
+        "missingResponse": "whatever",
+        "jsonPath": ""
+      }
+    },
+    {
+      "name": "BingParseAnalyzersService",
+      "classInterface": "BingServices.IParseAnalyzersService",
+      "request": {
+        "method": "get", // { "get" | "post" | <custom> }
+        "preferChunkedEncodedRequests": false,
+        "uri": {
+          "scheme": "https",
+          "host": "api.projectoxford.ai",
+          "path": "linguistics/v1.0/analyzers"
+          //"query": ""
+        },
+        "headers": [
+          {
+            "Name": "OcpApimSubscriptionKey",
+            "OcpApimSubscriptionKey": ""
+          }
+        ]
+        // no "data" property for GET methods
+      },
+      "response": {
+        "missingResponse": "whatever"
+        // TODO: implement jsonPath instead of hardcoding within service
+      }
+    },
+    {
       "name": "BingParseService",
       "classInterface": "BingServices.IParseService",
-      "curl": "curl -X POST -u \"{username}:{password}\" --header \"Content-Type: application/json; charset=utf-8\" --data-binary @profile.json \"https://api.projectoxford.ai/linguistics/v1.0/analyze\"",
       "request": {
         "method": "post", // { "get" | "post" | <custom> }
         "preferChunkedEncodedRequests": false,
@@ -202,8 +348,40 @@
           }
         ],
         "data": {
-          "type": "binary", // { ascii | base64 | binary | raw | string | urlencode }
+          "type": "json", // { ascii | base64 | binary | json | raw | string | urlencode }
           "value": "{'language' : 'en', 'analyzerIds' : [{AnalyzerStringized}], 'text' :'{text}'}"
+        }
+      },
+      "response": {
+        "missingResponse": "whatever",
+        "jsonPath": "[1].result"
+      }
+    },
+    {
+      "name": "BingSentimentService",
+      "classInterface": "BingServices.IToneService",
+      "request": {
+        "method": "post", // { "get" | "post" | <custom> }
+        "preferChunkedEncodedRequests": false,
+        "uri": {
+          "scheme": "https",
+          "host": "westus.api.cognitive.microsoft.com",
+          "path": "text/analytics/v2.0/sentiment"
+          //"query": ""
+        },
+        "headers": [
+          {
+            "Name": "Content-Type",
+            "ContentType": "application/json"
+          },
+          {
+            "Name": "OcpApimSubscriptionKey",
+            "OcpApimSubscriptionKey": ""
+          }
+        ],
+        "data": {
+          "type": "json", // { ascii | base64 | binary | json | raw | string | urlencode }
+          "value": "{ 'documents': [ { 'id': '{guid}', 'text': '{text}' } ] }"
         }
       },
       "response": {
@@ -213,16 +391,15 @@
     },
     {
       "name": "BingSpeechToTextService",
-      "classInterface": "BingServices.ITranslateService",
-      "curl": "curl -X POST -u \"{username}:{password}\" --header \"Content-Type: application/json; charset=utf-8\" --data-binary @profile.json \"https://speech.platform.bing.com/recognize\"",
+      "classInterface": "BingServices.ISpeechToTextService",
       "request": {
         "method": "post", // { "get" | "post" | <custom> }
         "preferChunkedEncodedRequests": false,
         "uri": {
           "scheme": "https",
           "host": "speech.platform.bing.com",
-          "path": "recognize"
-          //"query": ""
+          "path": "recognize",
+          "query": "scenarios=smd&appid=D4D52672-91D7-4C74-8AD8-42B1D98141A5&locale={locale}&device.os=wp7&version=3.0&format=json&instanceid=565D69FF-E928-4B7E-87DA-9A750B96D9E3&requestid={guid}"
         },
         "headers": [
           {
@@ -234,7 +411,10 @@
             "BearerAuthentication": {
               "type": "bearer", // { basic | bearer | <custom> }
               "clientID": "",
-              "clientSecret": ""
+              "clientSecret": "",
+              "scope": "https://speech.platform.bing.com",
+              "uri": "https://oxford-speech.cloudapp.net/token/issueToken",
+              "grant": "grant_type=client_credentials&client_id={clientID}&client_secret={clientSecret}&scope={scope}"
             }
           },
           {
@@ -243,7 +423,39 @@
           }
         ],
         "data": {
-          "type": "binary" // { ascii | base64 | binary | raw | string | urlencode }
+          "type": "binary" // { ascii | base64 | binary | json | raw | string | urlencode }
+        }
+      },
+      "response": {
+        "missingResponse": "whatever",
+        "jsonPath": "results[0].name"
+      }
+    },
+    {
+      "name": "BingSpellService",
+      "classInterface": "BingServices.ISpellService",
+      "request": {
+        "method": "post", // { "get" | "post" | <custom> }
+        "preferChunkedEncodedRequests": false,
+        "uri": {
+          "scheme": "https",
+          "host": "bingapis.azure-api.net",
+          "path": "api/v5/spellcheck",
+          "query": "proof&mkt=en-US" // must have mkt=en-US for use outside of US
+        },
+        "headers": [
+          {
+            "Name": "Content-Type",
+            "ContentType": "application/x-www-form-urlencoded"
+          },
+          {
+            "Name": "OcpApimSubscriptionKey",
+            "OcpApimSubscriptionKey": ""
+          }
+        ],
+        "data": {
+          "type": "urlencode", // { ascii | base64 | binary | json | raw | string | urlencode }
+          "value": "Text={text}" // urlencode name=content
         }
       },
       "response": {
@@ -254,15 +466,46 @@
     {
       "name": "BingTranslateService",
       "classInterface": "BingServices.ITranslateService",
-      "curl": "curl -X POST -u \"{username}:{password}\" --header \"Content-Type: application/json; charset=utf-8\" --data-binary @profile.json \"http://api.microsofttranslator.com/V2/Http.svc/Translate\"",
       "request": {
         "method": "get", // { "get" | "post" | <custom> }
         "preferChunkedEncodedRequests": false,
         "uri": {
           "scheme": "https",
-          "host": "http://api.microsofttranslator.com",
-          "path": "V2/Http.svc/Translate",
-          "query": "text={text}&from={source}&to={target}"
+          "host": "api.microsofttranslator.com",
+          "path": "v2/Http.svc/Translate",
+          "query": "Text={text}&From={source}&To={target}"
+        },
+        "headers": [
+          {
+            "Name": "BearerAuthentication",
+            "BearerAuthentication": {
+              "type": "bearer", // { basic | bearer | <custom> }
+              "clientID": "",
+              "clientSecret": "",
+              "scope": "http://api.microsofttranslator.com",
+              "uri": "https://datamarket.accesscontrol.windows.net/v2/OAuth2-13",
+              "grant": "grant_type=client_credentials&client_id={clientID}&client_secret={clientSecret}&scope={scope}"
+            }
+          }
+        ]
+        // no "data" property for GET methods
+      },
+      "response": {
+        "missingResponse": "whatever",
+        "jsonPath": ""
+      }
+    },
+    {
+      "name": "GoogleCloudAnalyzeEntitiesService",
+      "classInterface": "GoogleCloudServices.IEntitiesService",
+      "request": {
+        "method": "post", // { "get" | "post" | <custom> }
+        "preferChunkedEncodedRequests": false,
+        "uri": {
+          "scheme": "https",
+          "host": "language.googleapis.com",
+          "path": "v1alpha1/documents:analyzeEntities",
+          "query": "key={key}"
         },
         "headers": [
           {
@@ -271,13 +514,15 @@
               "type": "bearer", // { basic | bearer | <custom> }
               "key": ""
             }
+          },
+          {
+            "Name": "Content-Type",
+            "ContentType": "application/json"
           }
         ],
         "data": {
-          "type": "binary", // { ascii | base64 | binary | raw | string | urlencode }
-          "value": "{'language' : 'en', 'analyzerIds' : [{AnalyzerStringized}], 'text' :'{text}'}",
-          "source": "en", // from
-          "target": "es" // to
+          "type": "json", // { ascii | base64 | binary | json | raw | string | urlencode }
+          "value": "{ 'document': { 'type':'PLAIN_TEXT', 'content':'{text}' } }"
         }
       },
       "response": {
@@ -286,9 +531,113 @@
       }
     },
     {
+      "name": "GoogleCloudAnalyzeSentimentService",
+      "classInterface": "GoogleCloudServices.IToneService",
+      "request": {
+        "method": "post", // { "get" | "post" | <custom> }
+        "preferChunkedEncodedRequests": false,
+        "uri": {
+          "scheme": "https",
+          "host": "language.googleapis.com",
+          "path": "v1alpha1/documents:analyzeSentiment",
+          "query": "key={key}"
+        },
+        "headers": [
+          {
+            "Name": "BearerAuthentication",
+            "BearerAuthentication": {
+              "type": "bearer", // { basic | bearer | <custom> }
+              "key": ""
+            }
+          },
+          {
+            "Name": "Content-Type",
+            "ContentType": "application/json"
+          }
+        ],
+        "data": {
+          "type": "json", // { ascii | base64 | binary | json | raw | string | urlencode }
+          "value": "{ 'document':{ 'type':'PLAIN_TEXT', 'content':'{text}' } }"
+        }
+      },
+      "response": {
+        "missingResponse": "whatever",
+        "jsonPath": ""
+      }
+    },
+    {
+      "name": "GoogleCloudAnnotateTextService",
+      "classInterface": "GoogleCloudServices.IAnnotateService",
+      "request": {
+        "method": "post", // { "get" | "post" | <custom> }
+        "preferChunkedEncodedRequests": false,
+        "uri": {
+          "scheme": "https",
+          "host": "language.googleapis.com",
+          "path": "v1alpha1/documents:annotateText",
+          "query": "key={key}"
+        },
+        "headers": [
+          {
+            "Name": "BearerAuthentication",
+            "BearerAuthentication": {
+              "type": "bearer", // { basic | bearer | <custom> }
+              "key": ""
+            }
+          },
+          {
+            "Name": "Content-Type",
+            "ContentType": "application/json"
+          }
+        ],
+        "data": {
+          "type": "json", // { ascii | base64 | binary | json | raw | string | urlencode }
+          "value": "{ 'document':{ 'type':'PLAIN_TEXT', 'content':'{text}' }, 'features': { 'extract_sentences': true, 'extract_tokens': true, 'extract_entities': true, 'extract_document_sentiment': true } }"
+        }
+      },
+      "response": {
+        "missingResponse": "whatever",
+        "jsonPath": ""
+      }
+    },
+    {
+      "name": "GoogleCloudDetectLanguageService",
+      "classInterface": "GoogleCloudServices.IIdentifyLanguageService",
+      "request": {
+        "method": "post", // { "get" | "post" | <custom> }
+        "preferChunkedEncodedRequests": false,
+        "uri": {
+          "scheme": "https",
+          "host": "language.googleapis.com",
+          "path": "v1alpha1/documents:detectLanguage",
+          "query": "key={key}"
+        },
+        "headers": [
+          {
+            "Name": "BearerAuthentication",
+            "BearerAuthentication": {
+              "type": "bearer", // { basic | bearer | <custom> }
+              "key": ""
+            }
+          },
+          {
+            "Name": "Content-Type",
+            "ContentType": "application/json"
+          }
+        ],
+        "data": {
+          "type": "json", // { ascii | base64 | binary | json | raw | string | urlencode }
+          "value": "{ 'document': { 'type':'PLAIN_TEXT', 'content':'{text}' } }"
+        }
+      },
+      "response": {
+        "missingResponse": "whatever",
+        "jsonPath": "language"
+      }
+    },
+    {
       "name": "GoogleCloudSpeechToTextService",
       "classInterface": "GoogleCloudServices.ISpeechToTextService",
-      "curl": "curl -X POST -u \"{username}:{password}\" --header \"Content-Type: application/json; charset=utf-8\" --data-binary @profile.json \"https://speech.googleapis.com/v1/speech:recognize\"",
       "request": {
         "method": "post", // { "get" | "post" | <custom> }
         "preferChunkedEncodedRequests": false,
@@ -312,19 +661,46 @@
           }
         ],
         "data": {
-          "type": "base64", // { ascii | base64 | binary | raw | string | urlencode }
-          "value": "{'initialRequest':{'encoding':'LINEAR16','sampleRate':16000},'audioRequest':{'content':'{base64AudioBytes}'}}"
+          "type": "base64", // { ascii | base64 | binary | json | raw | string | urlencode }
+          "value": "{'initialRequest':{'encoding':'LINEAR16','sampleRate':16000},'audioRequest':{'content':'{text}'}}"
         }
       },
       "response": {
         "missingResponse": "whatever",
-        "jsonPath": ""
+        "jsonPath": "responses[0].results[0].alternatives[0].transcript"
+      }
+    },
+    {
+      "name": "GoogleCloudTranslateService",
+      "classInterface": "GoogleCloudServices.ITranslateService",
+      "request": {
+        "method": "get", // { "get" | "post" | <custom> }
+        "preferChunkedEncodedRequests": false,
+        "uri": {
+          "scheme": "https",
+          "host": "www.googleapis.com",
+          "path": "language/translate/v2",
+          "query": "key={key}&q={text}&source={source}&target={target}"
+        },
+        "headers": [
+          {
+            "Name": "BearerAuthentication",
+            "BearerAuthentication": {
+              "type": "bearer", // { basic | bearer | <custom> }
+              "key": ""
+            }
+          }
+        ]
+        // no "data" property for GET methods
+      },
+      "response": {
+        "missingResponse": "whatever",
+        "jsonPath": "data.translations[0].translatedText"
       }
     },
     {
       "name": "GoogleSpeechToTextService",
       "classInterface": "GoogleServices.ISpeechToTextService",
-      "curl": "curl -X POST -u \"{username}:{password}\" --header \"Content-Type: application/json; charset=utf-8\" --data-binary @profile.json \"https://www.google.com/speech-api/v2/recognize/output=json&lang={Options.options.locale.language}&key={settings.key}\"",
       "request": {
         "method": "post", // { "get" | "post" | <custom> }
         "preferChunkedEncodedRequests": false,
@@ -343,46 +719,12 @@
             "Name": "BearerAuthentication",
             "BearerAuthentication": {
               "type": "bearer", // { basic | bearer | <custom> }
-              "key": ""
+              "key": "AIzaSyCcjMGqIoJtd3hskrRbJBZHLaxI4XE1IxI"
             }
           }
         ],
         "data": {
-          "type": "binary" // { ascii | base64 | binary | raw | string | urlencode }
-        }
-      },
-      "response": {
-        "missingResponse": "whatever",
-        "jsonPath": ""
-      }
-    },
-    // https://www.googleapis.com/language/translate/v2?key=YOUR_API_KEY&q=hello%20world&source=en&target=de
-    {
-      "name": "GoogleCloudTranslateService",
-      "classInterface": "GoogleCloudServices.ITranslateService",
-      "curl": "curl \"https://www.googleapis.com/language/translate/v2?key={key}&q={text}&source={source}&target={target}\"",
-      "request": {
-        "method": "get", // { "get" | "post" | <custom> }
-        "preferChunkedEncodedRequests": false,
-        "uri": {
-          "scheme": "https",
-          "host": "www.googleapis.com",
-          "path": "language/translate/v2",
-          "query": "key={key}&q={text}&source={source}&target={target}"
-        },
-        "headers": [
-          {
-            "Name": "BearerAuthentication",
-            "BearerAuthentication": {
-              "type": "bearer", // { basic | bearer | <custom> }
-              "key": ""
-            }
-          }
-        ],
-        "data": {
-          "type": "binary", // { ascii | base64 | binary | raw | string | urlencode }
-          "source": "en",
-          "target": "es"
+          "type": "binary" // { ascii | base64 | binary | json | raw | string | urlencode }
         }
       },
       "response": {
@@ -393,7 +735,6 @@
     {
       "name": "HoundifyIntentAudioService",
       "classInterface": "HoundifyServices.IIntentService",
-      "curl": "curl -X POST --data-binary @computer.wav --header \"Hound-Request-Authentication:{HoundRequestAuthentication}\" --header \"Hound-Client-Authentication:{HoundClientAuthentication}\" --header \"Hound-Request-Info:{RequestBodyJson.Replace(\"'\", \"'\")}\" {ub.Uri}",
       "request": {
         "method": "post", // { "get" | "post" | <custom> }
         "preferChunkedEncodedRequests": false,
@@ -413,7 +754,7 @@
           }
         ],
         "data": {
-          "type": "binary" // { ascii | base64 | binary | raw | string | urlencode }
+          "type": "binary" // { ascii | base64 | binary | json | raw | string | urlencode }
         }
       },
       "response": {
@@ -425,7 +766,6 @@
     {
       "name": "HoundifyIntentTextService",
       "classInterface": "HoundifyServices.IIntentService",
-      "curl": "curl -X POST --data-binary @computer.wav --header \"Hound-Request-Authentication:{HoundRequestAuthentication}\" --header \"Hound-Client-Authentication:{HoundClientAuthentication}\" --header \"Hound-Request-Info:{RequestBodyJson.Replace(\"'\", \"'\")}\" {ub.Uri}",
       "request": {
         "method": "post", // { "get" | "post" | <custom> }
         "preferChunkedEncodedRequests": false,
@@ -446,7 +786,7 @@
           }
         ],
         "data": {
-          "type": "binary" // { ascii | base64 | binary | raw | string | urlencode }
+          "type": "string" // { ascii | base64 | binary | json | raw | string | urlencode }
         }
       },
       "response": {
@@ -458,7 +798,6 @@
     {
       "name": "HoundifySpeechToTextService",
       "classInterface": "HoundifyServices.ISpeechToTextService",
-      "curl": "curl -X POST --data-binary @computer.wav --header \"Hound-Request-Authentication:{HoundRequestAuthentication}\" --header \"Hound-Client-Authentication:{HoundClientAuthentication}\" --header \"Hound-Request-Info:{RequestBodyJson.Replace(\"'\", \"'\")}\" {ub.Uri}",
       "request": {
         "method": "post", // { "get" | "post" | <custom> }
         "preferChunkedEncodedRequests": false,
@@ -478,54 +817,17 @@
           }
         ],
         "data": {
-          "type": "binary" // { ascii | base64 | binary | raw | string | urlencode }
+          "type": "binary" // { ascii | base64 | binary | json | raw | string | urlencode }
         }
       },
       "response": {
         "missingResponse": "whatever",
-        "jsonPath": ""
-      }
-    },
-    {
-      "name": "IbmWatsonPersonalityService",
-      "classInterface": "IbmWatsonServices.IPersonalityService",
-      "curl": "curl -X POST -u \"{username}:{password}\" --header \"Content-Type: application/json; charset=utf-8\" --data-binary @profile.json \"https://gateway.watsonplatform.net/personality-insights/api/v2/profile\"",
-      "request": {
-        "method": "post", // { "get" | "post" | <custom> }
-        "preferChunkedEncodedRequests": false,
-        "uri": {
-          "scheme": "https",
-          "host": "gateway.watsonplatform.net",
-          "path": "personality-insights/api/v2/profile"
-          //"query": ""
-        },
-        "headers": [
-          {
-            "Name": "Content-Type",
-            "ContentType": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
-          },
-          {
-            "Name": "BasicAuthentication",
-            "BasicAuthentication": {
-              "type": "basic", // { basic | bearer | <custom> }
-              "username": "",
-              "password": ""
-            }
-          }
-        ],
-        "data": {
-          "type": "string" // { ascii | base64 | binary | raw | string | urlencode }
-        }
-      },
-      "response": {
-        "missingResponse": "whatever",
-        "jsonPath": ""
+        "jsonPath": "AllResults[0].SpokenResponse"
       }
     },
     {
       "name": "IbmWatsonIdentifyLanguageService",
       "classInterface": "IbmWatsonServices.IIdentifyLanguageService",
-      "curl": "curl -u \"{username}:{password}\" -H \"content-type: text/plain\" -H \"accept: application/json\" -X POST -d \"@%1\" \"https://gateway.watsonplatform.net/language-translation/api/v2/identify\"",
       "request": {
         "method": "post", // { "get" | "post" | <custom> }
         "preferChunkedEncodedRequests": false,
@@ -554,18 +856,52 @@
           }
         ],
         "data": {
-          "type": "string" // { ascii | base64 | binary | raw | string | urlencode }
+          "type": "string" // { ascii | base64 | binary | json | raw | string | urlencode }
         }
       },
       "response": {
         "missingResponse": "whatever",
-        "jsonPath": "" // return entire json result
+        "jsonPath": "languages[0].language"
+      }
+    },
+    {
+      "name": "IbmWatsonPersonalityService",
+      "classInterface": "IbmWatsonServices.IPersonalityService",
+      "request": {
+        "method": "post", // { "get" | "post" | <custom> }
+        "preferChunkedEncodedRequests": false,
+        "uri": {
+          "scheme": "https",
+          "host": "gateway.watsonplatform.net",
+          "path": "personality-insights/api/v2/profile"
+          //"query": ""
+        },
+        "headers": [
+          {
+            "Name": "BasicAuthentication",
+            "BasicAuthentication": {
+              "type": "basic", // { basic | bearer | <custom> }
+              "username": "",
+              "password": ""
+            }
+          },
+          {
+            "Name": "Content-Type",
+            "ContentType": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+          }
+        ],
+        "data": {
+          "type": "string" // { ascii | base64 | binary | json | raw | string | urlencode }
+        }
+      },
+      "response": {
+        "missingResponse": "whatever",
+        "jsonPath": ""
       }
     },
     {
       "name": "IbmWatsonSpeechToTextService",
       "classInterface": "IbmWatsonServices.ISpeechToTextService",
-      "curl": "curl -v -X POST -u \"{username}:{password}\" --header \"Content-Type: audio/wav\" --data-binary @audio.wav \"https: //stream.watsonplatform.net/speech-to-text/api/v1/recognize?timestamps=true&word_alternatives_threshold=0.9\"",
       "request": {
         "method": "post", // { "get" | "post" | <custom> }
         "preferChunkedEncodedRequests": false,
@@ -590,18 +926,17 @@
           }
         ],
         "data": {
-          "type": "binary" // { ascii | base64 | binary | raw | string | urlencode }
+          "type": "binary" // { ascii | base64 | binary | json | raw | string | urlencode }
         }
       },
       "response": {
         "missingResponse": "whatever",
-        "jsonPath": ""
+        "jsonPath": "results[0].alternatives[0].transcript"
       }
     },
     {
       "name": "IbmWatsonTextToSpeechService",
       "classInterface": "IbmWatsonServices.ITextToSpeechService",
-      "curl": "curl -X POST -u \"{username}:{password}\" --header \"Content-Type: application/json\" --header \"Accept: audio/wav\" --data \"{\"text\":\"Hello world.\"}\" --output hello_world.wav \"https://stream.watsonplatform.net/text-to-speech/api/v1/synthesize?voice=en-US_AllisonVoice\"",
       "request": {
         "method": "post", // { "get" | "post" | <custom> }
         "preferChunkedEncodedRequests": false,
@@ -630,7 +965,7 @@
           }
         ],
         "data": {
-          "type": "string", // { ascii | base64 | binary | raw | urlencode
+          "type": "json", // { ascii | base64 | binary | raw | urlencode
           "value": "{ \"text\":\"{text}\" }" // can also use "text={text}" (text/plain multipart)
         }
       },
@@ -642,7 +977,6 @@
     {
       "name": "IbmWatsonToneService",
       "classInterface": "IbmWatsonServices.IToneService",
-      "curl": "curl --libcurl %0.curl -u \"{username}:{password}\" -H \"Content-Type: application/json\" -d \"{\"text\": \"A word is dead when it is said, some say. Emily Dickinson\"}\" \"https://gateway.watsonplatform.net/tone-analyzer/api/v3/tone?version=2016-05-19\"",
       "request": {
         "method": "post", // { "get" | "post" | <custom> }
         "preferChunkedEncodedRequests": false,
@@ -667,7 +1001,7 @@
           }
         ],
         "data": {
-          "type": "string", // { ascii | base64 | binary | raw | string | urlencode }
+          "type": "json", // { ascii | base64 | binary | json | raw | string | urlencode }
           "value": "{\"text\":\"{text}\"}"
         }
       },
@@ -679,7 +1013,6 @@
     {
       "name": "IbmWatsonTranslateService",
       "classInterface": "IbmWatsonServices.ITranslateService",
-      "curl": "curl -u \"{username}:{password}\" -X POST -d \"@%1\" \"https://gateway.watsonplatform.net/language-translation/api/v2/translate?source=en&target=es\"",
       "request": {
         "method": "post", // { "get" | "post" | <custom> }
         "preferChunkedEncodedRequests": false,
@@ -708,10 +1041,10 @@
           }
         ],
         "data": {
-          "type": "string", // { ascii | base64 | binary | raw | string | urlencode }
+          "type": "json", // { ascii | base64 | binary | json | raw | string | urlencode }
           "value": "{ \"text\":\"{text}\" }", // can also use "text={text}" (text/plain multipart)
-          "source": "en",
-          "target": "es"
+          "source": "en", // from
+          "target": "es" // to
         }
       },
       "response": {
@@ -730,7 +1063,6 @@
     {
       "name": "WitSpeechToTextService",
       "classInterface": "WitServices.ISpeechToTextService",
-      "curl": "curl -XPOST \"https://api.wit.ai/speech?v=20141022\" -i -L -H \"Authorization: Bearer {Bearer}\" -H \"Content-Type: audio/wav\" --data-binary \"@{file}\"",
       "request": {
         "method": "post", // { "get" | "post" | <custom> }
         "preferChunkedEncodedRequests": false,
@@ -754,12 +1086,12 @@
           }
         ],
         "data": {
-          "type": "binary" // { ascii | base64 | binary | raw | string | urlencode }
+          "type": "binary" // { ascii | base64 | binary | json | raw | string | urlencode }
         }
       },
       "response": {
         "missingResponse": "whatever",
-        "jsonPath": ""
+        "jsonPath": "_text"
       }
     }
   ]

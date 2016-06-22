@@ -9,23 +9,23 @@ namespace WoundifyShared
         public static System.Collections.Generic.List<ITranslateService> PreferredOrderingTranslateServices = new FindServices<ITranslateService>(Options.commandservices["Translate"].preferredServices).PreferredOrderingOfServices;
         public static System.Collections.Generic.List<TranslateServiceResponse> responses = new System.Collections.Generic.List<TranslateServiceResponse>();
 
-        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<TranslateServiceResponse>> RunAllPreferredTranslateServicesAsync(string text)
+        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<TranslateServiceResponse>> RunAllPreferredTranslateServicesAsync(string text, string source, string target)
         {
-            return RunAllPreferredTranslateServicesRun(text);
+            return RunAllPreferredTranslateServicesRun(text, source, target);
         }
 
-        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<TranslateServiceResponse>> RunAllPreferredTranslateServicesAsync(byte[] bytes, int sampleRate)
+        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<TranslateServiceResponse>> RunAllPreferredTranslateServicesAsync(byte[] bytes, int sampleRate, string source, string target)
         {
             return null;
         }
 
-        public static System.Collections.Generic.List<TranslateServiceResponse> RunAllPreferredTranslateServicesRun(string text)
+        public static System.Collections.Generic.List<TranslateServiceResponse> RunAllPreferredTranslateServicesRun(string text, string source, string target)
         {
             responses = new System.Collections.Generic.List<TranslateServiceResponse>();
             // invoke each ITranslateService and show what it can do.
             foreach (ITranslateService STT in PreferredOrderingTranslateServices)
             {
-                System.Threading.Tasks.Task.Run(() => STT.TranslateServiceAsync(text)).ContinueWith((c) =>
+                System.Threading.Tasks.Task.Run(() => STT.TranslateServiceAsync(text, source, target)).ContinueWith((c) =>
                 {
                     ServiceResponse r = c.Result.sr;
                     if (string.IsNullOrEmpty(r.ResponseResult) || r.StatusCode != 200)
@@ -39,7 +39,7 @@ namespace WoundifyShared
         }
 
 #if false
-        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<ITranslateServiceResponse>> RunAllPreferredTranslateServices(byte[] bytes, int sampleRate)
+        public static async System.Threading.Tasks.Task<System.Collections.Generic.List<ITranslateServiceResponse>> RunAllPreferredTranslateServices(byte[] bytes, int sampleRate, string source, string target)
         {
             System.Collections.Generic.List<ITranslateServiceResponse> responses = new System.Collections.Generic.List<ITranslateServiceResponse>();
             // invoke each ITranslateService and show what it can do.

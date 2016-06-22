@@ -64,7 +64,7 @@ namespace WoundifyShared
             {
                 if (!Options.services.ContainsKey(prefs))
                     throw new NotImplementedException();
-                Settings.Service service = Options.services[prefs]; // preferred service must exist
+                Settings.Service service = Options.services[prefs].service; // preferred service must exist
                 if (ServiceTypes.ContainsKey(service.classInterface)) // use class that implements T
                 {
                     PreferredOrderingOfServices.Add((T)ServiceTypes[service.classInterface].GetConstructor(new Type[] { new Settings.Service().GetType() }).Invoke(new object[] { service }));
