@@ -23,7 +23,7 @@ The `WoundifyDefaultSettings.json` and `WoundifySettings.json` files contain pro
 
 
 ## Console Application
-The woundify.exe is a console app tool for scripting audio, text and Houndify operations. There are commands for recording audio, converting text-to-speech (TTS), converting speech-to-text (STT), and invoking Houndify intent services.
+The woundify.exe is a console app tool for scripting audio, text and AI services. There are commands for recording audio, converting text-to-speech (TTS), converting speech-to-text (STT), and invoking many of the currently offered AI services.
 
 > `Usage: woundify.exe [command]*`
 
