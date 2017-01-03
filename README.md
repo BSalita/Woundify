@@ -1,5 +1,5 @@
 # Woundify
-Woundify is a cognitive services (AI) tool used to compare, benchmark and script AI services. Woundify is written in C# and is compatible with Windows Console, WPF and UWP systems. Woundify supports AI services from Google, Houndify, IBM Watson, Microsoft (Bing), and Wit.ai. Woundify was originally developed as a Windows client for the Houndify intent service.
+Woundify is a cognitive services (AI) tool used to compare, benchmark and script AI services. Woundify is written in C# and is compatible with Windows Console, WPF and UWP systems. Woundify supports AI services from Google, Houndify, HPE, IBM Watson, Microsoft (Bing), and Wit.ai. Woundify was originally developed as a Windows client for the Houndify intent service.
 
 ## Requisites
 
@@ -7,7 +7,7 @@ Tasks:
 
 1. Install Visual Studio 2015. The free Community Edition is fine.
 2. Load this repo into Visual Studio.
-3. Register for the AI services that you'll be using (Bing, Google, HPE, Houndify, IBM, etc.). URLs listed below.
+3. Register for the AI services that you'll be using (Bing, Google, Houndify, HPE, IBM, etc.). URLs listed below.
 4. No API access keys are provided. You'll need to add your own API access keys to either `WoundifyDefaultSettings.json` or  `WoundifySettings.json`. If `WoundifySettings.json` does not exist, create it by copying `WoundifyDefaultSettings.json` to `WoundifySettings.json`. `WoundifyDefaultlSettings.json` is loaded first and then `WoundifySettings.json` is loaded overriding the defaults. Recommended practice is to modify `WoundifySettings.json` and never modifying `WoundifyDefaultlSettings.json`.
 
 The `WoundifyDefaultSettings.json` and `WoundifySettings.json` files contain properties used for each service such as API acccess keys. Services all use differing API access property names (e.g. Key, ClientID, Password, etc.). Register for the following services and insert their API access keys into the "services" section of the settings file. Be careful when modifying these files. Mistakes can cause unpredictable behaviors.
