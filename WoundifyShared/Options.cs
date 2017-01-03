@@ -126,7 +126,7 @@ namespace WoundifyShared
             }
         }
 #if false
-            // todo: obsolete? for initializing statics?
+            // TODO: obsolete? for initializing statics?
             bing = new BingServices();
             google = new GoogleServices();
             googlecloud = new GoogleCloudServices();

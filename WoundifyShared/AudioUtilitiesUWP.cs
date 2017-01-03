@@ -34,7 +34,7 @@ namespace AudioUtilitiesUWP
             }
         }
 
-        public void Dispose() // todo: implement IDispose
+        public void Dispose() // TODO: implement IDispose
         {
             if (graph != null)
             {
@@ -48,7 +48,7 @@ namespace AudioUtilitiesUWP
             Windows.Media.Audio.AudioGraphSettings graphSettings = new Windows.Media.Audio.AudioGraphSettings(Windows.Media.Render.AudioRenderCategory.Media);
             graphSettings.QuantumSizeSelectionMode = Windows.Media.Audio.QuantumSizeSelectionMode.LowestLatency;
 
-            // todo: let user pick from list of devices instead of blindly picking first one -- hoping for the microphone.
+            // TODO: let user pick from list of devices instead of blindly picking first one -- hoping for the microphone.
             Windows.Devices.Enumeration.DeviceInformationCollection deviceInformationCollection = await Windows.Devices.Enumeration.DeviceInformation.FindAllAsync(Windows.Devices.Enumeration.DeviceClass.AudioRender);
             Windows.Devices.Enumeration.DeviceInformation deviceInformation = deviceInformationCollection[0]; // blindly pick first one
             graphSettings.PrimaryRenderDevice = deviceInformation;

@@ -17,12 +17,12 @@ namespace WoundifyShared
             System.Collections.Generic.List<Tuple<string, string>> uriSubstitutes = new System.Collections.Generic.List<Tuple<string, string>>()
             {
                 new Tuple<string, string>("{text}", System.Uri.EscapeDataString(text)),
-                new Tuple<string, string>("{guid}", Guid.NewGuid().ToString()) // todo: replace [1] with dictionary lookup
+                new Tuple<string, string>("{guid}", Guid.NewGuid().ToString()) // TODO: replace [1] with dictionary lookup
             };
             System.Collections.Generic.List<Tuple<string, string>> headers = new System.Collections.Generic.List<Tuple<string, string>>()
             {
-                new Tuple<string, string>("Content-Type", service.request.headers[0].ContentType), // todo: need dictionary lookup instead of hardcoding
-                new Tuple<string, string>("Ocp-Apim-Subscription-Key", service.request.headers[1].OcpApimSubscriptionKey) // todo: need dictionary lookup instead of hardcoding
+                new Tuple<string, string>("Content-Type", service.request.headers[0].ContentType), // TODO: need dictionary lookup instead of hardcoding
+                new Tuple<string, string>("Ocp-Apim-Subscription-Key", service.request.headers[1].OcpApimSubscriptionKey) // TODO: need dictionary lookup instead of hardcoding
             };
             response.sr = await PostAsync(service, uriSubstitutes, headers, null, text);
             await ExtractResultAsync(service, response.sr);
@@ -76,9 +76,9 @@ namespace WoundifyShared
             };
             System.Collections.Generic.List<Tuple<string, string>> headers = new System.Collections.Generic.List<Tuple<string, string>>()
             {
-                new Tuple<string, string>("Accept", service.request.headers[0].Accept), // todo: need dictionary lookup instead of hardcoding
-                new Tuple<string, string>("Content-Type", service.request.headers[1].ContentType), // todo: need dictionary lookup instead of hardcoding
-                new Tuple<string, string>("Ocp-Apim-Subscription-Key", service.request.headers[2].OcpApimSubscriptionKey) // todo: need dictionary lookup instead of hardcoding
+                new Tuple<string, string>("Accept", service.request.headers[0].Accept), // TODO: need dictionary lookup instead of hardcoding
+                new Tuple<string, string>("Content-Type", service.request.headers[1].ContentType), // TODO: need dictionary lookup instead of hardcoding
+                new Tuple<string, string>("Ocp-Apim-Subscription-Key", service.request.headers[2].OcpApimSubscriptionKey) // TODO: need dictionary lookup instead of hardcoding
             };
             response.sr = await PostAsync(service, null, headers, jsonSubstitutes, text);
             await ExtractResultAsync(service, response.sr);
@@ -91,8 +91,8 @@ namespace WoundifyShared
             Log.WriteLine("Bing: Spell:" + text);
             System.Collections.Generic.List<Tuple<string, string>> headers = new System.Collections.Generic.List<Tuple<string, string>>()
             {
-                new Tuple<string, string>("Content-Type", service.request.headers[0].ContentType), // todo: need dictionary lookup instead of hardcoding
-                new Tuple<string, string>("Ocp-Apim-Subscription-Key", service.request.headers[1].OcpApimSubscriptionKey) // todo: need dictionary lookup instead of hardcoding
+                new Tuple<string, string>("Content-Type", service.request.headers[0].ContentType), // TODO: need dictionary lookup instead of hardcoding
+                new Tuple<string, string>("Ocp-Apim-Subscription-Key", service.request.headers[1].OcpApimSubscriptionKey) // TODO: need dictionary lookup instead of hardcoding
             };
             response.sr = await PostAsync(service, null, headers, null, text);
             await ExtractResultAsync(service, response.sr);
@@ -104,31 +104,31 @@ namespace WoundifyShared
         {
             SpeechToTextServiceResponse response = new SpeechToTextServiceResponse();
 
-            if (speechToTextAuth == null) // Must obtain an initial Bearer token and set timer for subsequent refreshes
+            // TODO: put into OAuthHelpers.cs?
+            Settings.BearerAuthentication BearerAuth = service.request.headers[1].BearerAuthentication;
+            ServiceResponse sr = new ServiceResponse(this.ToString());
+            Uri accessUri = new Uri(BearerAuth.uri);
+            System.Collections.Generic.List<Tuple<string, string>> header = new System.Collections.Generic.List<Tuple<string, string>>()
             {
-                speechToTextAuth = new Authentication();
-                await speechToTextAuth.PerformAuthenticationAsync(service.request.headers[1].BearerAuthentication);
-            }
+                new Tuple<string, string>("Content-Type", "application/x-www-form-urlencoded"),
+                new Tuple<string, string>("Ocp-Apim-Subscription-Key", service.request.headers[1].OcpApimSubscriptionKey) // TODO: need dictionary lookup instead of hardcoding
+            };
+            sr = await PostAsync(accessUri, "", header);
+            string BearerToken = sr.ResponseString;
 
             try
             {
-                AccessTokenInfo token = speechToTextAuth.GetAccessToken();
-                if (token == null)
-                {
-                    Log.WriteLine("Invalid authentication token");
-                    throw new FormatException();
-                }
-                Log.WriteLine("Token: {0}\n" + token.access_token);
+                Log.WriteLine("Bearer: {0}\n" + BearerToken);
 
                 System.Collections.Generic.List<Tuple<string, string>> UriSubstitutes = new System.Collections.Generic.List<Tuple<string, string>>()
                 {
                     new Tuple<string, string>("{locale}", Options.options.locale.language),
-                    new Tuple<string, string>("{guid}", Guid.NewGuid().ToString()) // todo: replace [1] with dictionary lookup
+                    new Tuple<string, string>("{guid}", Guid.NewGuid().ToString()) // TODO: replace [1] with dictionary lookup
                 };
                 System.Collections.Generic.List<Tuple<string, string>> headers = new System.Collections.Generic.List<Tuple<string, string>>()
                 {
                     new Tuple<string, string>("Accept", service.request.headers[0].Accept),
-                    new Tuple<string, string>("Authorization", "Bearer " + token.access_token),
+                    new Tuple<string, string>("Authorization", "Bearer " + BearerToken),
                     new Tuple<string, string>("Content-Type", service.request.headers[2].ContentType.Replace("{sampleRate}",sampleRate.ToString())), // 403 if wrong
                 };
                 response.sr = await PostAsync(service, UriSubstitutes, headers, null, audioBytes);
@@ -149,11 +149,11 @@ namespace WoundifyShared
             Log.WriteLine("Bing: Sentiment:" + text);
             System.Collections.Generic.List<Tuple<string, string>> Headers = new System.Collections.Generic.List<Tuple<string, string>>()
             {
-                new Tuple<string, string>("Content-Type", service.request.headers[0].ContentType), // todo: need dictionary lookup instead of hardcoding
-                new Tuple<string, string>("Ocp-Apim-Subscription-Key", service.request.headers[1].OcpApimSubscriptionKey) // todo: need dictionary lookup instead of hardcoding
+                new Tuple<string, string>("Content-Type", service.request.headers[0].ContentType), // TODO: need dictionary lookup instead of hardcoding
+                new Tuple<string, string>("Ocp-Apim-Subscription-Key", service.request.headers[1].OcpApimSubscriptionKey) // TODO: need dictionary lookup instead of hardcoding
             };
-            // todo: maybe a dictionary of headers should be passed including content-type. Then PostAsync can do if (dict.Contains("Content-Type")) headers.add(dict...)
-            // todo: maybe should init a header class, add values and pass to Post?
+            // TODO: maybe a dictionary of headers should be passed including content-type. Then PostAsync can do if (dict.Contains("Content-Type")) headers.add(dict...)
+            // TODO: maybe should init a header class, add values and pass to Post?
             response.sr = await PostAsync(service, null, Headers, null, text);
             await ExtractResultAsync(service, response.sr);
             return response;

@@ -46,6 +46,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)WitServices.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)HpeHavenServices.cs" />
     <None Include="$(MSBuildThisFileDirectory)WoundifyDefaultSettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

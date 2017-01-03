@@ -9,6 +9,15 @@ namespace WoundifyShared
     {
         public GoogleCloudServices(Settings.Service service) : base(service)
         {
+#if false
+            // needs Nuget Google.Apis.Auth.OAuth2 and Google.Apis.Compute.v1
+            System.IO.StreamReader stream = new System.IO.StreamReader("woundify-9767ef6fb6e1.json");
+            Google.Apis.Auth.OAuth2.GoogleCredential credential = Google.Apis.Auth.OAuth2.GoogleCredential.FromStream(stream.BaseStream);
+            Google.Apis.Compute.v1.ComputeService compute = new Google.Apis.Compute.v1.ComputeService(new Google.Apis.Services.BaseClientService.Initializer()
+            {
+                HttpClientInitializer = credential
+            });
+#endif
         }
 
         public override async System.Threading.Tasks.Task<AnnotateServiceResponse> AnnotateServiceAsync(string text)
@@ -18,11 +27,11 @@ namespace WoundifyShared
 
             System.Collections.Generic.List<Tuple<string, string>> uriSubstitutes = new System.Collections.Generic.List<Tuple<string, string>>()
             {
-                new Tuple<string, string>("{key}", service.request.headers[0].BearerAuthentication.key) // todo: replace [1] with dictionary lookup
+                new Tuple<string, string>("{key}", service.request.headers[0].BearerAuthentication.key) // TODO: replace [1] with dictionary lookup
             };
             System.Collections.Generic.List<Tuple<string, string>> headers = new System.Collections.Generic.List<Tuple<string, string>>()
             {
-                new Tuple<string, string>("Content-Type", service.request.headers[1].ContentType), // todo: need dictionary lookup instead of hardcoding
+                new Tuple<string, string>("Content-Type", service.request.headers[1].ContentType), // TODO: need dictionary lookup instead of hardcoding
             };
             response.sr = await PostAsync(service, uriSubstitutes, headers, null, text);
             await ExtractResultAsync(service, response.sr);
@@ -36,11 +45,11 @@ namespace WoundifyShared
 
             System.Collections.Generic.List<Tuple<string, string>> uriSubstitutes = new System.Collections.Generic.List<Tuple<string, string>>()
             {
-                new Tuple<string, string>("{key}", service.request.headers[0].BearerAuthentication.key) // todo: replace [1] with dictionary lookup
+                new Tuple<string, string>("{key}", service.request.headers[0].BearerAuthentication.key) // TODO: replace [1] with dictionary lookup
             };
             System.Collections.Generic.List<Tuple<string, string>> headers = new System.Collections.Generic.List<Tuple<string, string>>()
             {
-                new Tuple<string, string>("Content-Type", service.request.headers[1].ContentType), // todo: need dictionary lookup instead of hardcoding
+                new Tuple<string, string>("Content-Type", service.request.headers[1].ContentType), // TODO: need dictionary lookup instead of hardcoding
             };
             response.sr = await PostAsync(service, uriSubstitutes, headers, null, text);
             await ExtractResultAsync(service, response.sr); // TODO: not sure which JSON should be result
@@ -54,13 +63,14 @@ namespace WoundifyShared
 
             System.Collections.Generic.List<Tuple<string, string>> uriSubstitutes = new System.Collections.Generic.List<Tuple<string, string>>()
             {
-                new Tuple<string, string>("{key}", service.request.headers[0].BearerAuthentication.key) // todo: replace [1] with dictionary lookup
+                new Tuple<string, string>("{key}", service.request.headers[0].BearerAuthentication.key), // TODO: replace [1] with dictionary lookup
+                new Tuple<string, string>("{text}", text) // TODO: replace [1] with dictionary lookup
             };
             System.Collections.Generic.List<Tuple<string, string>> headers = new System.Collections.Generic.List<Tuple<string, string>>()
             {
-                new Tuple<string, string>("Content-Type", service.request.headers[1].ContentType), // todo: need dictionary lookup instead of hardcoding
+                new Tuple<string, string>("Content-Type", service.request.headers[1].ContentType), // TODO: need dictionary lookup instead of hardcoding
             };
-            response.sr = await PostAsync(service, null, uriSubstitutes, headers, text);
+            response.sr = await PostAsync(service, uriSubstitutes, headers, null, text);
             await ExtractResultAsync(service, response.sr);
             return response;
         }
@@ -72,11 +82,11 @@ namespace WoundifyShared
 
             System.Collections.Generic.List<Tuple<string, string>> uriSubstitutes = new System.Collections.Generic.List<Tuple<string, string>>()
             {
-                new Tuple<string, string>("{key}", service.request.headers[0].BearerAuthentication.key) // todo: replace [1] with dictionary lookup
+                new Tuple<string, string>("{key}", service.request.headers[0].BearerAuthentication.key) // TODO: replace [1] with dictionary lookup
             };
             System.Collections.Generic.List<Tuple<string, string>> headers = new System.Collections.Generic.List<Tuple<string, string>>()
             {
-                new Tuple<string, string>("Content-Type", service.request.headers[1].ContentType), // todo: need dictionary lookup instead of hardcoding
+                new Tuple<string, string>("Content-Type", service.request.headers[1].ContentType), // TODO: need dictionary lookup instead of hardcoding
             };
             response.sr = await PostAsync(service, uriSubstitutes, headers, null, text);
             await ExtractResultAsync(service, response.sr);
@@ -90,7 +100,7 @@ namespace WoundifyShared
 
             System.Collections.Generic.List<Tuple<string, string>> uriSubstitutes = new System.Collections.Generic.List<Tuple<string, string>>()
             {
-                new Tuple<string, string>("{key}", service.request.headers[1].BearerAuthentication.key) // todo: replace [1] with dictionary lookup
+                new Tuple<string, string>("{key}", service.request.headers[1].BearerAuthentication.key) // TODO: replace [1] with dictionary lookup
             };
             System.Collections.Generic.List<Tuple<string, string>> headers = new System.Collections.Generic.List<Tuple<string, string>>()
             {
@@ -108,11 +118,11 @@ namespace WoundifyShared
 
             System.Collections.Generic.List<Tuple<string, string>> uriSubstitutes = new System.Collections.Generic.List<Tuple<string, string>>()
             {
-                new Tuple<string, string>("{key}", service.request.headers[0].BearerAuthentication.key) // todo: replace [1] with dictionary lookup
+                new Tuple<string, string>("{key}", service.request.headers[0].BearerAuthentication.key) // TODO: replace [1] with dictionary lookup
             };
             System.Collections.Generic.List<Tuple<string, string>> headers = new System.Collections.Generic.List<Tuple<string, string>>()
                 {
-                    new Tuple<string, string>("Content-Type", service.request.headers[1].ContentType), // todo: need dictionary lookup instead of hardcoding
+                    new Tuple<string, string>("Content-Type", service.request.headers[1].ContentType), // TODO: need dictionary lookup instead of hardcoding
                 };
             response.sr = await PostAsync(service, uriSubstitutes, headers, null, text);
             await ExtractResultAsync(service, response.sr); // TODO: not sure which JSON should be result
@@ -129,7 +139,7 @@ namespace WoundifyShared
                     new Tuple<string, string>("{key}", service.request.headers[0].BearerAuthentication.key),
                     new Tuple<string, string>("{text}", System.Uri.EscapeDataString(text.Trim())),
                     new Tuple<string, string>("{source}", source),
-                    new Tuple<string, string>("{target}", target) // todo: replace [1] with dictionary lookup
+                    new Tuple<string, string>("{target}", target) // TODO: replace [1] with dictionary lookup
                 };
             response.sr = await GetAsync(service, UriSubstitutes, null);
             await ExtractResultAsync(service, response.sr);

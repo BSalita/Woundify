@@ -20,7 +20,7 @@ namespace WoundifyShared
 
         // set properties: Build Action = None, Copy to Output Directory = Copy Always
 
-        // todo: change to use class of command (Func, -1/+1 (push, pop))
+        // TODO: change to use class of command (Func, -1/+1 (push, pop))
         public static System.Collections.Generic.Dictionary<string, verbAction> verbActionsAsync =
             new System.Collections.Generic.Dictionary<string, verbAction>(StringComparer.OrdinalIgnoreCase)
             {
@@ -70,8 +70,8 @@ namespace WoundifyShared
 
         public static async System.Threading.Tasks.Task<int> ProcessArgsAsync(string[] args) // valid args include --ClientID "..."
         {
-#if false // todo: implement override of json
-            string settingsJson; // todo: need to implement settings file.
+#if false // TODO: implement override of json
+            string settingsJson; // TODO: need to implement settings file.
             if (Options.options.settings != null && Options.options.settings.First() == '@')
                 if (System.IO.File.Exists(Options.options.settings.Substring(1)))
                     settingsJson = await Helpers.ReadTextFromFileAsync(Options.options.settings.Substring(1));
@@ -157,16 +157,16 @@ namespace WoundifyShared
                 text = fileName = operatorStack.Pop();
                 if (fileName.First() == '@')
                 {
-                    if (fileName.EndsWith(".txt")) // todo: implement json same as Translate?
+                    if (fileName.EndsWith(".txt")) // TODO: implement json same as Translate?
                     {
-                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
+                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // TODO: implement local file name scheme
                         if (Options.options.debugLevel >= 4)
                             AllServiceResponses = (AllAnnotateServiceResponses = await AnnotateServices.RunAllPreferredAnnotateServicesAsync(text)).Select(sr => sr.sr);
                         r = await AnnotateServices.PreferredOrderingAnnotateServices[0].AnnotateServiceAsync(text);
                     }
                     else if (fileName.EndsWith(".wav"))
                     {
-                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // todo: implement local file scheme (non-tempFolder directory)
+                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // TODO: implement local file scheme (non-tempFolder directory)
                         int sampleRate = await Audio.GetSampleRateAsync(fileName.Substring(1));
                         if (Options.options.debugLevel >= 4)
                             AllServiceResponses = (AllAnnotateServiceResponses = await AnnotateServices.RunAllPreferredAnnotateServicesAsync(bytes, sampleRate)).Select(sr => sr.sr);
@@ -240,16 +240,16 @@ namespace WoundifyShared
                 text = fileName = operatorStack.Pop();
                 if (fileName.First() == '@')
                 {
-                    if (fileName.EndsWith(".txt")) // todo: implement json same as Translate?
+                    if (fileName.EndsWith(".txt")) // TODO: implement json same as Translate?
                     {
-                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
+                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // TODO: implement local file name scheme
                         if (Options.options.debugLevel >= 4)
                             AllServiceResponses = (AllEntitiesServiceResponses = await EntitiesServices.RunAllPreferredEntitiesServicesAsync(text)).Select(sr => sr.sr);
                         r = await EntitiesServices.PreferredOrderingEntitiesServices[0].EntitiesServiceAsync(text);
                     }
                     else if (fileName.EndsWith(".wav"))
                     {
-                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // todo: implement local file scheme (non-tempFolder directory)
+                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // TODO: implement local file scheme (non-tempFolder directory)
                         int sampleRate = await Audio.GetSampleRateAsync(fileName.Substring(1));
                         if (Options.options.debugLevel >= 4)
                             AllServiceResponses = (AllEntitiesServiceResponses = await EntitiesServices.RunAllPreferredEntitiesServicesAsync(bytes, sampleRate)).Select(sr => sr.sr);
@@ -305,7 +305,7 @@ namespace WoundifyShared
 
         private static async System.Threading.Tasks.Task<int> verbHelpAsync(string[] args, System.Collections.Generic.Stack<string> operatorStack, System.Collections.Generic.Stack<string> operandStack)
         {
-            // todo: string usage = Options.options.GetUsage();
+            // TODO: string usage = Options.options.GetUsage();
             //Console.WriteLine(usage);
             Console.WriteLine("Commands:");
             foreach (System.Collections.Generic.KeyValuePair<string, verbAction> v in verbActionsAsync)
@@ -327,16 +327,16 @@ namespace WoundifyShared
                 text = fileName = operatorStack.Pop();
                 if (fileName.First() == '@')
                 {
-                    if (fileName.EndsWith(".txt")) // todo: implement json same as Translate?
+                    if (fileName.EndsWith(".txt")) // TODO: implement json same as Translate?
                     {
-                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
+                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // TODO: implement local file name scheme
                         if (Options.options.debugLevel >= 4)
                             AllServiceResponses = (AllIdentifyLanguageServiceResponses = await IdentifyLanguageServices.RunAllPreferredIdentifyLanguageServicesAsync(text)).Select(sr => sr.sr);
                         r = await IdentifyLanguageServices.PreferredOrderingIdentifyLanguageServices[0].IdentifyLanguageServiceAsync(text);
                     }
                     else if (fileName.EndsWith(".wav"))
                     {
-                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // todo: implement local file scheme (non-tempFolder directory)
+                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // TODO: implement local file scheme (non-tempFolder directory)
                         int sampleRate = await Audio.GetSampleRateAsync(fileName.Substring(1));
                         if (Options.options.debugLevel >= 4)
                             AllServiceResponses = (AllIdentifyLanguageServiceResponses = await IdentifyLanguageServices.RunAllPreferredIdentifyLanguageServicesAsync(bytes, sampleRate)).Select(sr => sr.sr);
@@ -406,18 +406,18 @@ namespace WoundifyShared
                 {
                     if (fileName.EndsWith(".txt"))
                     {
-                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
+                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // TODO: implement local file name scheme
                         if (Options.options.debugLevel >= 4)
                             AllServiceResponses = (AllIntentServiceResponses = await IntentServices.RunAllPreferredIntentServicesAsync(text)).Select(sr => sr.sr);
-                        r = await IntentServices.PreferredOrderingIntentServices[1].IntentServiceAsync(text); // todo: implement dictionary. for now [0] is audio and for now [1] is text
+                        r = await IntentServices.PreferredOrderingIntentServices[1].IntentServiceAsync(text); // TODO: implement dictionary. for now [0] is audio and for now [1] is text
                     }
                     else if (fileName.EndsWith(".wav"))
                     {
-                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // todo: implement local file scheme (non-tempFolder directory)
+                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // TODO: implement local file scheme (non-tempFolder directory)
                         int sampleRate = await Audio.GetSampleRateAsync(fileName.Substring(1));
                         if (Options.options.debugLevel >= 4)
                             AllServiceResponses = (AllIntentServiceResponses = await IntentServices.RunAllPreferredIntentServicesAsync(bytes, sampleRate)).Select(sr => sr.sr);
-                        r = await IntentServices.PreferredOrderingIntentServices[0].IntentServiceAsync(bytes, sampleRate); // todo: implement dictionary.  for now [0] is audio and for now [1] is text
+                        r = await IntentServices.PreferredOrderingIntentServices[0].IntentServiceAsync(bytes, sampleRate); // TODO: implement dictionary.  for now [0] is audio and for now [1] is text
                         if (Options.options.debugLevel >= 4)
                             Console.WriteLine("Intent result (from audio):\"" + r.sr.ResponseResult + "\" StatusCode:" + r.sr.StatusCode + " Total ms:" + r.sr.TotalElapsedMilliseconds + " Request ms:" + r.sr.RequestElapsedMilliseconds);
                     }
@@ -510,7 +510,7 @@ namespace WoundifyShared
                 {
                     if (fileName.EndsWith(".txt"))
                     {
-                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
+                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // TODO: implement local file name scheme
                         if (Options.options.debugLevel >= 4)
                             AllServiceResponses = (AllTextToSpeechServiceResponses = await TextToSpeechServices.RunAllPreferredTextToSpeechServicesAsync(text)).Select(sr => sr.sr);
                         r = await TextToSpeechServices.PreferredOrderingTextToSpeechServices[0].TextToSpeechServiceAsync(text, Options.commandservices["TextToSpeech"].sampleRate);
@@ -518,7 +518,7 @@ namespace WoundifyShared
                     }
                     else if (fileName.EndsWith(".wav"))
                     {
-                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // todo: implement local file scheme (non-tempFolder directory)
+                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // TODO: implement local file scheme (non-tempFolder directory)
                         await Helpers.WriteBytesToFileAsync(stackFileName, bytes);
                     }
                     else
@@ -526,7 +526,7 @@ namespace WoundifyShared
                         throw new Exception("Listen: Unknown file extension:" + fileName);
                     }
                 }
-                else if (char.IsDigit(text[0])) // todo: deprecate seconds of listening arg?
+                else if (char.IsDigit(text[0])) // TODO: deprecate seconds of listening arg?
                 {
                     double listenTimeOut;
                     if (!double.TryParse(text, out listenTimeOut))
@@ -598,14 +598,14 @@ namespace WoundifyShared
                 {
                     if (fileName.EndsWith(".txt")) // implement json same as Identify?
                     {
-                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
+                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // TODO: implement local file name scheme
                         if (Options.options.debugLevel >= 3)
                             AllServiceResponses = (AllTranslateServiceResponses = await TranslateServices.RunAllPreferredTranslateServicesAsync(text, source, target)).Select(sr => sr.sr);
                         r = await TranslateServices.PreferredOrderingTranslateServices[0].TranslateServiceAsync(text, source, target);
                     }
                     else if (fileName.EndsWith(".wav"))
                     {
-                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // todo: implement local file scheme (non-tempFolder directory)
+                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // TODO: implement local file scheme (non-tempFolder directory)
                         int sampleRate = await Audio.GetSampleRateAsync(fileName.Substring(1));
                         if (Options.options.debugLevel >= 4)
                             AllServiceResponses = (AllTranslateServiceResponses = await TranslateServices.RunAllPreferredTranslateServicesAsync(bytes, sampleRate, source, target)).Select(sr => sr.sr);
@@ -675,14 +675,14 @@ namespace WoundifyShared
                 {
                     if (fileName.EndsWith(".txt"))
                     {
-                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
+                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // TODO: implement local file name scheme
                         if (Options.options.debugLevel >= 4)
                             AllServiceResponses = (AllParseServiceResponses = await ParseServices.RunAllPreferredParseServicesAsync(text)).Select(sr => sr.sr);
                         r = await ParseServices.PreferredOrderingParseServices[0].ParseServiceAsync(text);
                     }
                     else if (fileName.EndsWith(".wav"))
                     {
-                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // todo: implement local file scheme (non-tempFolder directory)
+                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // TODO: implement local file scheme (non-tempFolder directory)
                         int sampleRate = await Audio.GetSampleRateAsync(fileName.Substring(1));
                         if (Options.options.debugLevel >= 4)
                             AllServiceResponses = (AllParseServiceResponses = await ParseServices.RunAllPreferredParseServicesAsync(text)).Select(sr => sr.sr);
@@ -775,16 +775,16 @@ namespace WoundifyShared
                 text = fileName = operatorStack.Pop();
                 if (fileName.First() == '@')
                 {
-                    if (fileName.EndsWith(".json") || fileName.EndsWith(".txt")) // todo: support json elsewhere?
+                    if (fileName.EndsWith(".json") || fileName.EndsWith(".txt")) // TODO: support json elsewhere?
                     {
-                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
+                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // TODO: implement local file name scheme
                         if (Options.options.debugLevel >= 4)
                             AllServiceResponses = (AllPersonalityServiceResponses = await PersonalityServices.RunAllPreferredPersonalityServicesAsync(text)).Select(sr => sr.sr);
                         r = await PersonalityServices.PreferredOrderingPersonalityServices[0].PersonalityServiceAsync(text);
                     }
                     else if (fileName.EndsWith(".wav"))
                     {
-                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // todo: implement local file scheme (non-tempFolder directory)
+                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // TODO: implement local file scheme (non-tempFolder directory)
                         int sampleRate = await Audio.GetSampleRateAsync(fileName.Substring(1));
                         if (Options.options.debugLevel >= 4)
                             AllServiceResponses = (AllPersonalityServiceResponses = await PersonalityServices.RunAllPreferredPersonalityServicesAsync(bytes, sampleRate)).Select(sr => sr.sr);
@@ -853,11 +853,11 @@ namespace WoundifyShared
                 {
                     if (fileName.EndsWith(".txt"))
                     {
-                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
+                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // TODO: implement local file name scheme
                     }
                     else if (fileName.EndsWith(".wav"))
                     {
-                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // todo: implement local file scheme (non-tempFolder directory)
+                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // TODO: implement local file scheme (non-tempFolder directory)
                         text = await SpeechToText.SpeechToTextServiceAsync(bytes);
                     }
                     else
@@ -971,7 +971,7 @@ namespace WoundifyShared
                 else if (fileName.EndsWith(".wav"))
                 {
                     await Audio.PlayFileAsync(Options.options.tempFolderPath + fileName);
-                    // todo: do wave file to text
+                    // TODO: do wave file to text
                 }
                 else
                 {
@@ -997,7 +997,7 @@ namespace WoundifyShared
                 {
                     if (fileName.EndsWith(".txt"))
                     {
-                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
+                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // TODO: implement local file name scheme
                         Log.WriteLine("Converting text to speech:" + text);
                         if (Options.options.debugLevel >= 4)
                             AllServiceResponses = (AllTextToSpeechServiceResponses = await TextToSpeechServices.RunAllPreferredTextToSpeechServicesAsync(text)).Select(sr => sr.sr);
@@ -1065,7 +1065,7 @@ namespace WoundifyShared
                 {
                     if (fileName.EndsWith(".txt"))
                     {
-                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
+                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // TODO: implement local file name scheme
                         if (Options.options.debugLevel >= 4)
                             AllServiceResponses = (AllTextToSpeechServiceResponses = await TextToSpeechServices.RunAllPreferredTextToSpeechServicesAsync(text)).Select(sr => sr.sr);
                         r = await TextToSpeechServices.PreferredOrderingTextToSpeechServices[0].TextToSpeechServiceAsync(text, Options.commandservices["TextToSpeech"].sampleRate);
@@ -1073,7 +1073,7 @@ namespace WoundifyShared
                     }
                     else if (fileName.EndsWith(".wav"))
                     {
-                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // todo: implement local file scheme (non-tempFolder directory)
+                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // TODO: implement local file scheme (non-tempFolder directory)
                         await Helpers.WriteBytesToFileAsync(stackFileName, bytes);
                     }
                     else
@@ -1081,7 +1081,7 @@ namespace WoundifyShared
                         throw new Exception("Speak: Unknown file extension:" + fileName);
                     }
                 }
-                else if (char.IsDigit(text[0])) // todo: deprecate seconds of speech arg?
+                else if (char.IsDigit(text[0])) // TODO: deprecate seconds of speech arg?
                 {
                     double listenTimeOut;
                     if (!double.TryParse(text, out listenTimeOut))
@@ -1140,14 +1140,14 @@ namespace WoundifyShared
                 {
                     if (fileName.EndsWith(".txt"))
                     {
-                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
+                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // TODO: implement local file name scheme
                         if (Options.options.debugLevel >= 4)
                             AllServiceResponses = (AllSpellServiceResponses = await SpellServices.RunAllPreferredSpellServicesAsync(text)).Select(sr => sr.sr);
                         r = await SpellServices.PreferredOrderingSpellServices[0].SpellServiceAsync(text);
                     }
                     else if (fileName.EndsWith(".wav"))
                     {
-                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // todo: implement local file scheme (non-tempFolder directory)
+                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // TODO: implement local file scheme (non-tempFolder directory)
                         int sampleRate = await Audio.GetSampleRateAsync(fileName.Substring(1));
                         if (Options.options.debugLevel >= 4)
                             AllServiceResponses = (AllSpellServiceResponses = await SpellServices.RunAllPreferredSpellServicesAsync(bytes, sampleRate)).Select(sr => sr.sr);
@@ -1217,11 +1217,11 @@ namespace WoundifyShared
                 {
                     if (fileName.EndsWith(".txt"))
                     {
-                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
+                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // TODO: implement local file name scheme
                     }
                     else if (fileName.EndsWith(".wav"))
                     {
-                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // todo: implement local file scheme (non-tempFolder directory)
+                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // TODO: implement local file scheme (non-tempFolder directory)
                         int sampleRate = await Audio.GetSampleRateAsync(fileName.Substring(1));
                         if (Options.options.debugLevel >= 4)
                             AllServiceResponses = (AllSpeechToTextServiceResponses = await SpeechToTextServices.RunAllPreferredSpeechToTextServicesAsync(bytes, sampleRate)).Select(sr => sr.sr);
@@ -1248,7 +1248,7 @@ namespace WoundifyShared
                 }
                 else if (fileName.EndsWith(".wav"))
                 {
-                    bytes = await Helpers.ReadBytesFromFileAsync(fileName); // todo: implement local file scheme (non-tempFolder directory)
+                    bytes = await Helpers.ReadBytesFromFileAsync(fileName); // TODO: implement local file scheme (non-tempFolder directory)
                     text = await SpeechToText.SpeechToTextServiceAsync(bytes);
                 }
                 else
@@ -1277,14 +1277,14 @@ namespace WoundifyShared
                 {
                     if (fileName.EndsWith(".txt"))
                     {
-                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
+                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // TODO: implement local file name scheme
                         if (Options.options.debugLevel >= 4)
                             AllServiceResponses = (AllToneServiceResponses = await ToneServices.RunAllPreferredToneServicesAsync(text)).Select(sr => sr.sr);
                         r = await ToneServices.PreferredOrderingToneServices[0].ToneServiceAsync(text);
                     }
                     else if (fileName.EndsWith(".wav"))
                     {
-                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // todo: implement local file scheme (non-tempFolder directory)
+                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // TODO: implement local file scheme (non-tempFolder directory)
                         int sampleRate = await Audio.GetSampleRateAsync(fileName.Substring(1));
                         if (Options.options.debugLevel >= 4)
                             AllServiceResponses = (AllToneServiceResponses = await ToneServices.RunAllPreferredToneServicesAsync(bytes, sampleRate)).Select(sr => sr.sr);
@@ -1354,14 +1354,14 @@ namespace WoundifyShared
                 {
                     if (fileName.EndsWith(".txt")) // implement json same as Identify?
                     {
-                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
+                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // TODO: implement local file name scheme
                         if (Options.options.debugLevel >= 3)
                             AllServiceResponses = (AllParaphraseServiceResponses = await ParaphraseServices.RunAllPreferredParaphraseServicesAsync(text)).Select(sr => sr.sr);
                         r = await ParaphraseServices.PreferredOrderingParaphraseServices[0].ParaphraseServiceAsync(text);
                     }
                     else if (fileName.EndsWith(".wav"))
                     {
-                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // todo: implement local file scheme (non-tempFolder directory)
+                        bytes = System.IO.File.ReadAllBytes(fileName.Substring(1)); // TODO: implement local file scheme (non-tempFolder directory)
                         int sampleRate = await Audio.GetSampleRateAsync(fileName.Substring(1));
                         if (Options.options.debugLevel >= 4)
                             AllServiceResponses = (AllParaphraseServiceResponses = await ParaphraseServices.RunAllPreferredParaphraseServicesAsync(bytes, sampleRate)).Select(sr => sr.sr);
@@ -1428,7 +1428,7 @@ namespace WoundifyShared
                 {
                     if (fileName.EndsWith(".txt"))
                     {
-                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // todo: implement local file name scheme
+                        text = System.IO.File.ReadAllText(fileName.Substring(1)); // TODO: implement local file name scheme
                     }
                     else
                     {

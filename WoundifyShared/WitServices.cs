@@ -16,7 +16,9 @@ namespace WoundifyShared
                     new Tuple<string, string>("Content-Type", service.request.headers[1].ContentType), // ;bits=16;rate=" + sampleRate.ToString()); // 403 if wrong
             };
             SpeechToTextServiceResponse response = new SpeechToTextServiceResponse();
-            response = await SpeechToTextServiceAsync(audioBytes, sampleRate, Headers);
+            Log.WriteLine("audio file length:" + audioBytes.Length + " sampleRate:" + sampleRate);
+
+            response.sr = await PostAsync(service, null, Headers, null, audioBytes);
             await ExtractResultAsync(service, response.sr);
             return response;
         }

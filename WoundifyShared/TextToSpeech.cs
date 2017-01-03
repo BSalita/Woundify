@@ -13,7 +13,7 @@ namespace WoundifyShared
                 {
                     using (Windows.Media.SpeechSynthesis.SpeechSynthesisStream synthStream = await synth.SynthesizeTextToStreamAsync(text)) // doesn't handle special characters such as quotes
                     {
-                        // todo: obsolete to use DataReader? use await Windows.Storage.FileIO.Read...(file);
+                        // TODO: obsolete to use DataReader? use await Windows.Storage.FileIO.Read...(file);
                         using (Windows.Storage.Streams.DataReader reader = new Windows.Storage.Streams.DataReader(synthStream))
                         {
                             await reader.LoadAsync((uint)synthStream.Size);
@@ -59,7 +59,7 @@ namespace WoundifyShared
         }
         public static async System.Threading.Tasks.Task<string> TextToSpelledPronunciation(string text)
         {
-            return text; // todo: implement
+            return text; // TODO: implement
         }
 #else
         public static async System.Threading.Tasks.Task<Byte[]> TextToSpeechServiceAsync(string text, int sampleRate)

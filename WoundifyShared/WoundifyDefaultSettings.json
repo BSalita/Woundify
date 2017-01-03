@@ -1,6 +1,6 @@
 {
   "version": "0.0",
-  "debugLevel": 3,
+  "debugLevel": 3, // careful. level 3+ turns on preferred service so will double an api request
   "tempFolderPath": "",
   "logFilePath": "",
   "curlFilePath": "",
@@ -165,6 +165,7 @@
         "BingSpeechToTextService",
         //"GoogleSpeechToTextService",
         "HoundifySpeechToTextService",
+        "HpeHavenSpeechToTextService",
         "IbmWatsonSpeechToTextService",
         "WindowsSpeechToTextService",
         "WitSpeechToTextService"
@@ -192,9 +193,9 @@
       "key": "Tone",
       "name": "ToneService",
       "preferredServices": [
+        "IbmWatsonToneService",
         "BingSentimentService",
-        "GoogleCloudAnalyzeSentimentService",
-        "IbmWatsonToneService"
+        "GoogleCloudAnalyzeSentimentService"
       ]
     },
     {
@@ -408,13 +409,10 @@
           },
           {
             "Name": "BearerAuthentication",
+            "OcpApimSubscriptionKey": "",
             "BearerAuthentication": {
               "type": "bearer", // { basic | bearer | <custom> }
-              "clientID": "",
-              "clientSecret": "",
-              "scope": "https://speech.platform.bing.com",
-              "uri": "https://oxford-speech.cloudapp.net/token/issueToken",
-              "grant": "grant_type=client_credentials&client_id={clientID}&client_secret={clientSecret}&scope={scope}"
+              "uri": "https://api.cognitive.microsoft.com/sts/v1.0/issueToken"
             }
           },
           {
@@ -428,7 +426,7 @@
       },
       "response": {
         "missingResponse": "whatever",
-        "jsonPath": "results[0].name"
+        "jsonPath": "header.name"
       }
     },
     {
@@ -439,9 +437,9 @@
         "preferChunkedEncodedRequests": false,
         "uri": {
           "scheme": "https",
-          "host": "bingapis.azure-api.net",
-          "path": "api/v5/spellcheck",
-          "query": "proof&mkt=en-US" // must have mkt=en-US for use outside of US
+          "host": "api.cognitive.microsoft.com",
+          "path": "bing/v5.0/spellcheck",
+          "query": "mode=proof&mkt=en-US" // must have mkt=en-US for use outside of US
         },
         "headers": [
           {
@@ -504,7 +502,7 @@
         "uri": {
           "scheme": "https",
           "host": "language.googleapis.com",
-          "path": "v1alpha1/documents:analyzeEntities",
+          "path": "v1/documents:analyzeEntities",
           "query": "key={key}"
         },
         "headers": [
@@ -527,7 +525,7 @@
       },
       "response": {
         "missingResponse": "whatever",
-        "jsonPath": ""
+        "jsonPath": "entities[*].name"
       }
     },
     {
@@ -539,7 +537,7 @@
         "uri": {
           "scheme": "https",
           "host": "language.googleapis.com",
-          "path": "v1alpha1/documents:analyzeSentiment",
+          "path": "v1/documents:analyzeSentiment",
           "query": "key={key}"
         },
         "headers": [
@@ -574,7 +572,7 @@
         "uri": {
           "scheme": "https",
           "host": "language.googleapis.com",
-          "path": "v1alpha1/documents:annotateText",
+          "path": "v1/documents:annotateText",
           "query": "key={key}"
         },
         "headers": [
@@ -608,9 +606,9 @@
         "preferChunkedEncodedRequests": false,
         "uri": {
           "scheme": "https",
-          "host": "language.googleapis.com",
-          "path": "v1alpha1/documents:detectLanguage",
-          "query": "key={key}"
+          "host": "translation.googleapis.com",
+          "path": "language/translate/v2/detect",
+          "query": "key={key}&q={text}"
         },
         "headers": [
           {
@@ -632,7 +630,7 @@
       },
       "response": {
         "missingResponse": "whatever",
-        "jsonPath": "language"
+        "jsonPath": "data.detections[0][0].language"
       }
     },
     {
@@ -644,7 +642,7 @@
         "uri": {
           "scheme": "https",
           "host": "speech.googleapis.com",
-          "path": "v1/speech:recognize",
+          "path": "v1beta1/speech:syncrecognize",
           "query": "key={key}"
         },
         "headers": [
@@ -662,12 +660,12 @@
         ],
         "data": {
           "type": "base64", // { ascii | base64 | binary | json | raw | string | urlencode }
-          "value": "{'initialRequest':{'encoding':'LINEAR16','sampleRate':16000},'audioRequest':{'content':'{text}'}}"
+          "value": "{'config':{'encoding':'LINEAR16','sampleRate':16000,'languageCode':'en-US'},'audio':{'content':'{text}'}}"
         }
       },
       "response": {
         "missingResponse": "whatever",
-        "jsonPath": "responses[0].results[0].alternatives[0].transcript"
+        "jsonPath": "results[0].alternatives[0].transcript"
       }
     },
     {
@@ -760,7 +758,7 @@
       "response": {
         "missingResponse": "whatever",
         "PartialTranscriptsDesired": false,
-        "jsonPath": ""
+        "jsonPath": "AllResults[0].SpokenResponse"
       }
     },
     {
@@ -786,13 +784,13 @@
           }
         ],
         "data": {
-          "type": "string" // { ascii | base64 | binary | json | raw | string | urlencode }
+          "type": "binary" // { ascii | base64 | binary | json | raw | string | urlencode }
         }
       },
       "response": {
         "missingResponse": "whatever",
         "PartialTranscriptsDesired": false,
-        "jsonPath": ""
+        "jsonPath": "AllResults[0].SpokenResponse"
       }
     },
     {
@@ -823,6 +821,27 @@
       "response": {
         "missingResponse": "whatever",
         "jsonPath": "AllResults[0].SpokenResponse"
+      }
+    },
+    {
+      "name": "HpeHavenSpeechToTextService",
+      "classInterface": "HpeHavenServices.ISpeechToTextService",
+      "request": {
+        "method": "post", // { "get" | "post" | <custom> }
+        "preferChunkedEncodedRequests": false,
+        "uri": {
+          "scheme": "https",
+          "host": "api.havenondemand.com",
+          "path": "1/api/async/recognizespeech/v1"
+        },
+        "data": {
+          "type": "urlencode", // { ascii | base64 | binary | json | raw | string | urlencode }
+          "value": "file={text}&apikey=222693c9-6449-470f-a611-2d4433980dc1&language=en-US&interval=-1"
+        }
+      },
+      "response": {
+        "missingResponse": "whatever",
+        "jsonPath": "actions[0].result.document[0].content"
       }
     },
     {
@@ -1070,7 +1089,7 @@
           "scheme": "https",
           "host": "api.wit.ai",
           "path": "speech",
-          "query": "v=20141022"
+          "query": "v=20160526"
         },
         "headers": [
           {

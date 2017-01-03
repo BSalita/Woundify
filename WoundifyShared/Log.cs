@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices; // for CallerFilePath, CallerMemberName, 
 
 namespace WoundifyShared
 {
-    // ToDo: output using MessageDialog
+    // TODO: output using MessageDialog
     //var messageDialog = new Windows.UI.Popups.MessageDialog(message);
     //await messageDialog.ShowAsync();
     class Console

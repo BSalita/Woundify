@@ -58,7 +58,7 @@ namespace WoundifyShared
         public static async System.Threading.Tasks.Task MicrophoneToFileAsync(string fileName, TimeSpan timeout)
         {
             Log.WriteLine("fileName:" + fileName + " timeout:" + timeout);
-            AudioUtilitiesUWP.Audio audio = new AudioUtilitiesUWP.Audio(); // todo: make permanent graphs of: mic-to-file, mic-to-speaker, file-to-speaker
+            AudioUtilitiesUWP.Audio audio = new AudioUtilitiesUWP.Audio(); // TODO: make permanent graphs of: mic-to-file, mic-to-speaker, file-to-speaker
             await audio.CreateAudioGraphAsync(Options.options.tempFolderPath + fileName);
             audio.Start();
             System.Threading.Tasks.Task.Delay(timeout).Wait();

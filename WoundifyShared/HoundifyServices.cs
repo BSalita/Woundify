@@ -100,7 +100,7 @@ namespace WoundifyShared
             Windows.Storage.Streams.IBuffer MacHashBuf = MacHash.GetValueAndReset();
             string HashSignature = Windows.Security.Cryptography.CryptographicBuffer.EncodeToBase64String(MacHashBuf).Replace('+', '-').Replace('/', '_');
 #else
-            byte[] KeyBytes = Convert.FromBase64String(FriendlyClientKey); // todo: shouldn't this be System.Text.Encoding.UTF8.GetBytes?
+            byte[] KeyBytes = Convert.FromBase64String(FriendlyClientKey); // TODO: shouldn't this be System.Text.Encoding.UTF8.GetBytes?
             byte[] MessageBytes = System.Text.Encoding.UTF8.GetBytes(UserID + ";" + RequestID + Timestamp);
             byte[] HashBytes = new System.Security.Cryptography.HMACSHA256(KeyBytes).ComputeHash(MessageBytes); // always length of 32?
             string HashSignature = Convert.ToBase64String(HashBytes).Replace('+', '-').Replace('/', '_');
@@ -122,15 +122,16 @@ namespace WoundifyShared
                 Log.WriteLine("HoundClientAuthentication:" + HoundClientAuthentication);
             }
 #if true
-            Log.WriteLine("curl -X POST --data-binary @computer.wav --header \"Hound-Request-Authentication:" + HoundRequestAuthentication + "\" --header \"Hound-Client-Authentication:" + HoundClientAuthentication + "\" --header \"Hound-Request-Info:" + RequestBodyJson.Replace('"', '\'') + "\" " + uri);
+            // TODO: put curl into woundifysettings.json?
+            Log.WriteLine("curl -X POST" + " --data-binary @computer.wav" + " --header \"Hound-Request-Authentication:" + HoundRequestAuthentication + "\" --header \"Hound-Client-Authentication:" + HoundClientAuthentication + "\" --header \"Hound-Request-Info:" + RequestBodyJson.Replace('"', '\'') + "\" " + uri);
 #endif
             System.Collections.Generic.List<Tuple<string, string>> headers = new System.Collections.Generic.List<Tuple<string, string>>()
-                {
-                    new Tuple<string, string>("Hound-Request-Info-Length", RequestBodyJson.Length.ToString()),
-                    new Tuple<string, string>("Hound-Request-Authentication", HoundRequestAuthentication),
-                    new Tuple<string, string>("Hound-Client-Authentication", HoundClientAuthentication)
+            {
+                new Tuple<string, string>("Hound-Request-Info-Length", RequestBodyJson.Length.ToString()),
+                new Tuple<string, string>("Hound-Request-Authentication", HoundRequestAuthentication),
+                new Tuple<string, string>("Hound-Client-Authentication", HoundClientAuthentication)
             };
-            response = await PostAsync(uri,RequestBodyBytes, headers);
+            response = await PostAsync(service, uri, RequestBodyBytes, headers);
             return response;
         }
 

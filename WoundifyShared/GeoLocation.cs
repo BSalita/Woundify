@@ -24,7 +24,7 @@ namespace WoundifyShared
 
         static GeoLocation() // note static constructor - always instantiated upon startup
         {
-            GetGeoLocationAsync(); // todo: safer if awaited
+            GetGeoLocationAsync(); // TODO: safer if awaited
         }
 
  
@@ -150,7 +150,7 @@ namespace WoundifyShared
 
                     // Subscribe to the StatusChanged event to get updates of location status changes.
 #if false
-                    // todo: disable updating due to very frequenty updating (per second).
+                    // TODO: disable updating due to very frequenty updating (per second).
                     _geolocator.PositionChanged += OnPositionChanged;
 #endif
                     _geolocator.StatusChanged += OnStatusChangedAsync;
@@ -180,7 +180,7 @@ namespace WoundifyShared
 #else
         static GeoLocation()
         {
-            // todo: not implemented in non-Windows 10. Need to call web service?
+            // TODO: not implemented in non-Windows 10. Need to call web service?
         }
 #endif
     }

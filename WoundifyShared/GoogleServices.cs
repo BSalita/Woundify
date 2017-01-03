@@ -21,7 +21,7 @@ namespace WoundifyShared
             System.Collections.Generic.List<Tuple<string, string>> uriSubstitutes = new System.Collections.Generic.List<Tuple<string, string>>()
             {
                 new Tuple<string, string>("{language}", Options.options.locale.language ),
-                new Tuple<string, string>("{key}", service.request.headers[1].BearerAuthentication.key) // todo: replace [1] with dictionary lookup
+                new Tuple<string, string>("{key}", service.request.headers[1].BearerAuthentication.key) // TODO: replace [1] with dictionary lookup
             };
             response.sr = await PostAsync(service, uriSubstitutes, null, null, audioBytes);
             await ExtractResultAsync(service, response.sr);

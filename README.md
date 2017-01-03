@@ -81,7 +81,7 @@ Dependencies:
 Development Notes:
 * WoundifyUWP (UWP version only) needs a few app capabilities to be granted. Go to Package.appxmanifest->Capabilities and enable the following: Internet (Client), Location, Microphone
 * Microsoft.Speech doesn't offer a grammar for dictation input, that's why System.Speech is used.
-* When compiling source code, it is safe to ignore the Visual Studio warning CS1998 "This async method lacks `await` operators and will run synchronously. Consider using the `await` operator to await non-blocking API calls, or `await Task.Run(...)` to do CPU-bound work on a background thread."
+* When compiling source code, it is safe to ignore the Visual Studio warning CS1998 "This async method lacks `await` operators and will run synchronously. Consider using the `await` operator to await non-blocking API calls, or `await Task.Run(...)` TODO CPU-bound work on a background thread."
 
 Recommended Settings File Customization:
 * It's best to create a WoundifySettings.json file to contain your customizations. The file will override any settings obtained from the WoundifyDefaultSettings.json file. Use the SETTINGS command to verify that your settings are correct.

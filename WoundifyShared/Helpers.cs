@@ -1,9 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace WoundifyShared
 {
     class Helpers
     {
+        public static Dictionary<string, string> stringToDictionary(string line, char stringSplit = '&', char keyValueSplit = '=')
+        {
+            return line.Split(new[] { stringSplit }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Split(new[] { keyValueSplit })).ToDictionary(x => x[0], y => y[1]); ;
+        }
+
         public static string[] ParseArguments(string commandLine, char[] separators, bool removeQuotes = false)
         {
             char[] parmChars = commandLine.ToCharArray();
@@ -44,7 +51,7 @@ namespace WoundifyShared
             {
                 Windows.Storage.StorageFolder tempFolder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(Options.options.tempFolderPath);
                 Windows.Storage.StorageFile file = await tempFolder.GetFileAsync(fileName);
-                // todo: obsolete to use DataReader? use await Windows.Storage.FileIO.Read...(file);
+                // TODO: obsolete to use DataReader? use await Windows.Storage.FileIO.Read...(file);
                 using (Windows.Storage.Streams.IRandomAccessStream stream = await file.OpenReadAsync())
                 {
                     using (Windows.Storage.Streams.DataReader reader = new Windows.Storage.Streams.DataReader(stream.GetInputStreamAt(0)))
