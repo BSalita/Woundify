@@ -1,5 +1,5 @@
 # Woundify
-Woundify is a cognitive services (AI) tool used to compare, benchmark and script AI services. Woundify is written in C# and is compatible with Windows Console, WPF and UWP systems. Woundify supports AI services from Google, Houndify, HPE, IBM Watson, Microsoft (Bing), and Wit.ai. Woundify was originally developed as a Windows client for the Houndify intent service.
+Woundify is a cognitive services (AI) tool used to compare, benchmark, script, and demonstrate usage of major AI services. Woundify is written in C# and is compatible with Windows Console, WPF and UWP systems. Woundify supports AI services from Google, Houndify, HPE, IBM Watson, Microsoft (Bing), and Wit.ai. Woundify was originally developed as a Windows client for the Houndify intent service.
 
 ## Requisites
 
