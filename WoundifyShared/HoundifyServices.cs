@@ -8,63 +8,65 @@ using Newtonsoft.Json.Linq;
 
 namespace WoundifyShared
 {
-    class HoundifyServices : WoundifyServices
+    class HoundifyIntentServices : GenericCallServices // specific to Intent. Not used for Houndify SpeechToText.
+    {
+        public HoundifyIntentServices(Settings.Service service) : base(service)
+        {
+        }
+        public override async System.Threading.Tasks.Task<CallServiceResponse<IGenericServiceResponse>> CallServiceAsync(byte[] audioBytes, System.Collections.Generic.Dictionary<string, string> apiArgs)
+        {
+            Log.WriteLine("HoundifyIntentServices: audioBytes.Length:" + audioBytes.Length);
+            //IntentServiceResponse response = new IntentServiceResponse(service);
+            CallServiceResponse<IGenericServiceResponse> response = new CallServiceResponse<IGenericServiceResponse>(service);
+            response.Request = Array.Find(service.requests, p => p.argType == "binary");
+            await HoundifyServices.HoundifyPostAsync(service, response, HttpMethods.MakeUri(service.requests[0], apiArgs, null, ""), audioBytes, apiArgs);
+            return response;
+        }
+
+        public override async System.Threading.Tasks.Task<CallServiceResponse<IGenericServiceResponse>> CallServiceAsync(string text, System.Collections.Generic.Dictionary<string, string> apiArgs)
+        {
+            Log.WriteLine("HoundifyIntentServices: text:" + text);
+            //IntentServiceResponse response = new IntentServiceResponse(service);
+            CallServiceResponse<IGenericServiceResponse> response = new CallServiceResponse<IGenericServiceResponse>(service);
+            response.Request = Array.Find(service.requests, p => p.argType == "text");
+            await HoundifyServices.HoundifyPostAsync(service, response, HttpMethods.MakeUri(service.requests[0], apiArgs, null, text), new byte[0], apiArgs);
+            return response;
+        }
+
+    }
+    class HoundifySpeechToTextServices : GenericCallServices // specific to Intent. Not used for Houndify SpeechToText.
+    {
+        public HoundifySpeechToTextServices(Settings.Service service) : base(service)
+        {
+        }
+        public override async System.Threading.Tasks.Task<CallServiceResponse<IGenericServiceResponse>> CallServiceAsync(byte[] audioBytes, System.Collections.Generic.Dictionary<string, string> apiArgs)
+        {
+            Log.WriteLine("HoundifySpeechToTextServices: audioBytes.Length:" + audioBytes.Length);
+            //IntentServiceResponse response = new IntentServiceResponse(service);
+            CallServiceResponse<IGenericServiceResponse> response = new CallServiceResponse<IGenericServiceResponse>(service);
+            response.Request = Array.Find(service.requests, p => p.argType == "binary");
+            await HoundifyServices.HoundifyPostAsync(service, response, HttpMethods.MakeUri(service.requests[0], apiArgs, null, ""), audioBytes, apiArgs);
+            return response;
+        }
+    }
+
+    static class HoundifyServices
     {
         // save IntentConversationState (info about request and requestor) obtained from Houndify's ResultInfo for passing on to next Houndify request.
         private static JToken IntentConversationState = null; // need this to expire
+                                                              // override is working but somewhat verbose. Need to explore other methods such as passing Type? Need to combine Command->Run->Call as they're all the same Type. Make tail of Command into virtual.
+                                                              //public override async System.Threading.Tasks.Task<GenericCallServiceResponse<IHoundifyServiceResponse>> CallServiceAsync(byte[] bytes, System.Collections.Generic.Dictionary<string, string> apiArgs)
 
-        public HoundifyServices(Settings.Service service) : base(service)
+        public static async System.Threading.Tasks.Task HoundifyPostAsync(Settings.Service service, ServiceResponse response, Uri uri, byte[] RequestContentBytes, System.Collections.Generic.Dictionary<string, string> apiArgs)
         {
-        }
-
-        public override async System.Threading.Tasks.Task<IntentServiceResponse> IntentServiceAsync(string text)
-        {
-            IntentServiceResponse response = new IntentServiceResponse();
-            System.Collections.Generic.List<Tuple<string, string>> uriSubstitutes = new System.Collections.Generic.List<Tuple<string, string>>()
-            {
-                new Tuple<string, string>("{text}", System.Uri.EscapeDataString(text.Trim())),
-            };
-            response.sr = await HoundifyPostAsync(uriSubstitutes, new byte[0]);
-            await ExtractResultAsync(service, response.sr);
-            return response;
-        }
-
-        public override async System.Threading.Tasks.Task<IntentServiceResponse> IntentServiceAsync(byte[] audioBytes, int sampleRate)
-        {
-            IntentServiceResponse response = new IntentServiceResponse();
-            response.sr = await HoundifyPostAsync(audioBytes, sampleRate);
-            await ExtractResultAsync(service, response.sr);
-            return response;
-        }
-
-        public override async System.Threading.Tasks.Task<SpeechToTextServiceResponse> SpeechToTextServiceAsync(byte[] audioBytes, int sampleRate)
-        {
-            SpeechToTextServiceResponse response = new SpeechToTextServiceResponse();
-            response.sr = await HoundifyPostAsync(audioBytes, sampleRate);
-            await ExtractResultAsync(service, response.sr);
-            return response;
-        }
-
-        public async System.Threading.Tasks.Task<ServiceResponse> HoundifyPostAsync(byte[] RequestContentBytes, int sampleRate = 0)
-        {
-            return await HoundifyPostAsync(MakeUri(service, null), RequestContentBytes, sampleRate);
-        }
-
-        public async System.Threading.Tasks.Task<ServiceResponse> HoundifyPostAsync(System.Collections.Generic.List<Tuple<string, string>> uriSubstitutes, byte[] RequestContentBytes, int sampleRate = 0)
-        {
-            return await HoundifyPostAsync(MakeUri(service, uriSubstitutes), RequestContentBytes, sampleRate);
-        }
-
-        public async System.Threading.Tasks.Task<ServiceResponse> HoundifyPostAsync(Uri uri, byte[] RequestContentBytes, int sampleRate = 0)
-        {
-            ServiceResponse response = new ServiceResponse(this.ToString());
             Log.WriteLine("Content length:" + RequestContentBytes.Length);
 
-            string ClientID = service.request.headers[0].HoundifyAuthentication.ClientID; // moot? throws Exception thrown: 'Microsoft.CSharp.RuntimeBinder.RuntimeBinderException' in Microsoft.CSharp.dll
-            string ClientKey = service.request.headers[0].HoundifyAuthentication.ClientKey; // moot? Exception thrown: 'Microsoft.CSharp.RuntimeBinder.RuntimeBinderException' in Microsoft.CSharp.dll
-            string UserID = service.request.headers[0].HoundifyAuthentication.UserID;
+            string ClientID = service.requests[0].headers[0].HoundifyAuthentication.ClientID; // moot? throws Exception thrown: 'Microsoft.CSharp.RuntimeBinder.RuntimeBinderException' in Microsoft.CSharp.dll
+            string ClientKey = service.requests[0].headers[0].HoundifyAuthentication.ClientKey; // moot? Exception thrown: 'Microsoft.CSharp.RuntimeBinder.RuntimeBinderException' in Microsoft.CSharp.dll
+            string UserID = service.requests[0].headers[0].HoundifyAuthentication.UserID;
+            JObject RequestBodyObject;
 
-            JObject RequestBodyObject = JObject.FromObject(new
+            RequestBodyObject = JObject.FromObject(new
             {
                 Latitude = GeoLocation.latitude,
                 Longitude = GeoLocation.longitude,
@@ -73,9 +75,9 @@ namespace WoundifyShared
                 UserID = UserID,
                 ClientID = ClientID,
                 // audio specific
-                PartialTranscriptsDesired = Options.services["HoundifyIntentAudioService"].service.response.PartialTranscriptsDesired
+                PartialTranscriptsDesired = Options.services["HoundifyIntentAudioService"].service.requests[0].PartialTranscriptsDesired,
+                //ConversationState = IntentConversationState,
             });
-
             if (IntentConversationState != null)
                 RequestBodyObject.Add(IntentConversationState);
 
@@ -131,11 +133,12 @@ namespace WoundifyShared
                 new Tuple<string, string>("Hound-Request-Authentication", HoundRequestAuthentication),
                 new Tuple<string, string>("Hound-Client-Authentication", HoundClientAuthentication)
             };
-            response = await PostAsync(service, uri, RequestBodyBytes, headers);
-            return response;
+            await HttpMethods.CallApiAsync(response, uri, RequestBodyBytes, apiArgs, headers);
+            ProcessResponse(response.ResponseJToken);
+            await HttpMethods.ExtractResultAsync(response);
         }
 
-        private JToken ProcessResponse(JToken response)
+        private static JToken ProcessResponse(JToken response)
         {
             JToken tok = null;
             if (response == null)
@@ -146,22 +149,8 @@ namespace WoundifyShared
                     Log.WriteLine("Status property not found");
                 else
                     Log.WriteLine("Status is " + response.SelectToken("$.Status").ToString());
-                if ((tok = response.SelectToken("$.AllResults.ConversationState")) != null && (tok = tok.Parent) != null) // applies to many formats?
-                    IntentConversationState = tok;
-                JToken tokFormat;
-                if ((tokFormat = response.SelectToken("$.Format")) != null)
-                {
-                    Tuple<string, string>[] tuple = new Tuple<string, string>[] {
-                        new Tuple<string, string>("SoundHoundVoiceSearchParialTranscript", "$.PartialTranscript"),
-                        new Tuple<string, string>("SoundHoundVoiceSearchResult", "$.AllResults..SpokenResponseLong")
-                    };
-                    foreach (Tuple<string, string> t in tuple)
-                    {
-                        if (tokFormat.ToString() == t.Item1)
-                            if ((tok = response.SelectToken(t.Item2)) != null) // && (tok = tok.Parent) != null)
-                                break;
-                    }
-                }
+                if ((tok = response.SelectToken("$.AllResults[0].ConversationState")) != null) // not sure why && tok.Children().Count doesn't compile
+                    IntentConversationState = tok.Children().First();
             }
             return tok;
         }

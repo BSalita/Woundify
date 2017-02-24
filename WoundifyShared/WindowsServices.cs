@@ -2,39 +2,69 @@
 
 namespace WoundifyShared
 {
-    class WindowsServices : WoundifyServices
+    class WindowsPronounceService : GenericCallServices
     {
-        public WindowsServices(Settings.Service service) : base(service)
+        public WindowsPronounceService(Settings.Service service) : base(service)
         {
-            this.service = service;
         }
-
-        public override async System.Threading.Tasks.Task<SpeechToTextServiceResponse> SpeechToTextServiceAsync(byte[] audioBytes, int sampleRate)
+ 
+        public override async System.Threading.Tasks.Task<CallServiceResponse<IGenericServiceResponse>> CallServiceAsync(string text, System.Collections.Generic.Dictionary<string, string> apiArgs)
         {
-            SpeechToTextServiceResponse response = new SpeechToTextServiceResponse();
+            Log.WriteLine("text:" + text);
+            CallServiceResponse<IGenericServiceResponse> response = new CallServiceResponse<IGenericServiceResponse>(service);
 
-            Log.WriteLine("audio file length:" + audioBytes.Length + " sampleRate:" + sampleRate);
-            response.sr = new ServiceResponse(this.ToString());
-            response.sr.stopWatch.Start();
-            response.sr.ResponseResult = await SpeechToText.SpeechToTextServiceAsync(audioBytes);
-            response.sr.StatusCode = 200;
-            response.sr.stopWatch.Stop();
-            response.sr.TotalElapsedMilliseconds = response.sr.RequestElapsedMilliseconds = response.sr.stopWatch.ElapsedMilliseconds;
-            Log.WriteLine("Total Elapsed milliseconds:" + response.sr.TotalElapsedMilliseconds);
+            response.Service = service;
+            response.Request = Array.Find(service.requests, p => p.argType == "text");
+            response.stopWatch.Start();
+            response.ResponseResult = await TextToSpeech.TextToSpelledPronunciationServiceAsync(text, apiArgs);
+            response.StatusCode = 200;
+            response.stopWatch.Stop();
+            response.TotalElapsedMilliseconds = response.RequestElapsedMilliseconds = response.stopWatch.ElapsedMilliseconds;
+            Log.WriteLine("Total Elapsed milliseconds:" + response.TotalElapsedMilliseconds);
             return response;
         }
+    }
 
-        public override async System.Threading.Tasks.Task<TextToSpeechServiceResponse> TextToSpeechServiceAsync(string text, int sampleRate)
+    class WindowsSpeechToTextService : GenericCallServices
+    {
+        public WindowsSpeechToTextService(Settings.Service service) : base(service)
         {
-            TextToSpeechServiceResponse response = new TextToSpeechServiceResponse();
-            Log.WriteLine("text:" + text + " sampleRate:" + sampleRate);
-            response.sr = new ServiceResponse(this.ToString());
-            response.sr.stopWatch.Start();
-            response.sr.ResponseBytes = await TextToSpeech.TextToSpeechServiceAsync(text, sampleRate);
-            response.sr.StatusCode = 200;
-            response.sr.stopWatch.Stop();
-            response.sr.TotalElapsedMilliseconds = response.sr.RequestElapsedMilliseconds = response.sr.stopWatch.ElapsedMilliseconds;
-            Log.WriteLine("Total Elapsed milliseconds:" + response.sr.TotalElapsedMilliseconds);
+        }
+        public override async System.Threading.Tasks.Task<CallServiceResponse<IGenericServiceResponse>> CallServiceAsync(byte[] audioBytes, System.Collections.Generic.Dictionary<string, string> apiArgs)
+        {
+            Log.WriteLine("audio file length:" + audioBytes.Length);
+            CallServiceResponse<IGenericServiceResponse> response = new CallServiceResponse<IGenericServiceResponse>(service);
+
+            response.Service = service;
+            response.Request = Array.Find(service.requests, p => p.argType == "binary");
+            response.stopWatch.Start();
+            response.ResponseResult = await SpeechToText.SpeechToTextServiceAsync(audioBytes, apiArgs);
+            response.StatusCode = 200;
+            response.stopWatch.Stop();
+            response.TotalElapsedMilliseconds = response.RequestElapsedMilliseconds = response.stopWatch.ElapsedMilliseconds;
+            Log.WriteLine("Total Elapsed milliseconds:" + response.TotalElapsedMilliseconds);
+            return response;
+        }
+    }
+
+    class WindowsTextToSpeechService : GenericCallServices
+    {
+        public WindowsTextToSpeechService(Settings.Service service) : base(service)
+        {
+        }
+        public override async System.Threading.Tasks.Task<CallServiceResponse<IGenericServiceResponse>> CallServiceAsync(string text, System.Collections.Generic.Dictionary<string, string> apiArgs)
+        {
+            Log.WriteLine("text:" + text);
+            CallServiceResponse<IGenericServiceResponse> response = new CallServiceResponse<IGenericServiceResponse>(service);
+
+            response.Service = service;
+            response.Request = Array.Find(service.requests, p => p.argType == "text");
+            response.stopWatch.Start();
+            response.ResponseBytes = await TextToSpeech.TextToSpeechServiceAsync(text, apiArgs);
+            response.StatusCode = 200;
+            response.stopWatch.Stop();
+            response.TotalElapsedMilliseconds = response.RequestElapsedMilliseconds = response.stopWatch.ElapsedMilliseconds;
+            Log.WriteLine("Total Elapsed milliseconds:" + response.TotalElapsedMilliseconds);
             return response;
         }
     }

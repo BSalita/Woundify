@@ -127,7 +127,7 @@ namespace WoundifyShared
             }
         }
 
-        public static async System.Threading.Tasks.Task<int> GetSampleRateAsync(string fileName)
+        public static async System.Threading.Tasks.Task<int> GetSampleRateAsync(string fileName) // todo: need "byte[] bytes" overload
         {
             using (NAudio.Wave.WaveFileReader file = new NAudio.Wave.WaveFileReader(fileName))
             {

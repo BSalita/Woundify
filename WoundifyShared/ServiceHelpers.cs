@@ -52,7 +52,7 @@ namespace WoundifyShared
             System.Collections.Generic.IEnumerable<Type> ISpeechToTextServiceTypes = currentAssembly.DefinedTypes
                    .Select(type => typeof(IServiceResponse));
 #else
-            System.Collections.Generic.Dictionary<string, Type> ServiceTypes = AppDomain
+            System.Collections.Generic.Dictionary<string, Type> ServiceTypesOfT = AppDomain
                     .CurrentDomain
                     .GetAssemblies()
                     .SelectMany(assembly => assembly.GetTypes())
@@ -60,17 +60,38 @@ namespace WoundifyShared
                     .ToDictionary(k => k.Name + "." + typeof(T).Name, v => v, StringComparer.OrdinalIgnoreCase); // create key of Class+Interface
 #endif
             // Match user preferences with available classes. Build list of service objects.
+            if (Options.options.debugLevel >= 5)
+            {
+#if false
+                var ServiceTypesGeneric = AppDomain
+                        .CurrentDomain
+                        .GetAssemblies()
+                        .SelectMany(assembly => assembly.GetTypes())
+                        .Where(type => type.IsClass && typeof(GenericCallServices).IsAssignableFrom(type));
+                foreach (var serv in ServiceTypesGeneric)
+                    Console.WriteLine(serv.Name);
+#else
+                foreach (var serv in ServiceTypesOfT)
+                    Console.WriteLine(serv.Key);
+#endif
+
+            }
             foreach (string prefs in preferredServices)
             {
                 if (!Options.services.ContainsKey(prefs))
                     throw new NotImplementedException();
                 Settings.Service service = Options.services[prefs].service; // preferred service must exist
-                if (ServiceTypes.ContainsKey(service.classInterface)) // use class that implements T
+                if (ServiceTypesOfT.ContainsKey(service.classInterface)) // use class that implements T
                 {
-                    PreferredOrderingOfServices.Add((T)ServiceTypes[service.classInterface].GetConstructor(new Type[] { new Settings.Service().GetType() }).Invoke(new object[] { service }));
+                    PreferredOrderingOfServices.Add((T)ServiceTypesOfT[service.classInterface].GetConstructor(new Type[] { new Settings.Service().GetType() }).Invoke(new object[] { service }));
                 }
                 else
-                    throw new MissingMethodException(); // Class or interface does not exist 
+                {
+                    Console.WriteLine("Cannot find Service class:" + service.classInterface); // Class or interface does not exist 
+                    foreach (var serv in ServiceTypesOfT)
+                        Console.WriteLine(serv.Key + "<>" + service.classInterface);
+                    throw new Exception("Cannot find Service class:" + service.classInterface); // Class or interface does not exist 
+                }
             }
         }
     }

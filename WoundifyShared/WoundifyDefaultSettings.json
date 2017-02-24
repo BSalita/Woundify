@@ -20,88 +20,395 @@
   },
   "commands": [
     {
-      "key": "End",
-      "name": "End",
-      "help": "End execution."
-    },
-    {
       "key": "Annotate",
       "name": "Annotate",
+      "classInterface": "GenericCommand.IProcessACommand",
       "help": "Annotate the text.",
       "commandService": "AnnotateService"
     },
     {
+      "key": "Barcode",
+      "name": "Barcode",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Read barcode.",
+      "commandService": "BarcodeService"
+    },
+    {
+      "key": "BreakIntoWords",
+      "name": "BreakIntoWords",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Break text info words.",
+      "commandService": "BreakIntoWordsService"
+    },
+    {
+      "key": "End",
+      "name": "End",
+      "classInterface": "EndCommand.IProcessACommand",
+      "help": "End execution."
+    },
+    {
       "key": "Entities",
       "name": "Entities",
+      "classInterface": "GenericCommand.IProcessACommand",
       "help": "Analyze proper nouns within text.",
       "commandService": "EntitiesService"
     },
     {
+      "key": "GenerateNextWords",
+      "name": "GenerateNextWords",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Generate the next words following some text.",
+      "commandService": "GenerateNextWordsService"
+    },
+    {
       "key": "Help",
       "name": "Help",
+      "classInterface": "HelpCommand.IProcessACommand",
       "help": "Show commands and options."
     },
     {
       "key": "Identify",
       "name": "Identify",
+      "classInterface": "GenericCommand.IProcessACommand",
       "help": "Identify language of text.",
       "commandService": "IdentifyLanguageService"
     },
     {
+      "key": "ImageInsight",
+      "name": "ImageInsight",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Tag an image using Insight model.",
+      "commandService": "ImageInsightService"
+    },
+    {
+      "key": "ImageSearch",
+      "name": "ImageSearch",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Tag an image using Search model.",
+      "commandService": "ImageSearchService"
+    },
+    {
+      "key": "ImageDescribe",
+      "name": "ImageDescribe",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Tag an image using Describe model.",
+      "commandService": "ImageDescribeService"
+    },
+    {
+      "key": "ImageThumbnail",
+      "name": "ImageThumbnail",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Tag an image using Thumbnail model.",
+      "commandService": "ImageThumbnailService"
+    },
+    {
+      "key": "ImageTag",
+      "name": "ImageTag",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Tag an image using Tag model.",
+      "commandService": "ImageTagService"
+    },
+    {
+      "key": "ImageAgeGenderEthnicity",
+      "name": "ImageAgeGenderEthnicity",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Tag an image using Age Gender Ethnicity model.",
+      "commandService": "ImageAgeGenderEthnicityService"
+    },
+    {
+      "key": "ImageApparel",
+      "name": "ImageApparel",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Tag an image using apparel model.",
+      "commandService": "ImageApparelService"
+    },
+    {
+      "key": "ImageCelebrity",
+      "name": "ImageCelebrity",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Tag an image using Celebrity model.",
+      "commandService": "ImageCelebrityService"
+    },
+    {
+      "key": "ImageColor",
+      "name": "ImageColor",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Tag an image using Color model.",
+      "commandService": "ImageColorService"
+    },
+    {
+      "key": "ImageEmotion",
+      "name": "ImageEmotion",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Detect emotions within image.",
+      "commandService": "ImageEmotionService"
+    },
+    {
+      "key": "ImageFaceAnnotate",
+      "name": "ImageFaceAnnotate",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Locate facial characteristics.",
+      "commandService": "ImageFaceAnnotateService"
+    },
+    {
+      "key": "ImageFaceDetection",
+      "name": "ImageFaceDetection",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Tag an image using Face Detection model.",
+      "commandService": "ImageFaceDetectionService"
+    },
+    {
+      "key": "ImageRecognition",
+      "name": "ImageRecognition",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Recognize an image.",
+      "commandService": "ImageRecognitionService"
+    },
+    {
+      "key": "ImageFood",
+      "name": "ImageFood",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Tag an image using Food model.",
+      "commandService": "ImageFoodService"
+    },
+    {
+      "key": "ImageGeneral",
+      "name": "ImageGeneral",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Tag an image using General model.",
+      "commandService": "ImageGeneralService"
+    },
+    {
+      "key": "ImageLLL",
+      "name": "ImageLLL",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Tag an image using location, logo, label model.",
+      "commandService": "ImageLLLService"
+    },
+    {
+      "key": "ImageProperties",
+      "name": "ImageProperties",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Tag an image using properties models.",
+      "commandService": "ImagePropertiesService"
+    },
+    {
+      "key": "ImageSafe",
+      "name": "ImageSafe",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Tag an image using safe model.",
+      "commandService": "ImageSafeService"
+    },
+    {
+      "key": "ImageText",
+      "name": "ImageText",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Tag an image using text model.",
+      "commandService": "ImageTextService"
+    },
+    {
+      "key": "ImageNSFW",
+      "name": "ImageNSFW",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Tag an image using NSFW model.",
+      "commandService": "ImageNSFWService"
+    },
+    {
+      "key": "ImageTravel",
+      "name": "ImageTravel",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Tag an image using Travel model.",
+      "commandService": "ImageTravelService"
+    },
+    {
+      "key": "ImageWedding",
+      "name": "ImageWedding",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Tag an image using Wedding model.",
+      "commandService": "ImageWeddingService"
+    },
+    {
       "key": "Intent",
       "name": "Intent",
+      "classInterface": "GenericCommand.IProcessACommand",
       "help": "Intent of text.",
       "commandService": "IntentService"
     },
     {
-      "key": "Personality",
-      "name": "Personality",
-      "help": "Personality of text.",
-      "commandService": "PersonalityService"
+      "key": "KeyPhrases",
+      "name": "KeyPhrases",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Key phrases of text.",
+      "commandService": "KeyPhrasesService"
+    },
+    {
+      "key": "Listen",
+      "name": "Listen",
+      "classInterface": "ListenCommand.IProcessACommand",
+      "help": "Listen to text or audio.",
+      "commandService": "ListenService"
+    },
+    {
+      "key": "Loop",
+      "name": "Loop",
+      "classInterface": "LoopCommand.IProcessACommand",
+      "help": "Loop back to beginning.",
+      "commandService": "LoopService"
+    },
+    {
+      "key": "Ocr",
+      "name": "Ocr",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Ocr to text.",
+      "commandService": "OcrService"
     },
     {
       "key": "Paraphrase",
       "name": "Paraphrase",
+      "classInterface": "GenericCommand.IProcessACommand",
       "help": "[Deprecated] Paraphrase a sentence.",
       "commandService": "ParaphraseService"
     },
     {
       "key": "Parse",
       "name": "Parse",
+      "classInterface": "ParseCommand.IProcessACommand",
       "help": "Parse text.",
       "commandService": "ParseService"
     },
     {
+      "key": "Pause",
+      "name": "Pause",
+      "classInterface": "PauseCommand.IProcessACommand",
+      "help": "Pause for specified seconds.",
+      "commandService": "PauseService"
+    },
+    {
+      "key": "Quit",
+      "name": "Quit",
+      "classInterface": "QuitCommand.IProcessACommand",
+      "help": "Quit program.",
+      "commandService": "QuitService"
+    },
+    {
+      "key": "Personality",
+      "name": "Personality",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Personality of text.",
+      "commandService": "PersonalityService"
+    },
+    {
+      "key": "Pronounce",
+      "name": "Pronounce",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Show pronunciation of words.",
+      "commandService": "PronounceService"
+    },
+    {
+      "key": "Replay",
+      "name": "Replay",
+      "classInterface": "ReplayCommand.IProcessACommand",
+      "help": "Replay last command.",
+      "commandService": "ReplayService"
+    },
+    {
+      "key": "Response",
+      "name": "Response",
+      "classInterface": "ResponseCommand.IProcessACommand",
+      "help": "Stack response",
+      "commandService": "ResponseService"
+    },
+    {
+      "key": "Settings",
+      "name": "Settings",
+      "classInterface": "SettingsCommand.IProcessACommand",
+      "help": "View settings.",
+      "commandService": "SettingsService"
+    },
+    {
+      "key": "Show",
+      "name": "Show",
+      "classInterface": "ShowCommand.IProcessACommand",
+      "help": "Show contents of stack."
+    },
+    {
+      "key": "Speak",
+      "name": "Speak",
+      "classInterface": "SpeakCommand.IProcessACommand",
+      "help": "Speak text.",
+      "commandService": "SpeakService"
+    },
+    {
+      "key": "Speech",
+      "name": "Speech",
+      "classInterface": "SpeechCommand.IProcessACommand",
+      "help": "Speech input.",
+      "commandService": "SpeechService"
+    },
+    {
       "key": "SpeechToText",
       "name": "Speech",
+      "classInterface": "SpeechCommand.IProcessACommand",
       "help": "Speech to text.",
       "commandService": "SpeechToTextService"
     },
     {
       "key": "Spell",
       "name": "Spell",
+      "classInterface": "GenericCommand.IProcessACommand",
       "help": "Spell check text.",
       "commandService": "SpellService"
     },
     {
       "key": "TextToSpeech",
       "name": "Text",
+      "classInterface": "TextCommand.IProcessACommand",
       "help": "Capture as text.",
       "commandService": "TextToSpeechService"
     },
     {
+      "key": "Text",
+      "name": "Text",
+      "classInterface": "TextCommand.IProcessACommand",
+      "help": "Input text.",
+      "commandService": "TextService"
+    },
+    {
       "key": "Tone",
       "name": "Tone",
+      "classInterface": "GenericCommand.IProcessACommand",
       "help": "Tone of text.",
       "commandService": "ToneService"
     },
     {
+      "key": "TransformText",
+      "name": "TransformText",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Preprocess text for social jargon.",
+      "commandService": "TransformTextService"
+    },
+    {
       "key": "Translate",
       "name": "Translate",
+      "classInterface": "TranslateCommand.IProcessACommand",
       "help": "Translation of text.",
       "commandService": "TranslateService",
       "source": "en", // from
       "target": "es" // to
+    },
+    {
+      "key": "Wakeup",
+      "name": "Wakeup",
+      "classInterface": "WakeupCommand.IProcessACommand",
+      "help": "Listen for wakeup word, if implemented on platform.",
+      "commandService": "WakeupService"
+    },
+    {
+      "key": "XPath",
+      "name": "XPath",
+      "classInterface": "XPathCommand.IProcessACommand",
+      "help": "Apply xpath to xml response.",
+      "commandService": "XPathService"
     }
   ],
   "commandServices": [
@@ -113,19 +420,198 @@
       ]
     },
     {
+      "key": "Barcode",
+      "name": "BarcodeService",
+      "preferredServices": [
+        "HpeHavenBarcodeService"
+      ]
+    },
+    {
+      "key": "BreakIntoWords",
+      "name": "BreakIntoWordsService",
+      "preferredServices": [
+        "MicrosoftCognitiveBreakIntoWordsService"
+      ]
+    },
+    {
       "key": "Entities",
       "name": "EntitiesService",
       "preferredServices": [
-        "GoogleCloudAnalyzeEntitiesService"
+        "GoogleCloudAnalyzeEntitiesService",
+        "MicrosoftCognitiveEntitiesService"
+      ]
+    },
+    {
+      "key": "GenerateNextWords",
+      "name": "GenerateNextWordsService",
+      "preferredServices": [
+        "MicrosoftCognitiveGenerateNextWordsService"
       ]
     },
     {
       "key": "Identify",
       "name": "IdentifyLanguageService",
       "preferredServices": [
-        "BingDetectLanguageService",
+        "IbmWatsonIdentifyLanguageService",
         "GoogleCloudDetectLanguageService",
-        "IbmWatsonIdentifyLanguageService"
+        "MicrosoftCognitiveDetectLanguageService"
+      ]
+    },
+    {
+      "key": "ImageInsight",
+      "name": "ImageInsightService",
+      "preferredServices": [
+        "MicrosoftCognitiveInsightService"
+      ]
+    },
+    {
+      "key": "ImageSearch",
+      "name": "ImageSearchService",
+      "preferredServices": [
+        "MicrosoftCognitiveSearchService"
+      ]
+    },
+    {
+      "key": "ImageDescribe",
+      "name": "ImageDescribeService",
+      "preferredServices": [
+        "MicrosoftCognitiveDescribeService"
+      ]
+    },
+    {
+      "key": "ImageThumbnail",
+      "name": "ImageThumbnailService",
+      "preferredServices": [
+        "MicrosoftCognitiveThumbnailService"
+      ]
+    },
+    {
+      "key": "ImageTag",
+      "name": "ImageTagService",
+      "preferredServices": [
+        "MicrosoftCognitiveTagService"
+      ]
+    },
+    {
+      "key": "ImageAgeGenderEthnicity",
+      "name": "ImageAgeGenderEthnicityService",
+      "preferredServices": [
+        "ClarifAiImageAgeGenderEthnicityService"
+      ]
+    },
+    {
+      "key": "ImageApparel",
+      "name": "ImageApparelService",
+      "preferredServices": [
+        "ClarifAiImageApparelService"
+      ]
+    },
+    {
+      "key": "ImageCelebrity",
+      "name": "ImageCelebrityService",
+      "preferredServices": [
+        "ClarifAiImageCelebrityService",
+        "MicrosoftCognitiveCelebrityModelService"
+      ]
+    },
+    {
+      "key": "ImageColor",
+      "name": "ImageColorService",
+      "preferredServices": [
+        "ClarifAiImageColorService"
+      ]
+    },
+    {
+      "key": "ImageEmotion",
+      "name": "ImageEmotionService",
+      "preferredServices": [
+        "MicrosoftCognitiveEmotionRecognitionService"
+      ]
+    },
+    {
+      "key": "ImageFaceAnnotate",
+      "name": "ImageFaceAnnotateService",
+      "preferredServices": [
+        "GoogleCloudVisionFaceAnnotateService"
+      ]
+    },
+    {
+      "key": "ImageFaceDetection",
+      "name": "ImageFaceDetectionService",
+      "preferredServices": [
+        "MicrosoftCognitiveFaceDetectionService",
+        "HpeHavenFaceDetectionService",
+        "ClarifAiImageFaceDetectionService"
+      ]
+    },
+    {
+      "key": "ImageRecognition",
+      "name": "ImageRecognitionService",
+      "preferredServices": [
+        "HpeHavenImageRecognitionService"
+      ]
+    },
+    {
+      "key": "ImageFood",
+      "name": "ImageFoodService",
+      "preferredServices": [
+        "ClarifAiImageFoodService"
+      ]
+    },
+    {
+      "key": "ImageGeneral",
+      "name": "ImageGeneralService",
+      "preferredServices": [
+        "ClarifAiImageGeneralService"
+      ]
+    },
+    {
+      "key": "ImageLLL",
+      "name": "ImageLLLService",
+      "preferredServices": [
+        "GoogleCloudVisionImageLLLService"
+      ]
+    },
+    {
+      "key": "ImageProperties",
+      "name": "ImagePropertiesService",
+      "preferredServices": [
+        "GoogleCloudVisionImagePropertiesService"
+      ]
+    },
+    {
+      "key": "ImageSafe",
+      "name": "ImageSafeService",
+      "preferredServices": [
+        "GoogleCloudVisionImageSafeService"
+      ]
+    },
+    {
+      "key": "ImageText",
+      "name": "ImageTextService",
+      "preferredServices": [
+        "GoogleCloudVisionImageTextService"
+      ]
+    },
+    {
+      "key": "ImageNSFW",
+      "name": "ImageNSFWService",
+      "preferredServices": [
+        "ClarifAiImageNSFWService"
+      ]
+    },
+    {
+      "key": "ImageTravel",
+      "name": "ImageTravelService",
+      "preferredServices": [
+        "ClarifAiImageTravelService"
+      ]
+    },
+    {
+      "key": "ImageWedding",
+      "name": "ImageWeddingService",
+      "preferredServices": [
+        "ClarifAiImageWeddingService"
       ]
     },
     {
@@ -137,17 +623,31 @@
       ]
     },
     {
-      "key": "Paraphrase",
+      "key": "KeyPhrases",
+      "name": "KeyPhraseService",
+      "preferredServices": [
+        "MicrosoftCognitiveKeyPhrasesService"
+      ]
+    },
+    {
+      "key": "Ocr",
+      "name": "OcrService",
+      "preferredServices": [
+        "HpeHavenOcrService"
+      ]
+    },
+    {
+      "key": "Paraphrase", // deprecated by Microsoft
       "name": "ParaphraseService",
       "preferredServices": [
-      // no Paraphrase service available. Microsoft Paraphrase API has been withdrawn.
+        // no Paraphrase service available. Microsoft Paraphrase API has been withdrawn.
       ]
     },
     {
       "key": "Parse",
       "name": "ParseService",
       "preferredServices": [
-        "BingParseService"
+        "MicrosoftCognitiveParseService"
       ]
     },
     {
@@ -158,14 +658,22 @@
       ]
     },
     {
+      "key": "Pronounce",
+      "name": "PronounceService",
+      "preferredServices": [
+        "WindowsPronunciationService",
+        "IbmWatsonPronunciationService"
+      ]
+    },
+    {
       "key": "SpeechToText",
       "name": "SpeechToTextService",
       "preferredServices": [
         "GoogleCloudSpeechToTextService",
-        "BingSpeechToTextService",
-        //"GoogleSpeechToTextService",
-        "HoundifySpeechToTextService",
+        "MicrosoftCognitiveSpeechToTextService",
+        //"GoogleSpeechToTextService", // deprecated - leave commented out
         "HpeHavenSpeechToTextService",
+        "HoundifySpeechToTextService",
         "IbmWatsonSpeechToTextService",
         "WindowsSpeechToTextService",
         "WitSpeechToTextService"
@@ -175,7 +683,7 @@
       "key": "Spell",
       "name": "SpellService",
       "preferredServices": [
-        "BingSpellService"
+        "MicrosoftCognitiveSpellService"
       ]
     },
     {
@@ -183,9 +691,12 @@
       "name": "TextToSpeechService",
       "preferredServices": [
         "WindowsTextToSpeechService",
-        "IbmWatsonTextToSpeechService"
+        //"ApiAiTextToSpeechService",
+        //"IbmWatsonTextToSpeechService",
+        //"MicrosoftCognitiveTextToSpeechService",
+        //"MicrosoftCognitiveTextToSpeechV1Service"
       ],
-      "voiceAge": 0,
+      "voiceAge": "0",
       "voiceGender": 0,
       "sampleRate": 16000 // move bitDepth, channels from "Audio" to here? or just use "Audio" settings?
     },
@@ -193,9 +704,16 @@
       "key": "Tone",
       "name": "ToneService",
       "preferredServices": [
+        "GoogleCloudAnalyzeSentimentService",
         "IbmWatsonToneService",
-        "BingSentimentService",
-        "GoogleCloudAnalyzeSentimentService"
+        "MicrosoftCognitiveSentimentService"
+      ]
+    },
+    {
+      "key": "TransformText",
+      "name": "TransformTextService",
+      "preferredServices": [
+        "MicrosoftCognitiveTransformTextService"
       ]
     },
     {
@@ -204,7 +722,7 @@
       "preferredServices": [
         "GoogleCloudTranslateService",
         "IbmWatsonTranslateService",
-        "BingTranslateService"
+        "MicrosoftCognitiveTranslateService"
       ]
     }
   ],
@@ -237,881 +755,2828 @@
   },
   "services": [
     {
-      "name": "BingDetectLanguageService",
-      "classInterface": "BingServices.IIdentifyLanguageService",
-      "request": {
-        "method": "post", // { "get" | "post" | <custom> }
-        "preferChunkedEncodedRequests": false,
-        "uri": {
-          "scheme": "https",
-          "host": "westus.api.cognitive.microsoft.com",
-          "path": "text/analytics/v2.0/languages",
-          "query": "numberOfLanguagesToDetect=1"
-        },
-        "headers": [
-          {
-            "Name": "Content-Type",
-            "ContentType": "application/json"
+      "name": "ApiAiTextToSpeechService",
+      "classInterface": "GenericCallServices.ITextToSpeechService",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "get", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.api.ai",
+            "path": "v1/tts",
+            "query": "v=20150910&text={text}"
           },
-          {
-            "Name": "OcpApimSubscriptionKey",
-            "OcpApimSubscriptionKey": ""
-          }
-        ],
-        "data": {
-          "type": "json", // { ascii | base64 | binary | json | raw | string | urlencode }
-          "value": "{ 'documents': [ { 'id': '{guid}', 'text': '{text}' } ] }"
-        }
-      },
-      "response": {
-        "missingResponse": "whatever",
-        "jsonPath": "documents[0].detectedLanguages[0].name"
-      }
-    },
-    {
-      "name": "BingParaphraseService",
-      "classInterface": "BingServices.IParaphraseService",
-      "request": {
-        "method": "get", // { "get" | "post" | <custom> }
-        "preferChunkedEncodedRequests": false,
-        "uri": {
-          "scheme": "https",
-          "host": "api.microsofttranslator.com",
-          "path": "v3/json/paraphrase",
-          "query": "sentence={text}&language={language}&category={catagory}&maxParaphrases={maxParaphrases}"
-        },
-        "headers": [
-          {
-            "Name": "BearerAuthentication",
-            "BearerAuthentication": {
-              "type": "bearer", // { basic | bearer | <custom> }
-              "clientID": "Hackathon",
-              "clientSecret": "vrbE92fuvXfFLFcjxOoxg/3Y1adVc8nF1Zmc39LDw2c="
+          "headers": [
+            {
+              "Name": "Authentication", // no special auth or header processing
+              "Generic": "Bearer <Insert Bearer Token>"
+            },
+            {
+              "Name": "Accept-Language",
+              "Generic": "en-US"
             }
+          ],
+          "response": {
+            "missingResponse": "whatever",
+            "type": "binary"
           }
-        ]
-        // no "data" property for GET methods
-      },
-      "response": {
-        "missingResponse": "whatever",
-        "jsonPath": ""
-      }
-    },
-    {
-      "name": "BingParseAnalyzersService",
-      "classInterface": "BingServices.IParseAnalyzersService",
-      "request": {
-        "method": "get", // { "get" | "post" | <custom> }
-        "preferChunkedEncodedRequests": false,
-        "uri": {
-          "scheme": "https",
-          "host": "api.projectoxford.ai",
-          "path": "linguistics/v1.0/analyzers"
-          //"query": ""
-        },
-        "headers": [
-          {
-            "Name": "OcpApimSubscriptionKey",
-            "OcpApimSubscriptionKey": ""
-          }
-        ]
-        // no "data" property for GET methods
-      },
-      "response": {
-        "missingResponse": "whatever"
-        // TODO: implement jsonPath instead of hardcoding within service
-      }
-    },
-    {
-      "name": "BingParseService",
-      "classInterface": "BingServices.IParseService",
-      "request": {
-        "method": "post", // { "get" | "post" | <custom> }
-        "preferChunkedEncodedRequests": false,
-        "uri": {
-          "scheme": "https",
-          "host": "api.projectoxford.ai",
-          "path": "linguistics/v1.0/analyze"
-          //"query": ""
-        },
-        "headers": [
-          {
-            "Name": "Accept",
-            "Accept": "application/json"
-          },
-          {
-            "Name": "Content-Type",
-            "ContentType": "application/json"
-          },
-          {
-            "Name": "OcpApimSubscriptionKey",
-            "OcpApimSubscriptionKey": ""
-          }
-        ],
-        "data": {
-          "type": "json", // { ascii | base64 | binary | json | raw | string | urlencode }
-          "value": "{'language' : 'en', 'analyzerIds' : [{AnalyzerStringized}], 'text' :'{text}'}"
         }
-      },
-      "response": {
-        "missingResponse": "whatever",
-        "jsonPath": "[1].result"
-      }
+      ]
     },
     {
-      "name": "BingSentimentService",
-      "classInterface": "BingServices.IToneService",
-      "request": {
-        "method": "post", // { "get" | "post" | <custom> }
-        "preferChunkedEncodedRequests": false,
-        "uri": {
-          "scheme": "https",
-          "host": "westus.api.cognitive.microsoft.com",
-          "path": "text/analytics/v2.0/sentiment"
-          //"query": ""
-        },
-        "headers": [
-          {
-            "Name": "Content-Type",
-            "ContentType": "application/json"
+      "name": "ClarifAiImageAgeGenderEthnicityService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.clarifai.com",
+            "path": "v2/models/c0c0ac362b03416da06ab3fa36fb58e3/outputs",
+            "query": ""
           },
-          {
-            "Name": "OcpApimSubscriptionKey",
-            "OcpApimSubscriptionKey": ""
-          }
-        ],
-        "data": {
-          "type": "json", // { ascii | base64 | binary | json | raw | string | urlencode }
-          "value": "{ 'documents': [ { 'id': '{guid}', 'text': '{text}' } ] }"
-        }
-      },
-      "response": {
-        "missingResponse": "whatever",
-        "jsonPath": ""
-      }
-    },
-    {
-      "name": "BingSpeechToTextService",
-      "classInterface": "BingServices.ISpeechToTextService",
-      "request": {
-        "method": "post", // { "get" | "post" | <custom> }
-        "preferChunkedEncodedRequests": false,
-        "uri": {
-          "scheme": "https",
-          "host": "speech.platform.bing.com",
-          "path": "recognize",
-          "query": "scenarios=smd&appid=D4D52672-91D7-4C74-8AD8-42B1D98141A5&locale={locale}&device.os=wp7&version=3.0&format=json&instanceid=565D69FF-E928-4B7E-87DA-9A750B96D9E3&requestid={guid}"
-        },
-        "headers": [
-          {
-            "Name": "Accept",
-            "Accept": "application/json"
-          },
-          {
-            "Name": "BearerAuthentication",
-            "OcpApimSubscriptionKey": "",
-            "BearerAuthentication": {
-              "type": "bearer", // { basic | bearer | <custom> }
-              "uri": "https://api.cognitive.microsoft.com/sts/v1.0/issueToken"
+          "headers": [
+            {
+              "Name": "BearerAuthentication",
+              "BearerAuthentication": {
+                "type": "bearer", // { basic | bearer | <custom> }
+                "clientID": "<Insert clientID Token>",
+                "clientSecret": "<Insert clientSecret Token>",
+                "uri": "https://api.clarifai.com/v1/token",
+                "grant": "grant_type=client_credentials&client_id={clientID}&client_secret={clientSecret}" // &scope={scope}"
+              }
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
             }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"inputs\": [ { \"data\": { \"image\": { \"base64\": \"{base64}\" } } } ] }" // single quotes not allowed by clarifai
           },
-          {
-            "Name": "Content-Type",
-            "ContentType": "audio/wav; codec=\"audio/pcm\"; samplerate={sampleRate}"
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "outputs[*].data.regions[*].data.faces[*]",
+            "jq": ".outputs[].data.regions[].data.faces[]" // implemented in curl output only - jq.net doesn't appear to be working
           }
-        ],
-        "data": {
-          "type": "binary" // { ascii | base64 | binary | json | raw | string | urlencode }
-        }
-      },
-      "response": {
-        "missingResponse": "whatever",
-        "jsonPath": "header.name"
-      }
-    },
-    {
-      "name": "BingSpellService",
-      "classInterface": "BingServices.ISpellService",
-      "request": {
-        "method": "post", // { "get" | "post" | <custom> }
-        "preferChunkedEncodedRequests": false,
-        "uri": {
-          "scheme": "https",
-          "host": "api.cognitive.microsoft.com",
-          "path": "bing/v5.0/spellcheck",
-          "query": "mode=proof&mkt=en-US" // must have mkt=en-US for use outside of US
         },
-        "headers": [
-          {
-            "Name": "Content-Type",
-            "ContentType": "application/x-www-form-urlencoded"
+        {
+          "argType": "url",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.clarifai.com",
+            "path": "v2/models/c0c0ac362b03416da06ab3fa36fb58e3/outputs",
+            "query": ""
           },
-          {
-            "Name": "OcpApimSubscriptionKey",
-            "OcpApimSubscriptionKey": ""
-          }
-        ],
-        "data": {
-          "type": "urlencode", // { ascii | base64 | binary | json | raw | string | urlencode }
-          "value": "Text={text}" // urlencode name=content
-        }
-      },
-      "response": {
-        "missingResponse": "whatever",
-        "jsonPath": ""
-      }
-    },
-    {
-      "name": "BingTranslateService",
-      "classInterface": "BingServices.ITranslateService",
-      "request": {
-        "method": "get", // { "get" | "post" | <custom> }
-        "preferChunkedEncodedRequests": false,
-        "uri": {
-          "scheme": "https",
-          "host": "api.microsofttranslator.com",
-          "path": "v2/Http.svc/Translate",
-          "query": "Text={text}&From={source}&To={target}"
-        },
-        "headers": [
-          {
-            "Name": "BearerAuthentication",
-            "BearerAuthentication": {
-              "type": "bearer", // { basic | bearer | <custom> }
-              "clientID": "",
-              "clientSecret": "",
-              "scope": "http://api.microsofttranslator.com",
-              "uri": "https://datamarket.accesscontrol.windows.net/v2/OAuth2-13",
-              "grant": "grant_type=client_credentials&client_id={clientID}&client_secret={clientSecret}&scope={scope}"
+          "headers": [
+            {
+              "Name": "BearerAuthentication",
+              "BearerAuthentication": {
+                "type": "bearer", // { basic | bearer | <custom> }
+                "clientID": "<Insert clientID Token>",
+                "clientSecret": "<Insert clientSecret Token>",
+                "uri": "https://api.clarifai.com/v1/token",
+                "grant": "grant_type=client_credentials&client_id={clientID}&client_secret={clientSecret}" // &scope={scope}"
+              }
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
             }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"inputs\": [ { \"data\": { \"image\": { \"url\": \"{url}\" } } } ] }" // single quotes not allowed by clarifai
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "outputs[*].data.regions[*].data.faces[*]",
+            "jq": ".outputs[].data.regions[].data.faces[]" // implemented in curl output only - jq.net doesn't appear to be working
           }
-        ]
-        // no "data" property for GET methods
-      },
-      "response": {
-        "missingResponse": "whatever",
-        "jsonPath": ""
-      }
+        }
+      ]
+    },
+    {
+      "name": "ClarifAiImageApparelService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.clarifai.com",
+            "path": "v2/models/e0be3b9d6a454f0493ac3a30784001ff/outputs",
+            "query": ""
+          },
+          "headers": [
+            {
+              "Name": "BearerAuthentication",
+              "BearerAuthentication": {
+                "type": "bearer", // { basic | bearer | <custom> }
+                "clientID": "<Insert clientID Token>",
+                "clientSecret": "<Insert clientSecret Token>",
+                "uri": "https://api.clarifai.com/v1/token",
+                "grant": "grant_type=client_credentials&client_id={clientID}&client_secret={clientSecret}" // &scope={scope}"
+              }
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"inputs\": [ { \"data\": { \"image\": { \"base64\": \"{base64}\" } } } ] }" // single quotes not allowed by clarifai
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "outputs[*].data.concepts",
+            "jq": ".outputs[].data.concepts[] | [.name, .value]" // implemented in curl output only - jq.net doesn't appear to be working
+          }
+        },
+        {
+          "argType": "url",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.clarifai.com",
+            "path": "v2/models/e0be3b9d6a454f0493ac3a30784001ff/outputs",
+            "query": ""
+          },
+          "headers": [
+            {
+              "Name": "BearerAuthentication",
+              "BearerAuthentication": {
+                "type": "bearer", // { basic | bearer | <custom> }
+                "clientID": "<Insert clientID Token>",
+                "clientSecret": "<Insert clientSecret Token>",
+                "uri": "https://api.clarifai.com/v1/token",
+                "grant": "grant_type=client_credentials&client_id={clientID}&client_secret={clientSecret}" // &scope={scope}"
+              }
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"inputs\": [ { \"data\": { \"image\": { \"url\": \"{url}\" } } } ] }" // single quotes not allowed by clarifai
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "outputs[*].data.concepts",
+            "jq": ".outputs[].data.concepts[] | [.name, .value]" // implemented in curl output only - jq.net doesn't appear to be working
+          }
+        }
+      ]
+    },
+    {
+      "name": "ClarifAiImageCelebrityService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.clarifai.com",
+            "path": "v2/models/e466caa0619f444ab97497640cefc4dc/outputs",
+            "query": ""
+          },
+          "headers": [
+            {
+              "Name": "BearerAuthentication",
+              "BearerAuthentication": {
+                "type": "bearer", // { basic | bearer | <custom> }
+                "clientID": "<Insert clientID Token>",
+                "clientSecret": "<Insert clientSecret Token>",
+                "uri": "https://api.clarifai.com/v1/token",
+                "grant": "grant_type=client_credentials&client_id={clientID}&client_secret={clientSecret}" // &scope={scope}"
+              }
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"inputs\": [ { \"data\": { \"image\": { \"base64\": \"{base64}\" } } } ] }" // single quotes not allowed by clarifai
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "outputs[*].data.regions[*].data.faces[*].identity",
+            "jq": ".outputs[].data.regions[].data.faces[].identity[] | [.name, .value]" // implemented in curl output only - jq.net doesn't appear to be working
+          }
+        },
+        {
+          "argType": "url",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.clarifai.com",
+            "path": "v2/models/e466caa0619f444ab97497640cefc4dc/outputs",
+            "query": ""
+          },
+          "headers": [
+            {
+              "Name": "BearerAuthentication",
+              "BearerAuthentication": {
+                "type": "bearer", // { basic | bearer | <custom> }
+                "clientID": "<Insert clientID Token>",
+                "clientSecret": "<Insert clientSecret Token>",
+                "uri": "https://api.clarifai.com/v1/token",
+                "grant": "grant_type=client_credentials&client_id={clientID}&client_secret={clientSecret}" // &scope={scope}"
+              }
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"inputs\": [ { \"data\": { \"image\": { \"url\": \"{url}\" } } } ] }" // single quotes not allowed by clarifai
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "outputs[*].data.regions[*].data.faces[*].identity",
+            "jq": ".outputs[].data.regions[].data.faces[].identity[] | [.name, .value]" // implemented in curl output only - jq.net doesn't appear to be working
+          }
+        }
+      ]
+    },
+    {
+      "name": "ClarifAiImageColorService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.clarifai.com",
+            "path": "v2/models/eeed0b6733a644cea07cf4c60f87ebb7/outputs",
+            "query": ""
+          },
+          "headers": [
+            {
+              "Name": "BearerAuthentication",
+              "BearerAuthentication": {
+                "type": "bearer", // { basic | bearer | <custom> }
+                "clientID": "<Insert clientID Token>",
+                "clientSecret": "<Insert clientSecret Token>",
+                "uri": "https://api.clarifai.com/v1/token",
+                "grant": "grant_type=client_credentials&client_id={clientID}&client_secret={clientSecret}" // &scope={scope}"
+              }
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"inputs\": [ { \"data\": { \"image\": { \"base64\": \"{base64}\" } } } ] }" // single quotes not allowed by clarifai
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "outputs[*].data",
+            "jq": ".outputs[].data" // implemented in curl output only - jq.net doesn't appear to be working
+          }
+        },
+        {
+          "argType": "url",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.clarifai.com",
+            "path": "v2/models/eeed0b6733a644cea07cf4c60f87ebb7/outputs",
+            "query": ""
+          },
+          "headers": [
+            {
+              "Name": "BearerAuthentication",
+              "BearerAuthentication": {
+                "type": "bearer", // { basic | bearer | <custom> }
+                "clientID": "<Insert clientID Token>",
+                "clientSecret": "<Insert clientSecret Token>",
+                "uri": "https://api.clarifai.com/v1/token",
+                "grant": "grant_type=client_credentials&client_id={clientID}&client_secret={clientSecret}" // &scope={scope}"
+              }
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"inputs\": [ { \"data\": { \"image\": { \"url\": \"{url}\" } } } ] }" // single quotes not allowed by clarifai
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "outputs[*].data",
+            "jq": ".outputs[].data" // implemented in curl output only - jq.net doesn't appear to be working
+          }
+        }
+      ]
+    },
+    {
+      "name": "ClarifAiImageFaceDetectionService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.clarifai.com",
+            "path": "v2/models/a403429f2ddf4b49b307e318f00e528b/outputs",
+            "query": ""
+          },
+          "headers": [
+            {
+              "Name": "BearerAuthentication",
+              "BearerAuthentication": {
+                "type": "bearer", // { basic | bearer | <custom> }
+                "clientID": "<Insert clientID Token>",
+                "clientSecret": "<Insert clientSecret Token>",
+                "uri": "https://api.clarifai.com/v1/token",
+                "grant": "grant_type=client_credentials&client_id={clientID}&client_secret={clientSecret}" // &scope={scope}"
+              }
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"inputs\": [ { \"data\": { \"image\": { \"base64\": \"{base64}\" } } } ] }" // single quotes not allowed by clarifai
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "outputs[*].data.regions",
+            "jq": ".outputs[].data.regions" // implemented in curl output only - jq.net doesn't appear to be working
+          }
+        },
+        {
+          "argType": "url",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.clarifai.com",
+            "path": "v2/models/a403429f2ddf4b49b307e318f00e528b/outputs",
+            "query": ""
+          },
+          "headers": [
+            {
+              "Name": "BearerAuthentication",
+              "BearerAuthentication": {
+                "type": "bearer", // { basic | bearer | <custom> }
+                "clientID": "<Insert clientID Token>",
+                "clientSecret": "<Insert clientSecret Token>",
+                "uri": "https://api.clarifai.com/v1/token",
+                "grant": "grant_type=client_credentials&client_id={clientID}&client_secret={clientSecret}" // &scope={scope}"
+              }
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"inputs\": [ { \"data\": { \"image\": { \"url\": \"{url}\" } } } ] }" // single quotes not allowed by clarifai
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "outputs[*].data.regions",
+            "jq": ".outputs[].data.regions" // implemented in curl output only - jq.net doesn't appear to be working
+          }
+        }
+      ]
+    },
+    {
+      "name": "ClarifAiImageFoodService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.clarifai.com",
+            "path": "v2/models/bd367be194cf45149e75f01d59f77ba7/outputs",
+            "query": ""
+          },
+          "headers": [
+            {
+              "Name": "BearerAuthentication",
+              "BearerAuthentication": {
+                "type": "bearer", // { basic | bearer | <custom> }
+                "clientID": "<Insert clientID Token>",
+                "clientSecret": "<Insert clientSecret Token>",
+                "uri": "https://api.clarifai.com/v1/token",
+                "grant": "grant_type=client_credentials&client_id={clientID}&client_secret={clientSecret}" // &scope={scope}"
+              }
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"inputs\": [ { \"data\": { \"image\": { \"base64\": \"{base64}\" } } } ] }" // single quotes not allowed by clarifai
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "outputs[*].data",
+            "jq": ".outputs[].data" // implemented in curl output only - jq.net doesn't appear to be working
+          }
+        },
+        {
+          "argType": "url",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.clarifai.com",
+            "path": "v2/models/bd367be194cf45149e75f01d59f77ba7/outputs",
+            "query": ""
+          },
+          "headers": [
+            {
+              "Name": "BearerAuthentication",
+              "BearerAuthentication": {
+                "type": "bearer", // { basic | bearer | <custom> }
+                "clientID": "<Insert clientID Token>",
+                "clientSecret": "<Insert clientSecret Token>",
+                "uri": "https://api.clarifai.com/v1/token",
+                "grant": "grant_type=client_credentials&client_id={clientID}&client_secret={clientSecret}" // &scope={scope}"
+              }
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"inputs\": [ { \"data\": { \"image\": { \"url\": \"{url}\" } } } ] }" // single quotes not allowed by clarifai
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "outputs[*].data",
+            "jq": ".outputs[].data" // implemented in curl output only - jq.net doesn't appear to be working
+          }
+        }
+      ]
+    },
+    {
+      "name": "ClarifAiImageGeneralService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.clarifai.com",
+            "path": "v2/models/aaa03c23b3724a16a56b629203edc62c/outputs",
+            "query": ""
+          },
+          "headers": [
+            {
+              "Name": "BearerAuthentication",
+              "BearerAuthentication": {
+                "type": "bearer", // { basic | bearer | <custom> }
+                "clientID": "<Insert clientID Token>",
+                "clientSecret": "<Insert clientSecret Token>",
+                "uri": "https://api.clarifai.com/v1/token",
+                "grant": "grant_type=client_credentials&client_id={clientID}&client_secret={clientSecret}" // &scope={scope}"
+              }
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"inputs\": [ { \"data\": { \"image\": { \"base64\": \"{base64}\" } } } ] }" // single quotes not allowed by clarifai
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "outputs[*].data.concepts[*].name",
+            "jq": ".outputs[].data.concepts[].name" // implemented in curl output only - jq.net doesn't appear to be working
+          }
+        },
+        {
+          "argType": "url",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.clarifai.com",
+            "path": "v2/models/aaa03c23b3724a16a56b629203edc62c/outputs",
+            "query": ""
+          },
+          "headers": [
+            {
+              "Name": "BearerAuthentication",
+              "BearerAuthentication": {
+                "type": "bearer", // { basic | bearer | <custom> }
+                "clientID": "<Insert clientID Token>",
+                "clientSecret": "<Insert clientSecret Token>",
+                "uri": "https://api.clarifai.com/v1/token",
+                "grant": "grant_type=client_credentials&client_id={clientID}&client_secret={clientSecret}" // &scope={scope}"
+              }
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"inputs\": [ { \"data\": { \"image\": { \"url\": \"{url}\" } } } ] }" // single quotes not allowed by clarifai
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "outputs[*].data.concepts[*].name",
+            "jq": ".outputs[].data.concepts[].name" // implemented in curl output only - jq.net doesn't appear to be working
+          }
+        }
+      ]
+    },
+    {
+      "name": "ClarifAiImageNSFWService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.clarifai.com",
+            "path": "v2/models/e9576d86d2004ed1a38ba0cf39ecb4b1/outputs",
+            "query": ""
+          },
+          "headers": [
+            {
+              "Name": "BearerAuthentication",
+              "BearerAuthentication": {
+                "type": "bearer", // { basic | bearer | <custom> }
+                "clientID": "<Insert clientID Token>",
+                "clientSecret": "<Insert clientSecret Token>",
+                "uri": "https://api.clarifai.com/v1/token",
+                "grant": "grant_type=client_credentials&client_id={clientID}&client_secret={clientSecret}" // &scope={scope}"
+              }
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"inputs\": [ { \"data\": { \"image\": { \"base64\": \"{base64}\" } } } ] }" // single quotes not allowed by clarifai
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "outputs[*].data.concepts",
+            "jq": ".outputs[].data.concepts[] | [.name, .value]" // not implemented - jq.net doesn't appear to be working
+          }
+        },
+        {
+          "argType": "url",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.clarifai.com",
+            "path": "v2/models/e9576d86d2004ed1a38ba0cf39ecb4b1/outputs",
+            "query": ""
+          },
+          "headers": [
+            {
+              "Name": "BearerAuthentication",
+              "BearerAuthentication": {
+                "type": "bearer", // { basic | bearer | <custom> }
+                "clientID": "<Insert clientID Token>",
+                "clientSecret": "<Insert clientSecret Token>",
+                "uri": "https://api.clarifai.com/v1/token",
+                "grant": "grant_type=client_credentials&client_id={clientID}&client_secret={clientSecret}" // &scope={scope}"
+              }
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"inputs\": [ { \"data\": { \"image\": { \"url\": \"{url}\" } } } ] }" // single quotes not allowed by clarifai
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "outputs[*].data.concepts",
+            "jq": ".outputs[].data.concepts[] | [.name, .value]" // not implemented - jq.net doesn't appear to be working
+          }
+        }
+      ]
+    },
+    {
+      "name": "ClarifAiImageTravelService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.clarifai.com",
+            "path": "v2/models/eee28c313d69466f836ab83287a54ed9/outputs",
+            "query": ""
+          },
+          "headers": [
+            {
+              "Name": "BearerAuthentication",
+              "BearerAuthentication": {
+                "type": "bearer", // { basic | bearer | <custom> }
+                "clientID": "<Insert clientID Token>",
+                "clientSecret": "<Insert clientSecret Token>",
+                "uri": "https://api.clarifai.com/v1/token",
+                "grant": "grant_type=client_credentials&client_id={clientID}&client_secret={clientSecret}" // &scope={scope}"
+              }
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"inputs\": [ { \"data\": { \"image\": { \"base64\": \"{base64}\" } } } ] }" // single quotes not allowed by clarifai
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "outputs[*].data.concepts",
+            "jq": ".outputs[].data.concepts" // implemented in curl output only - jq.net doesn't appear to be working
+          }
+        },
+        {
+          "argType": "url",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.clarifai.com",
+            "path": "v2/models/eee28c313d69466f836ab83287a54ed9/outputs",
+            "query": ""
+          },
+          "headers": [
+            {
+              "Name": "BearerAuthentication",
+              "BearerAuthentication": {
+                "type": "bearer", // { basic | bearer | <custom> }
+                "clientID": "<Insert clientID Token>",
+                "clientSecret": "<Insert clientSecret Token>",
+                "uri": "https://api.clarifai.com/v1/token",
+                "grant": "grant_type=client_credentials&client_id={clientID}&client_secret={clientSecret}" // &scope={scope}"
+              }
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"inputs\": [ { \"data\": { \"image\": { \"url\": \"{url}\" } } } ] }" // single quotes not allowed by clarifai
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "outputs[*].data.concepts",
+            "jq": ".outputs[].data.concepts" // implemented in curl output only - jq.net doesn't appear to be working
+          }
+        }
+      ]
+    },
+    {
+      "name": "ClarifAiImageWeddingService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.clarifai.com",
+            "path": "v2/models/c386b7a870114f4a87477c0824499348/outputs",
+            "query": ""
+          },
+          "headers": [
+            {
+              "Name": "BearerAuthentication",
+              "BearerAuthentication": {
+                "type": "bearer", // { basic | bearer | <custom> }
+                "clientID": "<Insert clientID Token>",
+                "clientSecret": "<Insert clientSecret Token>",
+                "uri": "https://api.clarifai.com/v1/token",
+                "grant": "grant_type=client_credentials&client_id={clientID}&client_secret={clientSecret}" // &scope={scope}"
+              }
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"inputs\": [ { \"data\": { \"image\": { \"base64\": \"{base64}\" } } } ] }" // single quotes not allowed by clarifai
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "outputs[*].data.concepts",
+            "jq": ".outputs[].data.concepts" // implemented in curl output only - jq.net doesn't appear to be working
+          }
+        },
+        {
+          "argType": "url",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.clarifai.com",
+            "path": "v2/models/c386b7a870114f4a87477c0824499348/outputs",
+            "query": ""
+          },
+          "headers": [
+            {
+              "Name": "BearerAuthentication",
+              "BearerAuthentication": {
+                "type": "bearer", // { basic | bearer | <custom> }
+                "clientID": "<Insert clientID Token>",
+                "clientSecret": "<Insert clientSecret Token>",
+                "uri": "https://api.clarifai.com/v1/token",
+                "grant": "grant_type=client_credentials&client_id={clientID}&client_secret={clientSecret}" // &scope={scope}"
+              }
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"inputs\": [ { \"data\": { \"image\": { \"url\": \"{url}\" } } } ] }" // single quotes not allowed by clarifai
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "outputs[*].data.concepts",
+            "jq": ".outputs[].data.concepts" // implemented in curl output only - jq.net doesn't appear to be working
+          }
+        }
+      ]
     },
     {
       "name": "GoogleCloudAnalyzeEntitiesService",
-      "classInterface": "GoogleCloudServices.IEntitiesService",
-      "request": {
-        "method": "post", // { "get" | "post" | <custom> }
-        "preferChunkedEncodedRequests": false,
-        "uri": {
-          "scheme": "https",
-          "host": "language.googleapis.com",
-          "path": "v1/documents:analyzeEntities",
-          "query": "key={key}"
-        },
-        "headers": [
-          {
-            "Name": "BearerAuthentication",
-            "BearerAuthentication": {
-              "type": "bearer", // { basic | bearer | <custom> }
-              "key": ""
-            }
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "text",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "language.googleapis.com",
+            "path": "v1/documents:analyzeEntities",
+            "query": "key=<Insert Key Token>"
           },
-          {
-            "Name": "Content-Type",
-            "ContentType": "application/json"
+          "headers": [ // need content-type: application/json?
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"document\": { \"type\":\"PLAIN_TEXT\", \"content\":\"{text}\" } }"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "entities[*].name"
           }
-        ],
-        "data": {
-          "type": "json", // { ascii | base64 | binary | json | raw | string | urlencode }
-          "value": "{ 'document': { 'type':'PLAIN_TEXT', 'content':'{text}' } }"
         }
-      },
-      "response": {
-        "missingResponse": "whatever",
-        "jsonPath": "entities[*].name"
-      }
+      ]
     },
     {
       "name": "GoogleCloudAnalyzeSentimentService",
-      "classInterface": "GoogleCloudServices.IToneService",
-      "request": {
-        "method": "post", // { "get" | "post" | <custom> }
-        "preferChunkedEncodedRequests": false,
-        "uri": {
-          "scheme": "https",
-          "host": "language.googleapis.com",
-          "path": "v1/documents:analyzeSentiment",
-          "query": "key={key}"
-        },
-        "headers": [
-          {
-            "Name": "BearerAuthentication",
-            "BearerAuthentication": {
-              "type": "bearer", // { basic | bearer | <custom> }
-              "key": ""
-            }
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "text",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "language.googleapis.com",
+            "path": "v1/documents:analyzeSentiment",
+            "query": "key=<Insert Key Token>"
           },
-          {
-            "Name": "Content-Type",
-            "ContentType": "application/json"
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"document\":{ \"type\":\"PLAIN_TEXT\", \"content\":\"{text}\" } }"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": ""
           }
-        ],
-        "data": {
-          "type": "json", // { ascii | base64 | binary | json | raw | string | urlencode }
-          "value": "{ 'document':{ 'type':'PLAIN_TEXT', 'content':'{text}' } }"
         }
-      },
-      "response": {
-        "missingResponse": "whatever",
-        "jsonPath": ""
-      }
+      ]
     },
     {
       "name": "GoogleCloudAnnotateTextService",
-      "classInterface": "GoogleCloudServices.IAnnotateService",
-      "request": {
-        "method": "post", // { "get" | "post" | <custom> }
-        "preferChunkedEncodedRequests": false,
-        "uri": {
-          "scheme": "https",
-          "host": "language.googleapis.com",
-          "path": "v1/documents:annotateText",
-          "query": "key={key}"
-        },
-        "headers": [
-          {
-            "Name": "BearerAuthentication",
-            "BearerAuthentication": {
-              "type": "bearer", // { basic | bearer | <custom> }
-              "key": ""
-            }
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "text",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "language.googleapis.com",
+            "path": "v1/documents:annotateText",
+            "query": "key=<Insert Key Token>"
           },
-          {
-            "Name": "Content-Type",
-            "ContentType": "application/json"
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"document\":{ \"type\":\"PLAIN_TEXT\", \"content\":\"{text}\" }, \"features\": { \"extractSyntax\": true, \"extractEntities\": true, \"extractDocumentSentiment\": true } }"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": ""
           }
-        ],
-        "data": {
-          "type": "json", // { ascii | base64 | binary | json | raw | string | urlencode }
-          "value": "{ 'document':{ 'type':'PLAIN_TEXT', 'content':'{text}' }, 'features': { 'extract_sentences': true, 'extract_tokens': true, 'extract_entities': true, 'extract_document_sentiment': true } }"
         }
-      },
-      "response": {
-        "missingResponse": "whatever",
-        "jsonPath": ""
-      }
+      ]
     },
     {
       "name": "GoogleCloudDetectLanguageService",
-      "classInterface": "GoogleCloudServices.IIdentifyLanguageService",
-      "request": {
-        "method": "post", // { "get" | "post" | <custom> }
-        "preferChunkedEncodedRequests": false,
-        "uri": {
-          "scheme": "https",
-          "host": "translation.googleapis.com",
-          "path": "language/translate/v2/detect",
-          "query": "key={key}&q={text}"
-        },
-        "headers": [
-          {
-            "Name": "BearerAuthentication",
-            "BearerAuthentication": {
-              "type": "bearer", // { basic | bearer | <custom> }
-              "key": ""
-            }
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "text",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "translation.googleapis.com",
+            "path": "language/translate/v2/detect",
+            "query": "key=<Insert Key Token>&q={text}"
           },
-          {
-            "Name": "Content-Type",
-            "ContentType": "application/json"
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"document\": { \"type\":\"PLAIN_TEXT\", \"content\":\"{text}\" } }"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "data.detections[0][0].language"
           }
-        ],
-        "data": {
-          "type": "json", // { ascii | base64 | binary | json | raw | string | urlencode }
-          "value": "{ 'document': { 'type':'PLAIN_TEXT', 'content':'{text}' } }"
         }
-      },
-      "response": {
-        "missingResponse": "whatever",
-        "jsonPath": "data.detections[0][0].language"
-      }
+      ]
     },
     {
       "name": "GoogleCloudSpeechToTextService",
-      "classInterface": "GoogleCloudServices.ISpeechToTextService",
-      "request": {
-        "method": "post", // { "get" | "post" | <custom> }
-        "preferChunkedEncodedRequests": false,
-        "uri": {
-          "scheme": "https",
-          "host": "speech.googleapis.com",
-          "path": "v1beta1/speech:syncrecognize",
-          "query": "key={key}"
-        },
-        "headers": [
-          {
-            "Name": "Content-Type",
-            "ContentType": "application/json"
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "speech.googleapis.com",
+            "path": "v1beta1/speech:syncrecognize",
+            "query": "key=<Insert Key Token>"
           },
-          {
-            "Name": "BearerAuthentication",
-            "BearerAuthentication": {
-              "type": "bearer", // { basic | bearer | <custom> }
-              "key": ""
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
             }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"config\": { \"encoding\":\"LINEAR16\", \"sampleRate\":16000, \"languageCode\":\"en-US\" }, \"audio\": { \"content\":\"{base64}\" } }"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "results[0].alternatives[0].transcript"
           }
-        ],
-        "data": {
-          "type": "base64", // { ascii | base64 | binary | json | raw | string | urlencode }
-          "value": "{'config':{'encoding':'LINEAR16','sampleRate':16000,'languageCode':'en-US'},'audio':{'content':'{text}'}}"
         }
-      },
-      "response": {
-        "missingResponse": "whatever",
-        "jsonPath": "results[0].alternatives[0].transcript"
-      }
+      ]
     },
     {
       "name": "GoogleCloudTranslateService",
-      "classInterface": "GoogleCloudServices.ITranslateService",
-      "request": {
-        "method": "get", // { "get" | "post" | <custom> }
-        "preferChunkedEncodedRequests": false,
-        "uri": {
-          "scheme": "https",
-          "host": "www.googleapis.com",
-          "path": "language/translate/v2",
-          "query": "key={key}&q={text}&source={source}&target={target}"
-        },
-        "headers": [
-          {
-            "Name": "BearerAuthentication",
-            "BearerAuthentication": {
-              "type": "bearer", // { basic | bearer | <custom> }
-              "key": ""
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "text",
+          "method": "get", // { "get" | "post" | <custom> } // api annoyance. should be a post.
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "www.googleapis.com",
+            "path": "language/translate/v2",
+            "query": "key=<Insert Key Token>&q={text}&source={source}&target={target}"
+          },
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
             }
+          ],
+          // no "data" property for GET methods
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "data.translations[0].translatedText"
           }
-        ]
-        // no "data" property for GET methods
-      },
-      "response": {
-        "missingResponse": "whatever",
-        "jsonPath": "data.translations[0].translatedText"
-      }
+        }
+      ]
+    },
+    {
+      "name": "GoogleCloudVisionFaceAnnotateService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> } // api annoyance. should be a post.
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "vision.googleapis.com",
+            "path": "v1/images:annotate",
+            "query": "key=<Insert Key Token>" // secret
+          },
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"requests\": [ { \"image\": { \"content\": \"{base64}\" }, \"features\": [ { \"type\": \"FACE_DETECTION\" } ] } ] }"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "responses"
+          }
+        }
+      ]
+    },
+    {
+      "name": "GoogleCloudVisionImageLLLService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> } // api annoyance. should be a post.
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "vision.googleapis.com",
+            "path": "v1/images:annotate",
+            "query": "key=<Insert Key Token>" // secret
+          },
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"requests\": [ { \"image\": { \"content\": \"{base64}\" }, \"features\": [ { \"type\": \"LANDMARK_DETECTION\", \"maxResults\": 10 }, { \"type\": \"LOGO_DETECTION\", \"maxResults\": 10 }, { \"type\": \"LABEL_DETECTION\", \"maxResults\": 10 } ] } ] }"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "responses"
+          }
+        }
+      ]
+    },
+    {
+      "name": "GoogleCloudVisionImagePropertiesService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> } // api annoyance. should be a post.
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "vision.googleapis.com",
+            "path": "v1/images:annotate",
+            "query": "key=<Insert Key Token>" // secret
+          },
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"requests\": [ { \"image\": { \"content\": \"{base64}\" }, \"features\": [ { \"type\": \"IMAGE_PROPERTIES\" } ] } ] }"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "responses"
+          }
+        }
+      ]
+    },
+    {
+      "name": "GoogleCloudVisionImageSafeService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> } // api annoyance. should be a post.
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "vision.googleapis.com",
+            "path": "v1/images:annotate",
+            "query": "key=<Insert Key Token>"
+          },
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"requests\": [ { \"image\": { \"content\": \"{base64}\" }, \"features\": [ { \"type\": \"SAFE_SEARCH_DETECTION\" } ] } ] }"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "responses"
+          }
+        }
+      ]
+    },
+    {
+      "name": "GoogleCloudVisionImageTextService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> } // api annoyance. should be a post.
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "vision.googleapis.com",
+            "path": "v1/images:annotate",
+            "query": "key=<Insert Key Token>"
+          },
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"requests\": [ { \"image\": { \"content\": \"{base64}\" }, \"features\": [ { \"type\": \"TEXT_DETECTION\" } ] } ] }"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "responses"
+          }
+        }
+      ]
     },
     {
       "name": "GoogleSpeechToTextService",
-      "classInterface": "GoogleServices.ISpeechToTextService",
-      "request": {
-        "method": "post", // { "get" | "post" | <custom> }
-        "preferChunkedEncodedRequests": false,
-        "uri": {
-          "scheme": "https",
-          "host": "www.google.com",
-          "path": "speech-api/v2/recognize",
-          "query": "output=json&lang={language}&key={key}"
-        },
-        "headers": [
-          {
-            "Name": "Content-Type",
-            "ContentType": "audio/l16; rate={sampleRate.ToString()}"
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "www.google.com",
+            "path": "speech-api/v2/recognize",
+            "query": "key=<Insert Key Token>&output=json&lang={language}"
           },
-          {
-            "Name": "BearerAuthentication",
-            "BearerAuthentication": {
-              "type": "bearer", // { basic | bearer | <custom> }
-              "key": "AIzaSyCcjMGqIoJtd3hskrRbJBZHLaxI4XE1IxI"
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
             }
+          ],
+          "data": {
+            "type": "binary" // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": ""
           }
-        ],
-        "data": {
-          "type": "binary" // { ascii | base64 | binary | json | raw | string | urlencode }
         }
-      },
-      "response": {
-        "missingResponse": "whatever",
-        "jsonPath": ""
-      }
+      ]
     },
     {
       "name": "HoundifyIntentAudioService",
-      "classInterface": "HoundifyServices.IIntentService",
-      "request": {
-        "method": "post", // { "get" | "post" | <custom> }
-        "preferChunkedEncodedRequests": false,
-        "uri": {
-          "scheme": "https",
-          "host": "api.houndify.com",
-          "path": "v1/audio"
-        },
-        "headers": [
-          {
-            "Name": "HoundifyAuthentication",
-            "HoundifyAuthentication": {
-              "ClientID": "",
-              "ClientKey": "",
-              "UserID": ""
+      "classInterface": "HoundifyIntentServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "PartialTranscriptsDesired": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.houndify.com",
+            "path": "v1/audio"
+          },
+          "headers": [
+            {
+              "Name": "HoundifyAuthentication",
+              "HoundifyAuthentication": {
+                "ClientID": "<Insert ClientID Token>",
+                "ClientKey": "<Insert ClientKey Token>",
+                "UserID": "Robert"
+              }
             }
+          ],
+          "data": {
+            "type": "binary" // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "AllResults[0].SpokenResponse"
           }
-        ],
-        "data": {
-          "type": "binary" // { ascii | base64 | binary | json | raw | string | urlencode }
         }
-      },
-      "response": {
-        "missingResponse": "whatever",
-        "PartialTranscriptsDesired": false,
-        "jsonPath": "AllResults[0].SpokenResponse"
-      }
+      ]
     },
     {
       "name": "HoundifyIntentTextService",
-      "classInterface": "HoundifyServices.IIntentService",
-      "request": {
-        "method": "post", // { "get" | "post" | <custom> }
-        "preferChunkedEncodedRequests": false,
-        "uri": {
-          "scheme": "https",
-          "host": "api.houndify.com",
-          "path": "v1/text",
-          "query": "query={text}"
-        },
-        "headers": [
-          {
-            "Name": "HoundifyAuthentication",
-            "HoundifyAuthentication": {
-              "ClientID": "",
-              "ClientKey": "",
-              "UserID": ""
+      "classInterface": "HoundifyIntentServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "text",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "PartialTranscriptsDesired": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.houndify.com",
+            "path": "v1/text",
+            "query": "query={text}"
+          },
+          "headers": [
+            {
+              "Name": "HoundifyAuthentication",
+              "HoundifyAuthentication": {
+                "ClientID": "<Insert ClientID Token>",
+                "ClientKey": "<Insert ClientKey Token>",
+                "UserID": "Robert"
+              }
             }
+          ],
+          "data": {
+            "type": "string" // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "AllResults[0].SpokenResponse"
           }
-        ],
-        "data": {
-          "type": "binary" // { ascii | base64 | binary | json | raw | string | urlencode }
         }
-      },
-      "response": {
-        "missingResponse": "whatever",
-        "PartialTranscriptsDesired": false,
-        "jsonPath": "AllResults[0].SpokenResponse"
-      }
+      ]
     },
     {
       "name": "HoundifySpeechToTextService",
-      "classInterface": "HoundifyServices.ISpeechToTextService",
-      "request": {
-        "method": "post", // { "get" | "post" | <custom> }
-        "preferChunkedEncodedRequests": false,
-        "uri": {
-          "scheme": "https",
-          "host": "api.houndify.com",
-          "path": "v1/audio"
-        },
-        "headers": [
-          {
-            "Name": "HoundifyAuthentication",
-            "HoundifyAuthentication": {
-              "ClientID": "",
-              "ClientKey": "",
-              "UserID": ""
+      "classInterface": "HoundifySpeechToTextServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.houndify.com",
+            "path": "v1/audio"
+          },
+          "headers": [
+            {
+              "Name": "HoundifyAuthentication",
+              "HoundifyAuthentication": {
+                "ClientID": "<Insert ClientID Token>",
+                "ClientKey": "<Insert ClientKey Token>",
+                "UserID": "Robert"
+              }
             }
+          ],
+          "data": {
+            "type": "binary" // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "AllResults[0].SpokenResponse"
           }
-        ],
-        "data": {
-          "type": "binary" // { ascii | base64 | binary | json | raw | string | urlencode }
         }
-      },
-      "response": {
-        "missingResponse": "whatever",
-        "jsonPath": "AllResults[0].SpokenResponse"
-      }
+      ]
+    },
+    {
+      "name": "HpeHavenBarcodeService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.havenondemand.com",
+            "path": "1/api/sync/recognizebarcodes/v1"
+          },
+          "data": {
+            "type": "multipart", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "file=@{text}&apikey=<Insert apikey Token>"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "HpeHavenFaceDetectionService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.havenondemand.com",
+            "path": "1/api/sync/detectfaces/v1"
+          },
+          "data": {
+            "type": "multipart", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "file=@{text}&apikey=<Insert apikey Token>&additional=true"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "HpeHavenImageRecognitionService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.havenondemand.com",
+            "path": "1/api/sync/recognizeimages/v1"
+          },
+          "data": {
+            "type": "multipart", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "file=@{text}&apikey=<Insert apikey Token>&image_type=simple"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "HpeHavenOcrService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.havenondemand.com",
+            "path": "1/api/sync/ocrdocument/v1"
+          },
+          "data": {
+            "type": "multipart", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "file=@{text}&apikey=<Insert apikey Token>&mode=document_photo"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": ""
+          }
+        }
+      ]
     },
     {
       "name": "HpeHavenSpeechToTextService",
-      "classInterface": "HpeHavenServices.ISpeechToTextService",
-      "request": {
-        "method": "post", // { "get" | "post" | <custom> }
-        "preferChunkedEncodedRequests": false,
-        "uri": {
-          "scheme": "https",
-          "host": "api.havenondemand.com",
-          "path": "1/api/async/recognizespeech/v1"
-        },
-        "data": {
-          "type": "urlencode", // { ascii | base64 | binary | json | raw | string | urlencode }
-          "value": "file={text}&apikey=222693c9-6449-470f-a611-2d4433980dc1&language=en-US&interval=-1"
+      "classInterface": "HpeHavenSpeechToTextServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.havenondemand.com",
+            "path": "1/api/async/recognizespeech/v1"
+          },
+          "data": {
+            "type": "multipart", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "file=@{text}&apikey=<Insert apikey Token>&language=en-US&interval=-1"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "actions[0].result.document[0].content"
+          }
         }
-      },
-      "response": {
-        "missingResponse": "whatever",
-        "jsonPath": "actions[0].result.document[0].content"
-      }
+      ]
     },
     {
       "name": "IbmWatsonIdentifyLanguageService",
-      "classInterface": "IbmWatsonServices.IIdentifyLanguageService",
-      "request": {
-        "method": "post", // { "get" | "post" | <custom> }
-        "preferChunkedEncodedRequests": false,
-        "uri": {
-          "scheme": "https",
-          "host": "gateway.watsonplatform.net",
-          "path": "language-translation/api/v2/identify"
-          //"query": ""
-        },
-        "headers": [
-          {
-            "Name": "Accept",
-            "Accept": "application/json"
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "text",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "gateway.watsonplatform.net",
+            "path": "language-translation/api/v2/identify"
+            //"query": ""
           },
-          {
-            "Name": "BasicAuthentication",
-            "BasicAuthentication": {
-              "type": "basic", // { basic | bearer | <custom> }
-              "username": "",
-              "password": ""
+          "headers": [
+            {
+              "Name": "Accept",
+              "Generic": "application/json"
+            },
+            {
+              "Name": "BasicAuthentication",
+              "BasicAuthentication": {
+                "type": "basic", // { basic | bearer | <custom> }
+                "username": "<Insert username Token>",
+                "password": "<Insert password Token>"
+              }
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "text/plain"
             }
+          ],
+          "data": {
+            "type": "string" // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
           },
-          {
-            "Name": "Content-Type",
-            "ContentType": "text/plain"
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "languages[0].language"
           }
-        ],
-        "data": {
-          "type": "string" // { ascii | base64 | binary | json | raw | string | urlencode }
         }
-      },
-      "response": {
-        "missingResponse": "whatever",
-        "jsonPath": "languages[0].language"
-      }
+      ]
     },
     {
       "name": "IbmWatsonPersonalityService",
-      "classInterface": "IbmWatsonServices.IPersonalityService",
-      "request": {
-        "method": "post", // { "get" | "post" | <custom> }
-        "preferChunkedEncodedRequests": false,
-        "uri": {
-          "scheme": "https",
-          "host": "gateway.watsonplatform.net",
-          "path": "personality-insights/api/v2/profile"
-          //"query": ""
-        },
-        "headers": [
-          {
-            "Name": "BasicAuthentication",
-            "BasicAuthentication": {
-              "type": "basic", // { basic | bearer | <custom> }
-              "username": "",
-              "password": ""
-            }
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "text",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "gateway.watsonplatform.net",
+            "path": "personality-insights/api/v2/profile"
+            //"query": ""
           },
-          {
-            "Name": "Content-Type",
-            "ContentType": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+          "headers": [
+            {
+              "Name": "BasicAuthentication",
+              "BasicAuthentication": {
+                "type": "basic", // { basic | bearer | <custom> }
+                "username": "<Insert username Token>",
+                "password": "<Insert password Token>"
+              }
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "string" // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": ""
           }
-        ],
-        "data": {
-          "type": "string" // { ascii | base64 | binary | json | raw | string | urlencode }
         }
-      },
-      "response": {
-        "missingResponse": "whatever",
-        "jsonPath": ""
-      }
+      ]
+    },
+    {
+      "name": "IbmWatsonPronunciationService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "text",
+          "method": "get", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "stream.watsonplatform.net",
+            "path": "text-to-speech/api/v1/pronunciation",
+            "query": "text={text}"
+          },
+          "headers": [
+            {
+              "Name": "BasicAuthentication",
+              "BasicAuthentication": {
+                "type": "basic", // { basic | bearer | <custom> }
+                "username": "<Insert username Token>",
+                "password": "<Insert password Token>"
+              }
+            }
+          ],
+          "data": {
+            "type": "string" // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "pronunciation"
+          }
+        }
+      ]
     },
     {
       "name": "IbmWatsonSpeechToTextService",
-      "classInterface": "IbmWatsonServices.ISpeechToTextService",
-      "request": {
-        "method": "post", // { "get" | "post" | <custom> }
-        "preferChunkedEncodedRequests": false,
-        "uri": {
-          "scheme": "https",
-          "host": "stream.watsonplatform.net",
-          "path": "speech-to-text/api/v1/recognize",
-          "query": "timestamps=true&word_alternatives_threshold=0.9"
-        },
-        "headers": [
-          {
-            "Name": "Content-Type",
-            "ContentType": "audio/wav"
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "stream.watsonplatform.net",
+            "path": "speech-to-text/api/v1/recognize",
+            "query": "timestamps=true&word_alternatives_threshold=0.9"
           },
-          {
-            "Name": "BasicAuthentication",
-            "BasicAuthentication": {
-              "type": "basic", // { basic | bearer | <custom> }
-              "username": "",
-              "password": ""
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "audio/wav"
+            },
+            {
+              "Name": "BasicAuthentication",
+              "BasicAuthentication": {
+                "type": "basic", // { basic | bearer | <custom> }
+                "username": "<Insert username Token>",
+                "password": "<Insert password Token>"
+              }
             }
+          ],
+          "data": {
+            "type": "binary" // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "results[0].alternatives[0].transcript"
           }
-        ],
-        "data": {
-          "type": "binary" // { ascii | base64 | binary | json | raw | string | urlencode }
         }
-      },
-      "response": {
-        "missingResponse": "whatever",
-        "jsonPath": "results[0].alternatives[0].transcript"
-      }
+      ]
     },
     {
       "name": "IbmWatsonTextToSpeechService",
-      "classInterface": "IbmWatsonServices.ITextToSpeechService",
-      "request": {
-        "method": "post", // { "get" | "post" | <custom> }
-        "preferChunkedEncodedRequests": false,
-        "uri": {
-          "scheme": "https",
-          "host": "stream.watsonplatform.net",
-          "path": "text-to-speech/api/v1/synthesize",
-          "query": "voice=en-US_AllisonVoice"
-        },
-        "headers": [
-          {
-            "Name": "Accept",
-            "Accept": "audio/wav"
+      "classInterface": "GenericCallServices.ITextToSpeechService",
+      "requests": [
+        {
+          "argType": "text",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "stream.watsonplatform.net",
+            "path": "text-to-speech/api/v1/synthesize",
+            "query": "voice=en-US_AllisonVoice" // or Michael
           },
-          {
-            "Name": "BasicAuthentication",
-            "BasicAuthentication": {
-              "type": "basic", // { basic | bearer | <custom> }
-              "username": "",
-              "password": ""
+          "headers": [
+            {
+              "Name": "Accept",
+              "Generic": "audio/wav"
+            },
+            {
+              "Name": "BasicAuthentication",
+              "BasicAuthentication": {
+                "type": "basic", // { basic | bearer | <custom> }
+                "username": "<Insert username Token>",
+                "password": "<Insert password Token>"
+              }
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json"
             }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | raw | urlencode
+            "value": "{ \"text\":\"{text}\" }" // can also use "text={text}" (text/plain multipart)
           },
-          {
-            "Name": "Content-Type",
-            "ContentType": "application/json"
+          "response": {
+            "missingResponse": "whatever",
+            "type": "binary"
           }
-        ],
-        "data": {
-          "type": "json", // { ascii | base64 | binary | raw | urlencode
-          "value": "{ \"text\":\"{text}\" }" // can also use "text={text}" (text/plain multipart)
         }
-      },
-      "response": {
-        "missingResponse": "whatever",
-        "jsonPath": ""
-      }
+      ]
     },
     {
       "name": "IbmWatsonToneService",
-      "classInterface": "IbmWatsonServices.IToneService",
-      "request": {
-        "method": "post", // { "get" | "post" | <custom> }
-        "preferChunkedEncodedRequests": false,
-        "uri": {
-          "scheme": "https",
-          "host": "gateway.watsonplatform.net",
-          "path": "tone-analyzer/api/v3/tone",
-          "query": "version=2016-05-19"
-        },
-        "headers": [
-          {
-            "Name": "Content-Type",
-            "ContentType": "application/json"
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "text",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "gateway.watsonplatform.net",
+            "path": "tone-analyzer/api/v3/tone",
+            "query": "version=2016-05-19"
           },
-          {
-            "Name": "BasicAuthentication",
-            "BasicAuthentication": {
-              "type": "basic", // { basic | bearer | <custom> }
-              "username": "",
-              "password": ""
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json"
+            },
+            {
+              "Name": "BasicAuthentication",
+              "BasicAuthentication": {
+                "type": "basic", // { basic | bearer | <custom> }
+                "username": "<Insert username Token>",
+                "password": "<Insert password Token>"
+              }
             }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"text\":\"{text}\" }"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "" // use entire json response as result
           }
-        ],
-        "data": {
-          "type": "json", // { ascii | base64 | binary | json | raw | string | urlencode }
-          "value": "{\"text\":\"{text}\"}"
         }
-      },
-      "response": {
-        "missingResponse": "whatever",
-        "jsonPath": "" // use entire json response as result
-      }
+      ]
     },
     {
       "name": "IbmWatsonTranslateService",
-      "classInterface": "IbmWatsonServices.ITranslateService",
-      "request": {
-        "method": "post", // { "get" | "post" | <custom> }
-        "preferChunkedEncodedRequests": false,
-        "uri": {
-          "scheme": "https",
-          "host": "gateway.watsonplatform.net",
-          "path": "language-translation/api/v2/translate",
-          "query": "source={source}&target={target}"
-        },
-        "headers": [
-          {
-            "Name": "Accept",
-            "Accept": "application/json" // will return text/plain too
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "text",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "gateway.watsonplatform.net",
+            "path": "language-translation/api/v2/translate",
+            "query": "source={source}&target={target}"
           },
-          {
-            "Name": "Content-Type",
-            "ContentType": "application/json" // can use text/plain but must use multipart
-          },
-          {
-            "Name": "BasicAuthentication",
-            "BasicAuthentication": {
-              "type": "basic", // { basic | bearer | <custom> }
-              "username": "",
-              "password": ""
+          "headers": [
+            {
+              "Name": "Accept",
+              "Generic": "application/json" // will return text/plain too
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // can use text/plain but must use multipart
+            },
+            {
+              "Name": "BasicAuthentication",
+              "BasicAuthentication": {
+                "type": "basic", // { basic | bearer | <custom> }
+                "username": "<Insert username Token>",
+                "password": "<Insert password Token>"
+              }
             }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"text\":\"{text}\" }", // can also use "text={text}" (text/plain multipart)
+            "source": "en", // from
+            "target": "es" // to
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "translations[0].translation"
           }
-        ],
-        "data": {
-          "type": "json", // { ascii | base64 | binary | json | raw | string | urlencode }
-          "value": "{ \"text\":\"{text}\" }", // can also use "text={text}" (text/plain multipart)
-          "source": "en", // from
-          "target": "es" // to
         }
-      },
-      "response": {
-        "missingResponse": "whatever",
-        "jsonPath": "translations[0].translation"
-      }
+      ]
+    },
+    {
+      "name": "MicrosoftCognitiveBreakIntoWordsService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "text",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "westus.api.cognitive.microsoft.com",
+            "path": "text/weblm/v1.0/breakIntoWords",
+            "query": "model=body&text={text}&order=5&maxNumOfCandidatesReturned=5"
+          },
+          "headers": [
+            {
+              "Name": "OcpApimSubscriptionKey",
+              "OcpApimSubscriptionKey": "<Insert OcpApimSubscriptionKey Token>"
+            }
+          ],
+          "data": {
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "candidates"
+          }
+        }
+      ]
+    },
+    {
+      "name": "MicrosoftCognitiveDetectLanguageService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "text",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "westus.api.cognitive.microsoft.com",
+            "path": "text/analytics/v2.0/languages",
+            "query": "numberOfLanguagesToDetect=1"
+          },
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json"
+            },
+            {
+              "Name": "OcpApimSubscriptionKey",
+              "OcpApimSubscriptionKey": "<Insert OcpApimSubscriptionKey Token>"
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"documents\": [ { \"id\": \"{guid}\", \"text\": \"{text}\" } ] }"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "documents[0].detectedLanguages[0].name"
+          }
+        }
+      ]
+    },
+    {
+      "name": "MicrosoftCognitiveInsightService", // Both Get and Post work. Documentation says Content-Type of multipart but isn't needed.
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "text",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.cognitive.microsoft.com", // note: doesn't use westus
+            "path": "bing/v5.0/images/search", // is suppose to return images only
+            "query": "q={text}"
+          },
+          "headers": [
+            {
+              "Name": "OcpApimSubscriptionKey",
+              "OcpApimSubscriptionKey": "<Insert OcpApimSubscriptionKey Token>"
+            }
+          ],
+          "data": {
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "MicrosoftCognitiveSearchService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "text",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.cognitive.microsoft.com", // note: doesn't use westus
+            "path": "bing/v5.0/images/search", // is suppose to return images only
+            "query": "q={text}&count=10&offset=0&mkt=en-us&safeSearch=Moderate"
+          },
+          "headers": [ // documentation doesn't show any Content-Type header
+            {
+              "Name": "OcpApimSubscriptionKey",
+              "OcpApimSubscriptionKey": "<Insert OcpApimSubscriptionKey Token>"
+            }
+          ],
+          "data": {
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "MicrosoftCognitiveDescribeService", // multipart not working because of System.Net.Http issues
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "url",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "westus.api.cognitive.microsoft.com",
+            "path": "vision/v1.0/describe",
+            "query": "maxCandidates=10"
+          },
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json"
+            },
+            {
+              "Name": "OcpApimSubscriptionKey",
+              "OcpApimSubscriptionKey": "<Insert OcpApimSubscriptionKey Token>"
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"url\":\"{url}\" }"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": ""
+          }
+        },
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "westus.api.cognitive.microsoft.com",
+            "path": "vision/v1.0/describe",
+            "query": "maxCandidates=10"
+          },
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/octet-stream"
+            },
+            {
+              "Name": "OcpApimSubscriptionKey",
+              "OcpApimSubscriptionKey": "<Insert OcpApimSubscriptionKey Token>"
+            }
+          ],
+          "data": {
+            "type": "binary" // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": ""
+          }
+        },
+        {
+          "argType": "text",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "westus.api.cognitive.microsoft.com",
+            "path": "vision/v1.0/describe",
+            "query": "maxCandidates=10"
+          },
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "multipart/form-data" // Unable to implement multipart using System.Net.Http
+            },
+            {
+              "Name": "OcpApimSubscriptionKey",
+              "OcpApimSubscriptionKey": "<Insert OcpApimSubscriptionKey Token>"
+            }
+          ],
+          "data": {
+            "type": "urlencode", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{text}"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "MicrosoftCognitiveThumbnailService", // multipart not implemented
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "westus.api.cognitive.microsoft.com",
+            "path": "vision/v1.0/generateThumbnail",
+            "query": "width=100&height=100&smartCropping=true"
+          },
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/octet-stream"
+            },
+            {
+              "Name": "OcpApimSubscriptionKey",
+              "OcpApimSubscriptionKey": "<Insert OcpApimSubscriptionKey Token>"
+            }
+          ],
+          "data": {
+            "type": "binary" // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "binary"
+          }
+        },
+        {
+          "argType": "url",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "westus.api.cognitive.microsoft.com",
+            "path": "vision/v1.0/generateThumbnail",
+            "query": "width=100&height=100&smartCropping=true"
+          },
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json"
+            },
+            {
+              "Name": "OcpApimSubscriptionKey",
+              "OcpApimSubscriptionKey": "<Insert OcpApimSubscriptionKey Token>"
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"url\": \"{url}\" }"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "binary"
+          }
+        }
+      ]
+    },
+    {
+      "name": "MicrosoftCognitiveCelebrityModelService", // multipart not implemented
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "westus.api.cognitive.microsoft.com",
+            "path": "vision/v1.0/models/celebrities/analyze",
+            "query": ""
+          },
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/octet-stream"
+            },
+            {
+              "Name": "OcpApimSubscriptionKey",
+              "OcpApimSubscriptionKey": "<Insert OcpApimSubscriptionKey Token>"
+            }
+          ],
+          "data": {
+            "type": "binary" // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": ""
+          }
+        },
+        {
+          "argType": "url",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "westus.api.cognitive.microsoft.com",
+            "path": "vision/v1.0/models/celebrities/analyze",
+            "query": ""
+          },
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json"
+            },
+            {
+              "Name": "OcpApimSubscriptionKey",
+              "OcpApimSubscriptionKey": "<Insert OcpApimSubscriptionKey Token>"
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"url\": \"{url}\" }"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "MicrosoftCognitiveTagService", // multipart not implemented
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "westus.api.cognitive.microsoft.com",
+            "path": "vision/v1.0/tag",
+            "query": ""
+          },
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/octet-stream"
+            },
+            {
+              "Name": "OcpApimSubscriptionKey",
+              "OcpApimSubscriptionKey": "<Insert OcpApimSubscriptionKey Token>"
+            }
+          ],
+          "data": {
+            "type": "binary" // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": ""
+          }
+        },
+        {
+          "argType": "url",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "westus.api.cognitive.microsoft.com",
+            "path": "vision/v1.0/tag",
+            "query": ""
+          },
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json"
+            },
+            {
+              "Name": "OcpApimSubscriptionKey",
+              "OcpApimSubscriptionKey": "<Insert OcpApimSubscriptionKey Token>"
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"url\": \"{url}\" }"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "MicrosoftCognitiveEmotionRecognitionService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "westus.api.cognitive.microsoft.com",
+            "path": "emotion/v1.0/recognize",
+            "query": ""
+          },
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/octet-stream"
+            },
+            {
+              "Name": "OcpApimSubscriptionKey",
+              "OcpApimSubscriptionKey": "<Insert OcpApimSubscriptionKey Token>"
+            }
+          ],
+          "data": {
+            "type": "binary" // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": ""
+          }
+        },
+        {
+          "argType": "url",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "westus.api.cognitive.microsoft.com",
+            "path": "emotion/v1.0/recognize",
+            "query": ""
+          },
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json"
+            },
+            {
+              "Name": "OcpApimSubscriptionKey",
+              "OcpApimSubscriptionKey": "<Insert OcpApimSubscriptionKey Token>"
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"url\": \"{url}\" }"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "MicrosoftCognitiveEntitiesService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "text",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "westus.api.cognitive.microsoft.com",
+            "path": "entitylinking/v1.0/link",
+            "query": "model=body&words={text}&order=5&maxNumOfCandidatesReturned=5"
+          },
+          "headers": [
+            {
+              "Name": "OcpApimSubscriptionKey",
+              "OcpApimSubscriptionKey": "<Insert OcpApimSubscriptionKey Token>"
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "text/plain"
+            }
+          ],
+          "data": {
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "entities"
+          }
+        }
+      ]
+    },
+    {
+      "name": "MicrosoftCognitiveFaceDetectionService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "westus.api.cognitive.microsoft.com",
+            "path": "face/v1.0/detect",
+            "query": "returnFaceId=true&returnFaceLandmarks=false&returnFaceAttributes=age,gender,headPose,smile,facialHair,glasses"
+          },
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/octet-stream"
+            },
+            {
+              "Name": "OcpApimSubscriptionKey",
+              "OcpApimSubscriptionKey": "<Insert OcpApimSubscriptionKey Token>"
+            }
+          ],
+          "data": {
+            "type": "binary" // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": ""
+          }
+        },
+        {
+          "argType": "url",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "westus.api.cognitive.microsoft.com",
+            "path": "face/v1.0/detect",
+            "query": "returnFaceId=true&returnFaceLandmarks=false&returnFaceAttributes=age,gender,headPose,smile,facialHair,glasses"
+          },
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json"
+            },
+            {
+              "Name": "OcpApimSubscriptionKey",
+              "OcpApimSubscriptionKey": "<Insert OcpApimSubscriptionKey Token>"
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"url\": \"{url}\" }"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "MicrosoftCognitiveGenerateNextWordsService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "text",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "westus.api.cognitive.microsoft.com",
+            "path": "text/weblm/v1.0/generateNextWords",
+            "query": "model=body&words={text}&order=5&maxNumOfCandidatesReturned=5"
+          },
+          "headers": [
+            {
+              "Name": "OcpApimSubscriptionKey",
+              "OcpApimSubscriptionKey": "<Insert OcpApimSubscriptionKey Token>"
+            }
+          ],
+          "data": {
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "candidates"
+          }
+        }
+      ]
+    },
+    {
+      "name": "MicrosoftCognitiveKeyPhrasesService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "text",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "westus.api.cognitive.microsoft.com",
+            "path": "text/analytics/v2.0/keyPhrases"
+            //"query": ""
+          },
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json"
+            },
+            {
+              "Name": "OcpApimSubscriptionKey",
+              "OcpApimSubscriptionKey": "<Insert OcpApimSubscriptionKey Token>"
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"documents\": [ { \"id\": \"{guid}\", \"text\": \"{text}\" } ] }"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "MicrosoftCognitiveParaphraseService", // deprecated by Microsoft
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "text",
+          "method": "get", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.microsofttranslator.com",
+            "path": "v3/json/paraphrase",
+            "query": "sentence={text}&language={language}&category={catagory}&maxParaphrases={maxParaphrases}"
+          },
+          "headers": [
+            {
+              "Name": "BearerAuthentication",
+              "BearerAuthentication": {
+                "type": "bearer", // { basic | bearer | <custom> }
+                "clientID": "<Insert clientID Token>",
+                "clientSecret": "<Insert clientSecret Token>"
+              }
+            }
+          ],
+          // no "data" property for GET methods
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "MicrosoftCognitiveParseAnalyzersService", // not implemented - returns list of analyzers
+      "classInterface": "MicrosoftCognitiveParseAnalyzersServices.IParseAnalyzersService",
+      "requests": [
+        {
+          "argType": "text",
+          "method": "get", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "westus.api.cognitive.microsoft.com",
+            "path": "linguistics/v1.0/analyzers"
+            //"query": ""
+          },
+          "headers": [
+            {
+              "Name": "OcpApimSubscriptionKey",
+              "OcpApimSubscriptionKey": "<Insert OcpApimSubscriptionKey Token>"
+            }
+          ],
+          // no "data" property for GET methods
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "[*].id"
+          }
+        }
+      ]
+    },
+    {
+      "name": "MicrosoftCognitiveParseService",
+      "classInterface": "MicrosoftCognitiveParseServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "text",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "westus.api.cognitive.microsoft.com",
+            "path": "linguistics/v1.0/analyze"
+            //"query": ""
+          },
+          "headers": [
+            {
+              "Name": "Accept",
+              "Generic": "application/json"
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json"
+            },
+            {
+              "Name": "OcpApimSubscriptionKey",
+              "OcpApimSubscriptionKey": "<Insert OcpApimSubscriptionKey Token>"
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"language\" : \"en\", \"analyzerIds\" : [{AnalyzerStringized}], \"text\" :\"{text}\" }"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "[1].result"
+          }
+        }
+      ]
+    },
+    {
+      "name": "MicrosoftCognitiveSentimentService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "text",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "westus.api.cognitive.microsoft.com",
+            "path": "text/analytics/v2.0/sentiment"
+            //"query": ""
+          },
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json"
+            },
+            {
+              "Name": "OcpApimSubscriptionKey",
+              "OcpApimSubscriptionKey": "<Insert OcpApimSubscriptionKey Token>"
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"documents\": [ { \"id\": \"{guid}\", \"text\": \"{text}\" } ] }"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "MicrosoftCognitiveSpeechToTextService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "speech.platform.bing.com",
+            "path": "recognize",
+            "query": "scenarios=smd&appid=D4D52672-91D7-4C74-8AD8-42B1D98141A5&locale={locale}&device.os=wp7&version=3.0&format=json&instanceid=565D69FF-E928-4B7E-87DA-9A750B96D9E3&requestid={guid}"
+          },
+          "headers": [
+            {
+              "Name": "Accept",
+              "Generic": "application/json"
+            },
+            {
+              "Name": "BearerAuthentication",
+              "OcpApimSubscriptionKey": "<Insert OcpApimSubscriptionKey Token>",
+              "BearerAuthentication": {
+                "type": "bearer", // { basic | bearer | <custom> }
+                "uri": "https://api.cognitive.microsoft.com/sts/v1.0/issueToken"
+              }
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "audio/wav; codec=\"audio/pcm\"; samplerate={sampleRate}"
+            }
+          ],
+          "data": {
+            "type": "binary" // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "header.name"
+          }
+        }
+      ]
+    },
+    {
+      "name": "MicrosoftCognitiveSpellService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "text",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.cognitive.microsoft.com",
+            "path": "bing/v5.0/spellcheck",
+            "query": "mode=proof&mkt=en-US" // must have mkt=en-US for use outside of US
+          },
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/x-www-form-urlencoded"
+            },
+            {
+              "Name": "OcpApimSubscriptionKey",
+              "OcpApimSubscriptionKey": "<Insert OcpApimSubscriptionKey Token>"
+            }
+          ],
+          "data": {
+            "type": "urlencode", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "Text={text}" // urlencode name=content
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "MicrosoftCognitiveTextToSpeechV1Service",
+      "classInterface": "GenericCallServices.ITextToSpeechService",
+      "requests": [
+        {
+          "argType": "text",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "speech.platform.bing.com",
+            "path": "synthesize",
+            "query": ""
+          },
+          "headers": [
+            {
+              "Name": "BearerAuthentication",
+              "OcpApimSubscriptionKey": "<Insert OcpApimSubscriptionKey Token>",
+              "BearerAuthentication": {
+                "type": "bearer", // { basic | bearer | <custom> }
+                "uri": "https://api.cognitive.microsoft.com/sts/v1.0/issueToken"
+              }
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "application/ssml+xml"
+            },
+            {
+              "Name": "X-Microsoft-OutputFormat",
+              "Generic": "riff-16khz-16bit-mono-pcm"
+            },
+            {
+              "Name": "X-Search-AppId",
+              "Generic": "3ABA01CBBCA74A1DA768C4514829C88A"
+            },
+            {
+              "Name": "X-Search-ClientID",
+              "Generic": "0450973539784339B6E18E49B2D14E69"
+            },
+            {
+              "Name": "User-Agent",
+              "Generic": "Woundify"
+            }
+          ],
+          "data": {
+            "type": "xml", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "<speak version='1.0' xml:lang='en-US'><voice xml:lang='en-US' xml:gender='Female' name='Microsoft Server Speech Text to Speech Voice (en-US, ZiraRUS)'>{text}</voice></speak>"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "binary"
+          }
+        }
+      ]
+    },
+    {
+      "name": "MicrosoftCognitiveTextToSpeechService",
+      "classInterface": "GenericCallServices.ITextToSpeechService",
+      "requests": [
+        {
+          "argType": "text",
+          "method": "get", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.microsofttranslator.com",
+            "path": "v2/http.svc/Speak",
+            "query": "text={text}&language=en-US"
+          },
+          "headers": [
+            {
+              "Name": "BearerAuthentication",
+              "OcpApimSubscriptionKey": "<Insert OcpApimSubscriptionKey Token>",
+              "BearerAuthentication": {
+                "type": "bearer", // { basic | bearer | <custom> }
+                "uri": "https://api.cognitive.microsoft.com/sts/v1.0/issueToken"
+              }
+            }
+          ],
+          "response": {
+            "missingResponse": "whatever",
+            "type": "binary"
+          }
+        }
+      ]
+    },
+    {
+      "name": "MicrosoftCognitiveTransformTextService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "text",
+          "method": "get", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.microsofttranslator.com",
+            "path": "V3/json/TransformText",
+            "query": "sentence={text}&category=general&language=en-US"
+          },
+          "headers": [
+            {
+              "Name": "BearerAuthentication",
+              "OcpApimSubscriptionKey": "<Insert OcpApimSubscriptionKey Token>",
+              "BearerAuthentication": {
+                "type": "bearer", // { basic | bearer | <custom> }
+                "uri": "https://api.cognitive.microsoft.com/sts/v1.0/issueToken"
+              }
+            }
+          ],
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "MicrosoftCognitiveTranslateService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "text",
+          "method": "get", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.microsofttranslator.com",
+            "path": "v2/Http.svc/Translate",
+            "query": "Text={text}&From={source}&To={target}&contentType=text/plain&category=general"
+          },
+          "headers": [
+            {
+              "Name": "BearerAuthentication",
+              "OcpApimSubscriptionKey": "<Insert OcpApimSubscriptionKey Token>",
+              "BearerAuthentication": {
+                "type": "bearer", // { basic | bearer | <custom> }
+                "uri": "https://api.cognitive.microsoft.com/sts/v1.0/issueToken"
+              }
+            }
+          ],
+          // no "data" property for GET methods
+          "response": {
+            "missingResponse": "whatever",
+            "type": "xml",
+            "xpath": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "WindowsPronunciationService", // not a HTTP service
+      "classInterface": "WindowsPronounceService.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "text",
+          "data": {
+            "type": "string" // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "string"
+          }
+        }
+      ]
     },
     {
       "name": "WindowsSpeechToTextService", // not a HTTP service
-      "classInterface": "WindowsServices.ISpeechToTextService"
+      "classInterface": "WindowsSpeechToTextService.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "data": {
+            "type": "binary" // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "string"
+          }
+        }
+      ]
     },
     {
       "name": "WindowsTextToSpeechService", // not a HTTP service
-      "classInterface": "WindowsServices.ITextToSpeechService"
+      "classInterface": "WindowsTextToSpeechService.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "text",
+          "data": {
+            "type": "binary" // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "binary"
+          }
+        }
+      ]
     },
     {
       "name": "WitSpeechToTextService",
-      "classInterface": "WitServices.ISpeechToTextService",
-      "request": {
-        "method": "post", // { "get" | "post" | <custom> }
-        "preferChunkedEncodedRequests": false,
-        "uri": {
-          "scheme": "https",
-          "host": "api.wit.ai",
-          "path": "speech",
-          "query": "v=20160526"
-        },
-        "headers": [
-          {
-            "Name": "BearerAuthentication",
-            "BearerAuthentication": {
-              "type": "bearer", // { basic | bearer | <custom> }
-              "bearer": ""
-            }
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.wit.ai",
+            "path": "speech",
+            "query": "v=20160526"
           },
-          {
-            "Name": "Content-Type",
-            "ContentType": "audio/wav"
+          "headers": [
+            {
+              "Name": "BearerAuthentication",
+              "BearerAuthentication": {
+                "type": "bearer", // { basic | bearer | <custom> }
+                "bearer": "<Insert Bearer Token>"
+              }
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "audio/wav"
+            }
+          ],
+          "data": {
+            "type": "binary" // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "_text"
           }
-        ],
-        "data": {
-          "type": "binary" // { ascii | base64 | binary | json | raw | string | urlencode }
         }
-      },
-      "response": {
-        "missingResponse": "whatever",
-        "jsonPath": "_text"
-      }
+      ]
     }
   ]
 }

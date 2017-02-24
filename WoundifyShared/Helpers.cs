@@ -36,7 +36,7 @@ namespace WoundifyShared
             try
             {
                 Windows.Storage.StorageFolder tempFolder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(Options.options.tempFolderPath);
-                Windows.Storage.StorageFile file = await tempFolder.GetFileAsync(fileName);
+                Windows.Storage.StorageFile file = await tempFolder.GetFileAsyncServiceAsync(text, apiArgs);
                 return await Windows.Storage.FileIO.ReadTextAsync(file);
             }
             catch (Exception ex)
@@ -50,7 +50,7 @@ namespace WoundifyShared
             try
             {
                 Windows.Storage.StorageFolder tempFolder = await Windows.Storage.StorageFolder.GetFolderFromPathAsync(Options.options.tempFolderPath);
-                Windows.Storage.StorageFile file = await tempFolder.GetFileAsync(fileName);
+                Windows.Storage.StorageFile file = await tempFolder.GetFileAsyncServiceAsync(text, apiArgs);
                 // TODO: obsolete to use DataReader? use await Windows.Storage.FileIO.Read...(file);
                 using (Windows.Storage.Streams.IRandomAccessStream stream = await file.OpenReadAsync())
                 {

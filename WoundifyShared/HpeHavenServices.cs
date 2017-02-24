@@ -9,25 +9,26 @@ using System.Collections.Generic;
 
 namespace WoundifyShared
 {
-    class HpeHavenServices : WoundifyServices
+    class HpeHavenSpeechToTextServices : GenericCallServices // needed to deal with async JobID stuff
     {
-        public HpeHavenServices(Settings.Service service) : base(service)
+        public HpeHavenSpeechToTextServices(Settings.Service service) : base(service)
         {
         }
-
-        public override async System.Threading.Tasks.Task<SpeechToTextServiceResponse> SpeechToTextServiceAsync(byte[] audioBytes, int sampleRate)
+        public override async System.Threading.Tasks.Task<CallServiceResponse<IGenericServiceResponse>> CallServiceAsync(byte[] audioBytes, System.Collections.Generic.Dictionary<string, string> apiArgs)
         {
-            SpeechToTextServiceResponse response = new SpeechToTextServiceResponse();
+            int sampleRate = int.Parse(apiArgs["sampleRate"]);
             Log.WriteLine("audio file length:" + audioBytes.Length + " sampleRate:" + sampleRate);
+            CallServiceResponse<IGenericServiceResponse> response = new CallServiceResponse<IGenericServiceResponse>(service);
+            response.Request = Array.Find(service.requests, p => p.argType == "binary");
 
-            response.sr = await PostAsync(service, null, null, null, audioBytes);
-            string JobID = response.sr.ResponseJToken.SelectToken(".jobID").ToString();
-            Dictionary<string, string> dict = Helpers.stringToDictionary(service.request.data.value, '&', '=');
+            await HttpMethods.CallApiAsync(response, null, null, null, audioBytes, apiArgs);
+            string JobID = response.ResponseJToken.SelectToken(".jobID").ToString();
+            Dictionary<string, string> dict = Helpers.stringToDictionary(service.requests[0].data.value, '&', '=');
             string ApiKey = dict["apikey"];
             // TODO: move url to settings file
             string JobUrl = $"https://api.havenondemand.com/1/job/result/{JobID}?apikey={ApiKey}"; // using C# 6.0 string interpolation
-            response.sr = await GetAsync(service, new Uri(JobUrl), null, null);
-            await ExtractResultAsync(service, response.sr);
+            await HttpMethods.CallApiAuthAsync(response, new Uri(JobUrl), "", null);
+            await HttpMethods.ExtractResultAsync(response);
             return response;
         }
     }

@@ -12,6 +12,7 @@ namespace WoundifyConsole
             Console.OutputEncoding = System.Text.Encoding.Unicode;
             try
             {
+                Console.WriteLine("CommandLine:" + Environment.CommandLine);
                 WoundifyShared.Options.OptionsInit().Wait();
                 WoundifyShared.Commands.ProcessArgsAsync(args).Wait(); // Must use .Wait(), otherwise some await will cause Main to unexpectedly exit.
             }
@@ -19,7 +20,7 @@ namespace WoundifyConsole
             {
                 do
                 {
-                    Console.WriteLine("WoundifyConsole: Exception:" + ex.Message);
+                     Console.WriteLine("WoundifyConsole: Exception:" + ex.Message);
                 }
                 while ((ex = ex.InnerException) != null);
             }

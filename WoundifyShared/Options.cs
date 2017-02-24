@@ -10,7 +10,7 @@ namespace WoundifyShared
         public static Dictionary<string, Settings.Command> commands = new Dictionary<string, Settings.Command>(StringComparer.OrdinalIgnoreCase);
         public static Dictionary<string, Settings.Commandservice> commandservices = new Dictionary<string, Settings.Commandservice>(StringComparer.OrdinalIgnoreCase);
         //public static Dictionary<string, Settings.Service> services = new Dictionary<string, Settings.Service>(StringComparer.OrdinalIgnoreCase);
-        public static Dictionary<string, WoundifyServices> services = new Dictionary<string, WoundifyServices>(StringComparer.OrdinalIgnoreCase);
+        public static Dictionary<string, GenericCallServices> services = new Dictionary<string, GenericCallServices>(StringComparer.OrdinalIgnoreCase);
 #if false
         public static BingServices bing;
         public static GoogleServices google;
@@ -107,15 +107,26 @@ namespace WoundifyShared
                     .Where(type => type.IsClass && typeof(IService).IsAssignableFrom(type))
                     .ToDictionary(k => k.Name + "." + typeof(IService).Name, v => v, StringComparer.OrdinalIgnoreCase); // create key of Class+Interface
 #endif
-            foreach (Settings.Service service in Options.options.services)
+            foreach (Settings.Service service in Options.options.services) // sanity checks for services
             {
-                services.Add(service.name, new WoundifyServices(service));
+                foreach (Settings.Request request in service.requests) // sanity checks for requests
+                {
+                    if (request.response == null)
+                        throw new Exception("missing response:" + service.name);
+                    if (request.response.type == null)
+                        throw new Exception("missing response.type:" + service.name);
+                    if (request.response.type != "json" && request.response.jsonPath != null)
+                        throw new Exception("type is not json but jsonPath specified:" + service.name);
+                    if (request.response.type != "xml" && request.response.xpath != null)
+                        throw new Exception("type is not xml but xpath specified:" + service.name);
+                }
+                services.Add(service.name, new GenericCallServices(service));
             }
-            foreach (Settings.Command command in Options.options.commands)
+            foreach (Settings.Command command in Options.options.commands) // sanity checks for commands
             {
                 commands.Add(command.key, command);
             }
-            foreach (Settings.Commandservice s in Options.options.commandServices)
+            foreach (Settings.Commandservice s in Options.options.commandServices) // sanity checks for command services
             {
                 if (!commands.ContainsKey(s.key)) // must be a listed command
                     throw new NotImplementedException();

@@ -62,7 +62,8 @@ namespace WoundifyShared
 
         private static async System.Threading.Tasks.Task WhatCanISayAsync()
         {
-            await TextToSpeech.TextToSpeechServiceAsync("Ask me about the weather, a Wikipedia entry, a definition or quit or end.");
+            System.Collections.Generic.Dictionary<string, string> apiArgs = new System.Collections.Generic.Dictionary<string, string>();
+            await TextToSpeech.TextToSpeechServiceAsync("Ask me about the weather, a Wikipedia entry, a definition or quit or end.", apiArgs);
         }
     }
 }

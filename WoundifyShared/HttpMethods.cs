@@ -6,6 +6,7 @@ namespace WoundifyShared
 {
     public class HttpMethods
     {
+        private static Authentication ImageAuth = null;
         private static ulong httpCallCount = 0;
         static HttpMethods()
         {
@@ -13,12 +14,13 @@ namespace WoundifyShared
             {
                 System.IO.File.Delete(f);
             }
+            ImageAuth = new Authentication();
         }
 
 #if WINDOWS_UWP // major bit rot
-        public virtual async System.Threading.Tasks.Task<IServiceResponse> PostAsyncWindowsWeb(Uri uri, byte[] audioBytes, int sampleRate)
+        public virtual async System.Threading.Tasks.Task<IServiceResponse> PostAsyncWindowsWeb(Uri uri, byte[] audioBytes, apiArgs)
         {
-        IServiceResponse response = new IServiceResponse();
+        IServiceResponse response = new IServiceResponse(service);
             try
             {
                 // Using HttpClient to grab chunked encoding (partial) responses.
@@ -97,13 +99,41 @@ namespace WoundifyShared
         return response;
         }
 #endif
-        public Uri MakeUri(Settings.Service service, List<Tuple<string, string>> uriSubstitutes)
+        public static Uri MakeUri(Settings.Request request, Dictionary<string, string> apiArgs, List<Tuple<string, string>> uriSubstitutes = null, string text = null)
         {
             UriBuilder ub = new UriBuilder();
-            string scheme = service.request.uri.scheme;
-            string host = service.request.uri.host;
-            string path = service.request.uri.path;
-            string query = service.request.uri.query;
+            string scheme = request.uri.scheme;
+            string host = request.uri.host;
+            string path = request.uri.path;
+            string query = request.uri.query;
+
+            if (apiArgs != null)
+            {
+                foreach (KeyValuePair<string, string> r in apiArgs)
+                {
+                    // so far only query needs substitutes
+                    string k = "{" + r.Key + "}";
+                    scheme = scheme.Replace(k, r.Value);
+                    host = host.Replace(k, r.Value);
+                    path = path.Replace(k, r.Value);
+                    if (query == null)
+                        query = string.Empty;
+                    else
+                        query = query.Replace(k, r.Value);
+                }
+            }
+
+            if (uriSubstitutes == null)
+            {
+                uriSubstitutes = new System.Collections.Generic.List<Tuple<string, string>>()
+                {
+                    new Tuple<string, string>("{guid}", Guid.NewGuid().ToString()), // Microsoft SpeechToText
+                    new Tuple<string, string>("{locale}", Options.options.locale.language) // Microsoft SpeechToText
+                };
+                if (text != null)
+                    uriSubstitutes.Add(new Tuple<string, string>("{text}", text));
+            }
+
             if (uriSubstitutes != null)
             {
                 foreach (Tuple<string, string> r in uriSubstitutes)
@@ -122,25 +152,35 @@ namespace WoundifyShared
             ub.Host = host;
             ub.Path = path;
             ub.Query = query;
+            ub.Query = query;
             return ub.Uri;
         }
 
-        private List<string> MakePostDataSubstitutes(Settings.Service service, string text, byte[] bytes, List<Tuple<string, string>> postDataSubstitutes)
+        private static List<string> MakePostDataSubstitutes(Settings.Request request, string text, byte[] bytes, System.Collections.Generic.Dictionary<string, string> apiArgs, List<Tuple<string, string>> postDataSubstitutes)
         {
-            if (service == null)
+            if (request == null || request.data == null || request.data.type == null) // some POSTs have no data
                 return new List<string> { text };
 
-            string data = service.request.data.value;
-            if (data == null)
-                data = text;
-            else if (postDataSubstitutes != null)
+            if (text != null && bytes != null)
+                throw new Exception("MakePostDataSubstitutes: Both text and bytes are not null");
+
+            string data = text;
+            if (request.data.value != null)
+                data = request.data.value;
+
+            if (postDataSubstitutes != null)
             {
                 foreach (Tuple<string, string> r in postDataSubstitutes)
                 {
                     data = data.Replace(r.Item1, r.Item2);
                 }
             }
-            switch (service.request.data.type)
+
+            string fileName = null;
+            if (apiArgs.ContainsKey("fileName"))
+                fileName = apiArgs["fileName"];
+
+            switch (request.data.type)
             {
                 case "ascii":
                     return new List<string> { data };
@@ -148,15 +188,15 @@ namespace WoundifyShared
                     // TODO: use Helpers.stringToDictionary()
                     if (data.Contains("=")) // TODO: use text or data?
                     {
-                        List<string> content = new List<string>();
+                        List<string> base64content = new List<string>();
                         foreach (string multicontent in data.Split('&'))
                         {
                             string[] namecontent = multicontent.Split('=');
                             if (namecontent.Length != 2)
                                 throw new FormatException();
-                            content.Add(namecontent[0] + "=" + namecontent[1].Replace("{text}", Convert.ToBase64String(bytes)));
+                            base64content.Add(namecontent[0] + "=" + namecontent[1].Replace("{text}", Convert.ToBase64String(bytes)));
                         }
-                        return content;
+                        return base64content;
                     }
                     else
                     {
@@ -166,166 +206,245 @@ namespace WoundifyShared
                     return null;
                 case "json":
                     // TODO: pass list of substitutes instead of hard coding?
-                    return new List<string> { data.Replace("{guid}", Guid.NewGuid().ToString()).Replace("{text}", text) }; // bing sentiment uses guid
+                    // TODO: issue with replacing "'" with "\\'". Seems to work when json properties are delimited with single-quotes but not with double-quotes. 
+                    if (data.Contains("{base64}") ^ bytes != null)
+                        throw new Exception("json: bytes ^ {base64} mismatch"); // can occur if string/url argument is passed to binary data API
+                    if ((data.Contains("{text}") || data.Contains("{url}")) ^ text != null) // todo: remove when url is implemented
+                        throw new Exception("json: text ^ {text} mismatch");
+                    // pass Uri here so request use Url instead of text
+                    //if (data.Contains("{url}") ^ text != null)
+                    //throw new Exception("json: text ^ {url} mismatch");
+                    if (bytes != null)
+                        return new List<string> { data.Replace("{guid}", Guid.NewGuid().ToString()).Replace("{base64}", Convert.ToBase64String(bytes)) };
+                    else if (text != null)
+                        return new List<string> { data.Replace("{guid}", Guid.NewGuid().ToString()).Replace("{url}", text).Replace("{text}", text.Replace("\"", "\\\"")) }; // bing sentiment uses guid. Replace '"' with '\"'
+                    else
+                        throw new Exception("json: expecting bytes or text");
+                case "multipart":
+                    // TODO: use Helpers.stringToDictionary()
+                    if (!data.Contains("=")) // && isMultipart(headers)?
+                        throw new Exception("multipart is missing =");
+                    List<string> multipartcontent = new List<string>();
+                    foreach (string multicontent in data.Split('&'))
+                    {
+                        string[] namecontent = multicontent.Split('=');
+                        if (namecontent.Length != 2)
+                            throw new FormatException();
+                        if (fileName != null)
+                            multipartcontent.Add(namecontent[0] + "=" + namecontent[1].Replace("{text}", fileName)); // hpe haven ocr
+                        else if (bytes != null)
+                            multipartcontent.Add(namecontent[0] + "=" + namecontent[1].Replace("{text}", Convert.ToBase64String(bytes))); // bing spell, Microsoft Detect
+                        else if (text != null)
+                            multipartcontent.Add(namecontent[0] + "=" + namecontent[1].Replace("{text}", text)); // bing spell, Microsoft Detect
+                    }
+                    return multipartcontent;
                 case "raw":
                     return new List<string> { data };
                 case "string":
                     return new List<string> { data };
                 case "urlencode":
                     // TODO: use Helpers.stringToDictionary()
-                    data = data.Replace("{text}", text); // bing spell
-                    if (data.Contains("="))
+                    if (text == null)
+                        throw new Exception("urlencode: expecting text");
+                    if (data.Contains("=")) // && isMultipart(headers)?
                     {
-                        List<string> content = new List<string>();
+                        List<string> urlencodecontent = new List<string>();
                         foreach (string multicontent in data.Split('&'))
                         {
                             string[] namecontent = multicontent.Split('=');
                             if (namecontent.Length != 2)
                                 throw new FormatException();
-                            content.Add(namecontent[0] + "=" + System.Web.HttpUtility.UrlEncode(namecontent[1]));
+                            urlencodecontent.Add(namecontent[0] + "=" + (namecontent[1][0] == '@' ? namecontent[1] : System.Web.HttpUtility.UrlEncode(namecontent[1].Replace("{text}", text))));
                         }
-                        return content;
+                        return urlencodecontent;
                     }
                     else
                     {
                         return new List<string> { System.Web.HttpUtility.UrlEncode(data) };
                     }
+                case "xml":
+                    // TODO: pass list of substitutes instead of hard coding?
+                    if (bytes == null)
+                        return new List<string> { data.Replace("{guid}", Guid.NewGuid().ToString()).Replace("{text}", text) }; // bing sentiment uses guid
+                    else
+                        return new List<string> { data.Replace("{guid}", Guid.NewGuid().ToString()).Replace("{text}", Convert.ToBase64String(bytes)) }; // bing sentiment uses guid
                 default:
                     throw new MissingFieldException();
             }
         }
 
-        private List<Tuple<string, string>> MakeHeaders(Settings.Service service)
+        private static List<Tuple<string, string>> MakeHeaders(Settings.Request request)
         {
             List<Tuple<string, string>> headers = new List<Tuple<string, string>>();
-            if (service == null || service.request == null || service.request.headers == null)
+            if (request == null || request.headers == null)
                 return headers;
-            foreach (Settings.Header h in service.request.headers)
+            foreach (Settings.Header h in request.headers)
             {
-                // TODO: need to expand request headers to include any header. Use Value instead of concrete name (Accept, ContentType)
+                // TODO: need to expand request headers to include any header. Use Value instead of "Generic" or concrete name (Accept, ContentType)
                 switch (h.Name)
                 {
-                    case "Accept":
-                        headers.Add(new Tuple<string, string>("Accept", h.Accept));
-                        break;
                     case "BearerAuthentication":
-                        // contained within uriSubstitutes
+                        AccessTokenInfo accessTokenInfo = ImageAuth.PerformAuthenticationAsync(request, h).Result; // TODO: make this method async so don't have to do Wait?
+                        headers.Add(new Tuple<string, string>("Authorization", "Bearer " + accessTokenInfo.access_token));
                         break;
                     case "BasicAuthentication":
                         string userpass = Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes(string.Format("{0}:{1}", h.BasicAuthentication.username, h.BasicAuthentication.password).Replace('+', '-').Replace('/', '_')));
                         headers.Add(new Tuple<string, string>("Authorization", "Basic " + userpass));
                         break;
-                    case "Content-Type":
-                        headers.Add(new Tuple<string, string>("Content-Type", h.ContentType));
+                    case "HoundifyAuthentication": // will be passed in but must skip, don't let default
+                        break;
+                    case "OcpApimSubscriptionKey":
+                        headers.Add(new Tuple<string, string>("Ocp-Apim-Subscription-Key", h.OcpApimSubscriptionKey)); // needs rewrite. see above.
                         break;
                     default:
-                        throw new MissingFieldException();
+                        if (h.Generic == null)
+                            throw new Exception("Header: Generic is null");
+                        headers.Add(new Tuple<string, string>(h.Name, h.Generic));
+                        break;
                 }
             }
             return headers;
         }
 
-        public virtual async System.Threading.Tasks.Task<ServiceResponse> GetAsync(Settings.Service service)
+        public static async System.Threading.Tasks.Task CallApiAsync(ServiceResponse response, List<Tuple<string, string>> uriSubstitutes, List<Tuple<string, string>> headers)
         {
-            return await GetAsync(service, null, null, null);
+            await CallApiAsyncInternal(response, null, uriSubstitutes, headers, null, new byte[0], null);
         }
 
-        public virtual async System.Threading.Tasks.Task<ServiceResponse> GetAsync(Settings.Service service, List<Tuple<string, string>> uriSubstitutes, List<Tuple<string, string>> headers)
+        public static async System.Threading.Tasks.Task CallApiAsync(ServiceResponse response, byte[] bytes, System.Collections.Generic.Dictionary<string, string> apiArgs)
         {
-            return await GetAsync(service, null, uriSubstitutes, headers);
+            await CallApiAsyncInternal(response, null, null, null, null, bytes, apiArgs);
         }
 
-        public virtual async System.Threading.Tasks.Task<ServiceResponse> GetAsync(Settings.Service service, Uri uri, List<Tuple<string, string>> uriSubstitutes, List<Tuple<string, string>> headers)
+        public static async System.Threading.Tasks.Task CallApiAsync(ServiceResponse response, string text, System.Collections.Generic.Dictionary<string, string> apiArgs)
         {
+            await CallApiAsyncInternal(response, null, null, null, null, text, apiArgs);
+        }
+
+        public static async System.Threading.Tasks.Task CallApiAsync(ServiceResponse response, Uri url, System.Collections.Generic.Dictionary<string, string> apiArgs)
+        {
+            await CallApiAsyncInternal(response, null, null, null, null, url.ToString(), apiArgs);
+        }
+
+        public static async System.Threading.Tasks.Task CallApiAsync(ServiceResponse response, Uri uri, byte[] bytes, System.Collections.Generic.Dictionary<string, string> apiArgs, List<Tuple<string, string>> headers)
+        {
+            await CallApiAsyncInternal(response, uri, null, headers, null, bytes, apiArgs);
+        }
+
+        public static async System.Threading.Tasks.Task CallApiAsync(ServiceResponse response, Uri uri, string text, System.Collections.Generic.Dictionary<string, string> apiArgs, List<Tuple<string, string>> headers)
+        {
+            await CallApiAsyncInternal(response, uri, null, headers, null, text, apiArgs);
+        }
+
+        public static async System.Threading.Tasks.Task CallApiAsync(ServiceResponse response, List<Tuple<string, string>> UriSubstitutes, List<Tuple<string, string>> headers, List<Tuple<string, string>> postDataSubstitutes, byte[] bytes, System.Collections.Generic.Dictionary<string, string> apiArgs, int maxResponseLength = 10000000)
+        {
+            await CallApiAsyncInternal(response, null, UriSubstitutes, headers, postDataSubstitutes, bytes, apiArgs);
+        }
+
+        public static async System.Threading.Tasks.Task CallApiAsync(ServiceResponse response, List<Tuple<string, string>> UriSubstitutes, List<Tuple<string, string>> headers, List<Tuple<string, string>> postDataSubstitutes, string text, System.Collections.Generic.Dictionary<string, string> apiArgs, int maxResponseLength = 10000000)
+        {
+            await CallApiAsyncInternal(response, null, UriSubstitutes, headers, postDataSubstitutes, text, apiArgs);
+        }
+
+        private static async System.Threading.Tasks.Task CallApiAsyncInternal(ServiceResponse response, Uri uri, List<Tuple<string, string>> UriSubstitutes, List<Tuple<string, string>> headers, List<Tuple<string, string>> postDataSubstitutes, byte[] bytes, System.Collections.Generic.Dictionary<string, string> apiArgs, int maxResponseLength = 10000000)
+        {
+            switch (response.Request.method)
+            {
+                case "get":
+                    await GetAsync(response, uri, UriSubstitutes, headers, postDataSubstitutes, null, apiArgs);
+                    break;
+                case "post":
+                    await PostAsync(response, uri, UriSubstitutes, headers, postDataSubstitutes, bytes, apiArgs);
+                    break;
+                default:
+                    throw new Exception("Unsupported Http method:" + response.Request.method);
+            }
+        }
+
+        private static async System.Threading.Tasks.Task CallApiAsyncInternal(ServiceResponse response, Uri uri, List<Tuple<string, string>> UriSubstitutes, List<Tuple<string, string>> headers, List<Tuple<string, string>> postDataSubstitutes, string text, System.Collections.Generic.Dictionary<string, string> apiArgs, int maxResponseLength = 10000000)
+        {
+            switch (response.Request.method)
+            {
+                case "get":
+                    await GetAsync(response, uri, UriSubstitutes, headers, postDataSubstitutes, text, apiArgs);
+                    break;
+                case "post":
+                    await PostAsync(response, uri, UriSubstitutes, headers, postDataSubstitutes, text, apiArgs);
+                    break;
+                default:
+                    throw new Exception("Unsupported Http method:" + response.Request.method);
+            }
+        }
+
+        // for oAuth calls
+        public static async System.Threading.Tasks.Task CallApiAuthAsync(ServiceResponse response, Uri uri, string text, List<Tuple<string, string>> headers, int maxResponseLength = 10000000)
+        {
+            await MakePostCurl(uri, headers, new List<string>() { text }, null, false);
+            System.Net.Http.HttpContent requestContent = new System.Net.Http.StringContent(text);
+            await SystemNetAsync(response, "POST", uri, headers, requestContent, false, maxResponseLength);
+        }
+
+        private static async System.Threading.Tasks.Task GetAsync(ServiceResponse response, Uri uri, List<Tuple<string, string>> UriSubstitutes, List<Tuple<string, string>> headers, List<Tuple<string, string>> postDataSubstitutes, string text, System.Collections.Generic.Dictionary<string, string> apiArgs, int maxResponseLength = 10000000)
+        {
+            Settings.Request request = response.Request;
+            bool binaryResponse = request.response.type == "binary";
             if (uri == null)
-                uri = MakeUri(service, uriSubstitutes);
+                uri = MakeUri(request, apiArgs, UriSubstitutes, text);
             if (headers == null)
-                headers = MakeHeaders(service);
-            await MakeGetCurl(uri, headers);
+                headers = MakeHeaders(request);
+            List<string> texts = MakePostDataSubstitutes(request, text, null, apiArgs, postDataSubstitutes);
+            if (texts.Count != 1)
+                throw new Exception("multipart GET not allowed");
+            await MakeGetCurl(uri, headers, request.response.jq, binaryResponse);
 #if WINDOWS_UWP
             ServiceResponse response;
             if (Options.options.Services.APIs.PreferSystemNet)
-                response = await SystemNetAsync("GET", uri, headers, new System.Net.Http.ByteArrayContent(requestContent), binaryResponse, maxResponseLength);
+                await SystemNetAsync("GET", uri, headers, new System.Net.Http.ByteArrayContent(requestContent), binaryResponse, maxResponseLength);
             else
-                response = await WindowsWebAsync("GET", new Uri(requestUri), audioBytes, sampleRate, contentType, headerValue);
+                await WindowsWebAsync("GET", new Uri(requestUri), audioBytes, sampleRate, contentType, headerValue);
 #else
-            ServiceResponse response = await SystemNetAsync("GET", uri, headers);
+            await SystemNetAsync(response, "GET", uri, headers, null, binaryResponse, maxResponseLength);
 #endif
-            return response;
+            response.FileName = "curl-" + httpCallCount;
         }
 
-        public virtual async System.Threading.Tasks.Task<ServiceResponse> PostAsync(Settings.Service service, byte[] bytes)
+        private static async System.Threading.Tasks.Task PostAsync(ServiceResponse response, Uri uri, List<Tuple<string, string>> UriSubstitutes, List<Tuple<string, string>> headers, List<Tuple<string, string>> postDataSubstitutes, byte[] bytes, System.Collections.Generic.Dictionary<string, string> apiArgs, int maxResponseLength = 10000000)
         {
-            return await PostAsync(service, null, null, null, null, bytes);
-        }
+            Settings.Request request = response.Request;
+            bool binaryResponse = request.response.type == "binary";
+            string fileName = null;
+            if (apiArgs.ContainsKey("fileName"))
+                fileName = apiArgs["fileName"];
 
-        public virtual async System.Threading.Tasks.Task<ServiceResponse> PostAsync(Settings.Service service, string text)
-        {
-            return await PostAsync(service, null, null, null, null, text);
-        }
-
-        public virtual async System.Threading.Tasks.Task<ServiceResponse> PostAsync(Uri uri, byte[] bytes)
-        {
-            return await PostAsync(null, uri, null, null, null, bytes);
-        }
-
-        public virtual async System.Threading.Tasks.Task<ServiceResponse> PostAsync(Uri uri, string text)
-        {
-            return await PostAsync(null, uri, null, null, null, text);
-        }
-
-        public virtual async System.Threading.Tasks.Task<ServiceResponse> PostAsync(Uri uri, byte[] bytes, List<Tuple<string, string>> headers)
-        {
-            return await PostAsync(null, uri, null, headers, null, bytes);
-        }
-
-        public virtual async System.Threading.Tasks.Task<ServiceResponse> PostAsync(Settings.Service service, Uri uri, byte[] bytes, List<Tuple<string, string>> headers)
-        {
-            return await PostAsync(service, uri, null, headers, null, bytes);
-        }
-
-        public virtual async System.Threading.Tasks.Task<ServiceResponse> PostAsync(Uri uri, string text, List<Tuple<string, string>> headers)
-        {
-            return await PostAsync(null, uri, null, headers, null, text);
-        }
-
-        public virtual async System.Threading.Tasks.Task<ServiceResponse> PostAsync(Settings.Service service, List<Tuple<string, string>> UriSubstitutes, List<Tuple<string, string>> headers, List<Tuple<string, string>> postDataSubstitutes, byte[] bytes, bool binaryResponse = false, int maxResponseLength = 10000000)
-        {
-            return await PostAsync(service, null, UriSubstitutes, headers, postDataSubstitutes, bytes);
-        }
-
-        public virtual async System.Threading.Tasks.Task<ServiceResponse> PostAsync(Settings.Service service, List<Tuple<string, string>> UriSubstitutes, List<Tuple<string, string>> headers, List<Tuple<string, string>> postDataSubstitutes, string text, bool binaryResponse = false, int maxResponseLength = 10000000)
-        {
-            return await PostAsync(service, null, UriSubstitutes, headers, postDataSubstitutes, text);
-        }
-
-        internal async System.Threading.Tasks.Task<ServiceResponse> PostAsync(Settings.Service service, Uri uri, List<Tuple<string, string>> UriSubstitutes, List<Tuple<string, string>> headers, List<Tuple<string, string>> postDataSubstitutes, byte[] bytes, bool binaryResponse = false, int maxResponseLength = 10000000)
-        {
             if (uri == null)
-                uri = MakeUri(service, UriSubstitutes);
+                uri = MakeUri(request, apiArgs, UriSubstitutes);
             if (headers == null)
-                headers = MakeHeaders(service);
-            List<string> text = MakePostDataSubstitutes(service, null, bytes, postDataSubstitutes);
+                headers = MakeHeaders(request);
+            List<string> texts = MakePostDataSubstitutes(request, null, bytes, apiArgs, postDataSubstitutes);
             System.Net.Http.HttpContent requestContent;
-            if (text == null)
+            if (texts == null)
             {
-                await MakePostCurl(uri, headers, bytes, binaryResponse);
+                await MakePostCurl(uri, headers, bytes, request.response.jq, binaryResponse);
                 requestContent = new System.Net.Http.ByteArrayContent(bytes);
             }
             else
             {
-                if (text.Count == 1)
+                if (texts.Count == 1 && !isMultipart(headers))
                 {
-                    await MakePostCurl(uri, headers, text, binaryResponse);
-                    requestContent = new System.Net.Http.StringContent(text[0]);
-                    return await SystemNetAsync("POST", uri, headers, requestContent, binaryResponse, maxResponseLength);
+                    await MakePostCurl(uri, headers, texts, request.response.jq, binaryResponse);
+                    if (texts[0] == null) // Houndify text intent
+                        requestContent = new System.Net.Http.ByteArrayContent(bytes);
+                    else
+                        requestContent = new System.Net.Http.StringContent(texts[0]);
+                    await SystemNetAsync(response, "POST", uri, headers, requestContent, binaryResponse, maxResponseLength);
+                    return;
                 }
                 else
                 {
                     List<KeyValuePair<string, string>> lkvp = new List<KeyValuePair<string, string>>();
-                    foreach (string s in text)
+                    foreach (string s in texts)
                         lkvp.Add(new KeyValuePair<string, string>(s.Substring(0, s.IndexOf("=")), s.Substring(s.IndexOf("=") + 1)));
-                    await MakePostMultiPartCurl(uri, headers, lkvp, binaryResponse);
+                    await MakePostMultiPartCurl(uri, headers, lkvp, request.response.jq, binaryResponse);
 
                     System.Net.Http.MultipartFormDataContent multiPartRequestContent = new System.Net.Http.MultipartFormDataContent();
                     foreach (KeyValuePair<string, string> kvp in lkvp)
@@ -335,8 +454,8 @@ namespace WoundifyShared
                         {
                             case "file":
                                 ht = new System.Net.Http.ByteArrayContent(bytes);
-                                ht.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
-                                multiPartRequestContent.Add(ht, "\"file\"", "\"file.wav\"");
+                                ht.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream"); // optional for HPE Haven?
+                                multiPartRequestContent.Add(ht, "\"file\"", "\"" + fileName + "\"");
                                 break;
                             default:
                                 ht = new System.Net.Http.StringContent(kvp.Value);
@@ -345,58 +464,78 @@ namespace WoundifyShared
                                 break;
                         }
                     }
-                    return await SystemNetAsync("POST", uri, headers, multiPartRequestContent, binaryResponse, maxResponseLength);
+                    await SystemNetAsync(response, "POST", uri, headers, multiPartRequestContent, binaryResponse, maxResponseLength);
+                    response.FileName = "curl-" + httpCallCount;
+                    return;
                 }
             }
 #if WINDOWS_UWP
-            ServiceResponse response;
             if (Options.options.Services.APIs.PreferSystemNet)
-                response = await SystemNetAsync("POST", uri, headers, new System.Net.Http.ByteArrayContent(requestContent), binaryResponse, maxResponseLength);
+                await SystemNetAsync("POST", uri, headers, new System.Net.Http.ByteArrayContent(requestContent), binaryResponse, maxResponseLength);
             else
-                response = await WindowsWebAsync("POST", new Uri(requestUri), audioBytes, sampleRate, contentType, headerValue);
+                await WindowsWebAsync("POST", new Uri(requestUri), audioBytes, sampleRate, contentType, headerValue);
 #else
-            ServiceResponse response = await SystemNetAsync("POST", uri, headers, requestContent, binaryResponse, maxResponseLength);
+            await SystemNetAsync(response, "POST", uri, headers, requestContent, binaryResponse, maxResponseLength);
 #endif
-            return response;
+            response.FileName = "curl-" + httpCallCount;
         }
 
-        internal async System.Threading.Tasks.Task<ServiceResponse> PostAsync(Settings.Service service, Uri uri, List<Tuple<string, string>> UriSubstitutes, List<Tuple<string, string>> headers, List<Tuple<string, string>> postDataSubstitutes, string text, bool binaryResponse = false, int maxResponseLength = 10000000)
+        private static async System.Threading.Tasks.Task PostAsync(ServiceResponse response, Uri uri, List<Tuple<string, string>> UriSubstitutes, List<Tuple<string, string>> headers, List<Tuple<string, string>> postDataSubstitutes, string text, System.Collections.Generic.Dictionary<string, string> apiArgs, int maxResponseLength = 10000000)
         {
+            Settings.Request request = response.Request;
+            bool binaryResponse = request.response.type == "binary";
             if (uri == null)
-                uri = MakeUri(service, UriSubstitutes);
+                uri = MakeUri(request, apiArgs, UriSubstitutes, text);
             if (headers == null)
-                headers = MakeHeaders(service);
-            List<string> data = MakePostDataSubstitutes(service, text, null, postDataSubstitutes);
-            if (data.Count == 1)
+                headers = MakeHeaders(request);
+            List<string> data = MakePostDataSubstitutes(request, text, null, apiArgs, postDataSubstitutes);
+            if (data.Count == 1 && !isMultipart(headers))
             {
-                await MakePostCurl(uri, headers, data, binaryResponse);
+                await MakePostCurl(uri, headers, data, request == null ? null : request.response.jq, binaryResponse);
                 System.Net.Http.HttpContent requestContent = new System.Net.Http.StringContent(data[0]);
-                return await SystemNetAsync("POST", uri, headers, requestContent, binaryResponse, maxResponseLength);
+                await SystemNetAsync(response, "POST", uri, headers, requestContent, binaryResponse, maxResponseLength);
+                response.FileName = "curl-" + httpCallCount;
+                return;
             }
             else
             {
-                List<KeyValuePair<string, string>> kvp = new List<KeyValuePair<string, string>>();
+#if true // MicrosoftCognitiveInsightService can use multipart? See Post Byte[] overload above for helpful details.
+                throw new Exception("PostAsync: multipart/form-data not implemented. Doesn't seem to work with System.Net.Http");
+#else
+                List<KeyValuePair<string, string>> kvps = new List<KeyValuePair<string, string>>();
                 foreach (string s in data)
-                    kvp.Add(new KeyValuePair<string, string>(s.Substring(0, s.IndexOf("=")), s.Substring(s.IndexOf("=") + 1)));
-                await MakePostMultiPartCurl(uri, headers, kvp, binaryResponse);
+                    kvps.Add(new KeyValuePair<string, string>(s.Substring(0, s.IndexOf("=")), s.Substring(s.IndexOf("=") + 1)));
+                await MakePostMultiPartCurl(uri, headers, kvps, request.response.jq, binaryResponse);
+                List<KeyValuePair<string, string>> newkvps = new List<KeyValuePair<string, string>>();
+                foreach (KeyValuePair<string, string> kvp in kvps)
+                {
+                    string s = kvp.Value;
+                    if (kvp.Value[0] == '@')
+                    {
+                        byte[] bytes = System.IO.File.ReadAllBytes(kvp.Value.Substring(1));
+                        s = Convert.ToBase64String(bytes);
+                    }
+                    newkvps.Add(new KeyValuePair<string, string>(kvp.Key, s));
+                }
                 System.Net.Http.MultipartFormDataContent multiPartRequestContent = new System.Net.Http.MultipartFormDataContent();
-                multiPartRequestContent.Add(new System.Net.Http.FormUrlEncodedContent(kvp));
-                return await SystemNetAsync("POST", uri, headers, multiPartRequestContent, binaryResponse, maxResponseLength);
+                multiPartRequestContent.Add(new System.Net.Http.FormUrlEncodedContent(newkvps));
+                await SystemNetAsync(response, "POST", uri, headers, multiPartRequestContent, binaryResponse, maxResponseLength);
+                response.FileName = "curl-" + httpCallCount;
+#endif
             }
 #if WINDOWS_UWP // major bit rot. Multi-part not implemented.
-            ServiceResponse response;
             if (Options.options.Services.APIs.PreferSystemNet)
                 response = await SystemNetAsync("POST", uri, headers, new System.Net.Http.ByteArrayContent(requestContent), binaryResponse, maxResponseLength);
             else
                 response = await WindowsWebAsync("POST", new Uri(requestUri), audioBytes, sampleRate, contentType, headerValue);#else
-            ServiceResponse response = await SystemNetAsync("POST", uri, headers, requestContent, binaryResponse, maxResponseLength);
+            response = await SystemNetAsync("POST", uri, headers, requestContent, binaryResponse, maxResponseLength);
+            response.FileName = "curl-" + httpCallCount;
             return response;
 #endif
         }
 
-        internal async System.Threading.Tasks.Task<ServiceResponse> SystemNetAsync(string method, Uri uri, List<Tuple<string, string>> headers, System.Net.Http.HttpContent requestContent = null, bool binaryResponse = false, int maxResponseLength = 10000000)
+        private static async System.Threading.Tasks.Task SystemNetAsync(ServiceResponse response, string method, Uri uri, List<Tuple<string, string>> headers, System.Net.Http.HttpContent requestContent, bool binaryResponse, int maxResponseLength)
         {
-            ServiceResponse response = new ServiceResponse(this.ToString());
             long t = 0;
             response.stopWatch.Start();
             try
@@ -433,11 +572,14 @@ namespace WoundifyShared
                     {
                         switch (h.Item1)
                         {
-                            case "Accept":
+                            case "Accept": // must use explicity Accept property otherwise an error is thrown
                                 request.Accept = h.Item2;
                                 break;
-                            case "Content-Type":
+                            case "Content-Type": // must use explicity ContentType property otherwise an error is thrown
                                 request.ContentType = h.Item2;
+                                break;
+                            case "User-Agent": // must use explicity ContentType property otherwise an error is thrown
+                                request.UserAgent = h.Item2;
                                 break;
                             default:
                                 request.Headers[h.Item1] = h.Item2;
@@ -480,13 +622,13 @@ namespace WoundifyShared
                 if (ex.InnerException != null)
                     Log.WriteLine("InnerException:" + ex.InnerException);
             }
+            response.FileName = "curl-" + httpCallCount;
             response.stopWatch.Stop();
             response.TotalElapsedMilliseconds = response.stopWatch.ElapsedMilliseconds;
             Log.WriteLine("Total Elapsed milliseconds:" + response.TotalElapsedMilliseconds);
-            return response;
         }
 
-        public virtual async System.Threading.Tasks.Task PostSystemNetAsyncBinaryReader(System.IO.Stream rr, int maxResponseLength, ServiceResponse response)
+        public static async System.Threading.Tasks.Task PostSystemNetAsyncBinaryReader(System.IO.Stream rr, int maxResponseLength, ServiceResponse response)
         {
             try
             {
@@ -503,7 +645,7 @@ namespace WoundifyShared
             }
         }
 
-        public virtual async System.Threading.Tasks.Task PostSystemNetAsyncStreamReader(System.IO.Stream rr, ServiceResponse response)
+        public static async System.Threading.Tasks.Task PostSystemNetAsyncStreamReader(System.IO.Stream rr, ServiceResponse response)
         {
             try
             {
@@ -534,45 +676,75 @@ namespace WoundifyShared
             }
         }
 
-        public virtual async System.Threading.Tasks.Task ExtractResultAsync(Settings.Service service, ServiceResponse response)
+        public static async System.Threading.Tasks.Task ExtractResultAsync(ServiceResponse response)
         {
-            if (response.ResponseJToken == null || string.IsNullOrEmpty(response.ResponseJToken.ToString()))
+            switch (response.Request.response.type)
             {
-                response.ResponseResult = service.response.missingResponse;
-                if (Options.options.debugLevel >= 3)
-                    Log.WriteLine(response.ResponseResult);
+                case "json":
+                    if (response.Request.response.jsonPath == null) // json routine but no jsonPath specified. just ignore.
+                        return;
+                    Settings.Request request = response.Request;
+                    if (response.ResponseJToken == null || string.IsNullOrEmpty(response.ResponseJToken.ToString()))
+                    {
+                        response.ResponseResult = request.response.missingResponse;
+                        if (Options.options.debugLevel >= 3)
+                            Log.WriteLine(response.ResponseResult);
+                    }
+                    else
+                    {
+                        // not sure how to handle array result
+                        //response.ResponseResult = response.ResponseJToken.SelectTokens(service.response.jsonPath).ToString();
+                        // jq.net doesn't seem to be supported. I don't know how to instantiate it as there's no constructor. I haven't found a substitute.
+                        IEnumerable<Newtonsoft.Json.Linq.JToken> jtoks = response.ResponseJToken.SelectTokens(request.response.jsonPath);
+                        response.ResponseResult = string.Empty;
+                        foreach (Newtonsoft.Json.Linq.JToken jtok in jtoks)
+                            response.ResponseResult += ", " + jtok.ToString();
+                        if (response.ResponseResult.Length > 0)
+                            response.ResponseResult = response.ResponseResult.Substring(2);
+                        if (Options.options.debugLevel >= 3)
+                            Log.WriteLine(response.ResponseJToken.Path + ": " + response.ResponseResult);
+                    }
+                    break;
+                case "xml":
+                    // not implemented/debugged
+                    response.ResponseXml.LoadXml(response.ResponseResult);
+                    response.ResponseXmlNodeList = response.ResponseXml.SelectNodes(response.Request.response.xpath);
+                    response.ResponseXmlFormatted = response.ResponseXmlNodeList.ToString(); // must be wrong
+                    break;
+                default:
+                    break;
             }
-            else
+        }
+
+        public static bool isMultipart(List<Tuple<string, string>> headers)
+        {
+            if (headers != null)
             {
-                // not sure how to handle array result
-                //response.ResponseResult = response.ResponseJToken.SelectTokens(service.response.jsonPath).ToString();
-                IEnumerable<Newtonsoft.Json.Linq.JToken> jtoks = response.ResponseJToken.SelectTokens(service.response.jsonPath);
-                response.ResponseResult = string.Empty;
-                foreach (Newtonsoft.Json.Linq.JToken jtok in jtoks)
-                    response.ResponseResult += ", " + jtok.ToString();
-                if (response.ResponseResult.Length > 0)
-                    response.ResponseResult = response.ResponseResult.Substring(2);
-                if (Options.options.debugLevel >= 3)
-                    Log.WriteLine(response.ResponseJToken.Path + ": " + response.ResponseResult);
+                foreach (Tuple<string, string> h in headers) // makes argument for changing header to a dictionary
+                {
+                    if (h.Item1.ToLower() == "content-type" && h.Item2.ToLower() == "multipart/form-data")
+                        return true;
+                }
             }
+            return false;
         }
 
         // determine if get or post. if post, is data string, json, binary, urlencoded?
-        public virtual async System.Threading.Tasks.Task<string> MakeGetCurl(Uri uri, List<Tuple<string, string>> headers)
+        public static async System.Threading.Tasks.Task<string> MakeGetCurl(Uri uri, List<Tuple<string, string>> headers, string jq, bool binaryResponse)
         {
             string fileName = "curl-" + ++httpCallCount;
-            return await MakeCurl(fileName, uri, headers);
+            return await MakeCurl(fileName, uri, headers, jq, null, binaryResponse);
         }
 
-        public virtual async System.Threading.Tasks.Task<string> MakePostCurl(Uri uri, List<Tuple<string, string>> headers, byte[] bytes, bool binaryResponse = false)
+        public static async System.Threading.Tasks.Task<string> MakePostCurl(Uri uri, List<Tuple<string, string>> headers, byte[] bytes, string jq, bool binaryResponse)
         {
             string fileName = "curl-" + ++httpCallCount;
             System.IO.File.WriteAllBytes(fileName + ".bin", bytes);
             string data = "--data-binary \"@" + fileName + ".bin\""; // create unique filename with data for reuse? use original text/file? what about data-ascii, data-raw, data-urlencode?
-            return await MakeCurl(fileName, uri, headers, data);
+            return await MakeCurl(fileName, uri, headers, jq, data, binaryResponse);
         }
 
-        public virtual async System.Threading.Tasks.Task<string> MakePostCurl(Uri uri, List<Tuple<string, string>> headers, List<string> text, bool binaryResponse = false)
+        public static async System.Threading.Tasks.Task<string> MakePostCurl(Uri uri, List<Tuple<string, string>> headers, List<string> text, string jq, bool binaryResponse)
         {
             string fileName = "curl-" + ++httpCallCount;
             string data = string.Empty;
@@ -580,22 +752,29 @@ namespace WoundifyShared
                 throw new FormatException();
             System.IO.File.WriteAllText(fileName + ".txt", text[0]);
             data += "--data \"@" + fileName + ".txt\" "; // create unique filename with data for reuse? use original text/file? what about data-ascii, data-raw, data-urlencode?
-            return await MakeCurl(fileName, uri, headers, data);
+            return await MakeCurl(fileName, uri, headers, jq, data, binaryResponse);
         }
 
-        public virtual async System.Threading.Tasks.Task<string> MakePostMultiPartCurl(Uri uri, List<Tuple<string, string>> headers, List<KeyValuePair<string, string>> text, bool binaryResponse = false)
+        public static async System.Threading.Tasks.Task<string> MakePostMultiPartCurl(Uri uri, List<Tuple<string, string>> headers, List<KeyValuePair<string, string>> text, string jq, bool binaryResponse)
         {
             string fileName = "curl-" + ++httpCallCount;
             string data = string.Empty;
             for (int i = 0; i < text.Count; ++i)
             {
-                System.IO.File.WriteAllText(fileName + "." + i.ToString() + ".txt", text[i].Value);
-                data += "--form \"" + text[i].Key + "=@" + fileName + "." + i.ToString() + ".txt\" "; // create unique filename with data for reuse? use original text/file? what about data-ascii, data-raw, data-urlencode?
+                if (text[i].Value[0] == '@') // todo: obsolete?
+                {
+                    data += "--form \"" + text[i].Key + "=" + text[i].Value + "\" "; // create unique filename with data for reuse? use original text/file? what about data-ascii, data-raw, data-urlencode?
+                }
+                else
+                {
+                    System.IO.File.WriteAllText(fileName + "." + i.ToString() + ".txt", text[i].Value);
+                    data += "--form \"" + text[i].Key + "=@" + fileName + "." + i.ToString() + ".txt\" "; // create unique filename with data for reuse? use original text/file? what about data-ascii, data-raw, data-urlencode?
+                }
             }
-            return await MakeCurl(fileName, uri, headers, data);
+            return await MakeCurl(fileName, uri, headers, jq, data, binaryResponse);
         }
 
-        public virtual async System.Threading.Tasks.Task<string> MakeCurl(string fileName, Uri uri, List<Tuple<string, string>> headers, string data = null)
+        public static async System.Threading.Tasks.Task<string> MakeCurl(string fileName, Uri uri, List<Tuple<string, string>> headers, string jq, string data, bool binaryResponse)
         {
             try
             {
@@ -621,7 +800,21 @@ namespace WoundifyShared
                         }
                     }
                 }
-                curl += " \"" + uri.AbsoluteUri + "\"";
+                string responseFile = fileName + (binaryResponse ? "-response.bin" : "-response.txt");
+                curl += " \"" + uri.AbsoluteUri + "\" -o " + responseFile;
+                if (!binaryResponse)
+                {
+                    if (jq == null)
+                    {
+                        curl += "\ntype " + responseFile;
+                    }
+                    else
+                    {
+                        string jqFile = fileName + "-jq.txt";
+                        curl += "\njq \"" + jq + "\" " + responseFile + " > " + jqFile;
+                        curl += "\ntype " + jqFile;
+                    }
+                }
                 Log.WriteLine(curl);
                 //Console.WriteLine(curl);
                 System.IO.File.WriteAllText(fileName + ".bat", curl.Replace("%", "%%"));

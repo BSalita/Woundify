@@ -11,7 +11,7 @@ namespace WoundifyShared
             {
                 try
                 {
-                    using (Windows.Media.SpeechSynthesis.SpeechSynthesisStream synthStream = await synth.SynthesizeTextToStreamAsync(text)) // doesn't handle special characters such as quotes
+                    using (Windows.Media.SpeechSynthesis.SpeechSynthesisStream synthStream = await synth.SynthesizeTextToStreamAsyncServiceAsync(text, apiArgs)) // doesn't handle special characters such as quotes
                     {
                         // TODO: obsolete to use DataReader? use await Windows.Storage.FileIO.Read...(file);
                         using (Windows.Storage.Streams.DataReader reader = new Windows.Storage.Streams.DataReader(synthStream))
@@ -48,27 +48,28 @@ namespace WoundifyShared
             return 0;
         }
 
-        public static async System.Threading.Tasks.Task<int> SynSpeechPlayAsync(string text)
+        public static async System.Threading.Tasks.Task<int> SynSpeechPlayAsyncServiceAsync(byte[] bytes, System.Collections.Generic.Dictionary<string, string> apiArgs)
         {
             using (Windows.Media.SpeechSynthesis.SpeechSynthesizer synth = new Windows.Media.SpeechSynthesis.SpeechSynthesizer())
             {
-                Windows.Media.SpeechSynthesis.SpeechSynthesisStream synthStream = await synth.SynthesizeTextToStreamAsync(text); // doesn't handle special characters such as quotes
+                Windows.Media.SpeechSynthesis.SpeechSynthesisStream synthStream = await synth.SynthesizeTextToStreamAsyncServiceAsync(text, apiArgs); // doesn't handle special characters such as quotes
                 await Audio.PlayFileAsync(synthStream, synthStream.ContentType);
             }
             return 0;
         }
-        public static async System.Threading.Tasks.Task<string> TextToSpelledPronunciation(string text)
+        public static async System.Threading.Tasks.Task<string> TextToSpelledPronunciationServiceAsync(byte[] bytes, System.Collections.Generic.Dictionary<string, string> apiArgs)
         {
             return text; // TODO: implement
         }
 #else
-        public static async System.Threading.Tasks.Task<Byte[]> TextToSpeechServiceAsync(string text, int sampleRate)
+        public static async System.Threading.Tasks.Task<Byte[]> TextToSpeechServiceAsync(string text, System.Collections.Generic.Dictionary<string, string> apiArgs)
         {
             Log.WriteLine("text:\"" + text + "\"");
             //System.Globalization.CultureInfo ci = new System.Globalization.CultureInfo(Options.options.locale.language);
             using (System.Speech.Synthesis.SpeechSynthesizer synth = new System.Speech.Synthesis.SpeechSynthesizer())
             {
                 // Explicitly specify audio settings. All services are ok with 16000/16/1. It's ok to cast options to enums as their values are identical.
+                int sampleRate = int.Parse(apiArgs["sampleRate"]);
                 System.Speech.AudioFormat.SpeechAudioFormatInfo si = new System.Speech.AudioFormat.SpeechAudioFormatInfo(sampleRate, (System.Speech.AudioFormat.AudioBitsPerSample)WoundifyShared.Options.options.audio.bitDepth, (System.Speech.AudioFormat.AudioChannel)WoundifyShared.Options.options.audio.channels);
                 // TODO: use memory based file instead
                 synth.SetOutputToWaveFile(Options.options.tempFolderPath + Options.options.audio.speechSynthesisFileName, si);
@@ -78,18 +79,7 @@ namespace WoundifyShared
             return await Helpers.ReadBytesFromFileAsync(Options.options.audio.speechSynthesisFileName);
         }
 
-        public static async System.Threading.Tasks.Task TextToSpeechServiceAsync(string text)
-        {
-            //System.Globalization.CultureInfo ci = new System.Globalization.CultureInfo(Options.options.locale.language);
-            Log.WriteLine("text:" + text);
-            using (System.Speech.Synthesis.SpeechSynthesizer synth = new System.Speech.Synthesis.SpeechSynthesizer())
-            {
-                synth.SelectVoiceByHints((System.Speech.Synthesis.VoiceGender)Options.commandservices["TextToSpeech"].voiceAge);
-                synth.Speak(text);
-            }
-        }
-
-        public static async System.Threading.Tasks.Task<string> TextToSpelledPronunciation(string text)
+        public static async System.Threading.Tasks.Task<string> TextToSpelledPronunciationServiceAsync(string text, System.Collections.Generic.Dictionary<string, string> apiArgs)
         {
             //System.Globalization.CultureInfo ci = new System.Globalization.CultureInfo(Options.options.locale.language);
             using (System.Speech.Recognition.SpeechRecognitionEngine RecognitionEngine = new System.Speech.Recognition.SpeechRecognitionEngine())
@@ -98,7 +88,7 @@ namespace WoundifyShared
                 text = text.Replace(".", ""); // EmulateRecognize returns null if a period is in the text
                 System.Speech.Recognition.RecognitionResult result = RecognitionEngine.EmulateRecognize(text);
                 if (result == null)
-                    throw new FormatException();
+                    throw new Exception("TextToSpelledPronunciationServiceAsync: RecognitionResult returned null probably due to invalid language input.");
                 string pronunciations = null;
                 foreach (System.Speech.Recognition.RecognizedWordUnit w in result.Words)
                     pronunciations += w.Pronunciation + " ";
