@@ -21,6 +21,9 @@ The `WoundifyDefaultSettings.json` and `WoundifySettings.json` files contain pro
 7. https://datamarket.azure.com/dataset/bing/speechoutput
 8. https://datamarket.azure.com/dataset/bing/microsofttranslator
 9. https://dev.havenondemand.com/
+10. https://www.ApiAi.com/
+11. https://www.ClarifAI.com/
+12. https://www.Wit.ai/
 
 ## Console Application
 The woundify.exe is a console app tool for scripting audio, text and AI services. There are commands for recording audio, converting text-to-speech (TTS), converting speech-to-text (STT), and invoking many of the currently offered AI services.
