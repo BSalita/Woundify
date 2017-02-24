@@ -34,6 +34,8 @@ woundify.exe accepts zero or more commands. See the chart below for an explanati
 
 Examples:
 
+> `woundify help <br>Displays a list of commands.
+  
 > `woundify text "What's the weather in Paris?" intent speak`<br>Sends the text to Houndify and speaks the response.
   
 > `woundify listen intent speak`<br>Listens to the microphone (default timeout), calls intent service, speaks the response.
