@@ -121,6 +121,7 @@ Woundify first tries to load WoundifyDefaultSettings.json file, followed by Woun
 | ImageEmotion | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
 | ImageFaceAnnotate | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
 | ImageFaceDetection | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
+| ImageFocus | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
 | ImageFood | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
 | ImageGeneral | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
 | ImageInsight | Pops stack and sends image to image analysis service. The response is pushed onto the stack.

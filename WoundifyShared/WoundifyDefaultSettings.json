@@ -172,6 +172,13 @@
       "commandService": "ImageRecognitionService"
     },
     {
+      "key": "ImageFocus",
+      "name": "ImageFocus",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Call Image focus model.",
+      "commandService": "ImageFocusService"
+    },
+    {
       "key": "ImageFood",
       "name": "ImageFood",
       "classInterface": "GenericCommand.IProcessACommand",
@@ -570,6 +577,13 @@
       "name": "ImageRecognitionService",
       "preferredServices": [
         "HpeHavenImageRecognitionService"
+      ]
+    },
+    {
+      "key": "ImageFocus",
+      "name": "ImageFocusService",
+      "preferredServices": [
+        "ClarifAiImageFocusService"
       ]
     },
     {
@@ -1206,6 +1220,86 @@
             "type": "json",
             "jsonPath": "outputs[*].data.regions",
             "jq": ".outputs[].data.regions" // implemented in curl output only - jq.net doesn't appear to be working
+          }
+        }
+      ]
+    },
+    {
+      "name": "ClarifAiImageFocusService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.clarifai.com",
+            "path": "v2/models/c2cf7cecd8a6427da375b9f35fcd2381/outputs",
+            "query": ""
+          },
+          "headers": [
+            {
+              "Name": "BearerAuthentication",
+              "BearerAuthentication": {
+                "type": "bearer", // { basic | bearer | <custom> }
+                "clientID": "<Insert clientID Token>",
+                "clientSecret": "<Insert clientSecret Token>",
+                "uri": "https://api.clarifai.com/v1/token",
+                "grant": "grant_type=client_credentials&client_id={clientID}&client_secret={clientSecret}" // &scope={scope}"
+              }
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"inputs\": [ { \"data\": { \"image\": { \"base64\": \"{base64}\" } } } ] }" // single quotes not allowed by clarifai
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "outputs[*].data",
+            "jq": ".outputs[].data" // implemented in curl output only - jq.net doesn't appear to be working
+          }
+        },
+        {
+          "argType": "url",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "api.clarifai.com",
+            "path": "v2/models/c2cf7cecd8a6427da375b9f35fcd2381/outputs",
+            "query": ""
+          },
+          "headers": [
+            {
+              "Name": "BearerAuthentication",
+              "BearerAuthentication": {
+                "type": "bearer", // { basic | bearer | <custom> }
+                "clientID": "<Insert clientID Token>",
+                "clientSecret": "<Insert clientSecret Token>",
+                "uri": "https://api.clarifai.com/v1/token",
+                "grant": "grant_type=client_credentials&client_id={clientID}&client_secret={clientSecret}" // &scope={scope}"
+              }
+            },
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"inputs\": [ { \"data\": { \"image\": { \"url\": \"{url}\" } } } ] }" // single quotes not allowed by clarifai
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "outputs[*].data",
+            "jq": ".outputs[].data" // implemented in curl output only - jq.net doesn't appear to be working
           }
         }
       ]
