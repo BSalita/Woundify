@@ -691,10 +691,10 @@
       "name": "TextToSpeechService",
       "preferredServices": [
         "WindowsTextToSpeechService",
-        //"ApiAiTextToSpeechService",
-        //"IbmWatsonTextToSpeechService",
-        //"MicrosoftCognitiveTextToSpeechService",
-        //"MicrosoftCognitiveTextToSpeechV1Service"
+        "ApiAiTextToSpeechService",
+        "IbmWatsonTextToSpeechService",
+        "MicrosoftCognitiveTextToSpeechService",
+        "MicrosoftCognitiveTextToSpeechV1Service"
       ],
       "voiceAge": "0",
       "voiceGender": 0,

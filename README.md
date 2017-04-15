@@ -107,6 +107,29 @@ Woundify first tries to load WoundifyDefaultSettings.json file, followed by Woun
 | ENTITIES | Pops stack and sends audio/text to entities service. The response is pushed onto the stack.
 | HELP | Show help.
 | IDENTIFY | Pops stack and sends audio/text to language identification service. The response is pushed onto the stack.
+| ImageAgeGenderEthnicity | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
+| ImageApparel | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
+| ImageCelebrity | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
+| ImageColor | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
+| ImageDescribe | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
+| ImageEmotion | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
+| ImageFaceAnnotate | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
+| ImageFaceDetection | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
+| ImageFood | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
+| ImageGeneral | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
+| ImageInsight | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
+| ImageLLL | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
+| ImageNSFW | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
+| ImageProperties | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
+| ImageRecognition | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
+| ImageSafe | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
+| ImageSearch | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
+| ImageTag | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
+| ImageText | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
+| ImageThumbnail | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
+| ImageTravel | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
+| ImageThumbnail | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
+| ImageWedding | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
 | INTENT | Pops stack and sends audio/text to intent service. The response is pushed onto the stack.
 | JSONPATH | Apply a JsonPath to the previous response.
 | LISTEN | Record audio and push utterance onto stack.
