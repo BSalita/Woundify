@@ -1,5 +1,5 @@
 # Woundify
-Woundify is a cognitive services (AI) tool used to compare, benchmark, script, demonstrate API calling, and consumption of major AI services. Woundify is written in C# and is compatible with Windows Console, WPF and UWP systems. Woundify supports AI services from Google, Houndify, HPE, IBM Watson, Microsoft (Bing), and Wit.ai. Woundify was originally developed as a Windows client for the Houndify intent service.
+Woundify is a cognitive services (AI) tool used to compare, benchmark, script, demonstrate API calling, and consumption of major AI services. Woundify is written in C# and is compatible with Windows Console, WPF and UWP systems. Woundify supports AI services from ApiAI, ClarifAI, Google Cloud, Houndify, HPE Haven, IBM Watson, Microsoft Cognitive, and Wit.ai. Woundify was originally developed as a Windows client for the Houndify intent service but has expanded to include all known AI API providers.
 
 ## Requisites
 
@@ -21,6 +21,9 @@ The `WoundifyDefaultSettings.json` and `WoundifySettings.json` files contain pro
 7. https://datamarket.azure.com/dataset/bing/speechoutput
 8. https://datamarket.azure.com/dataset/bing/microsofttranslator
 9. https://dev.havenondemand.com/
+10. https://www.ApiAi.com/
+11. https://www.ClarifAI.com/
+12. https://www.Wit.ai/
 
 ## Console Application
 The woundify.exe is a console app tool for scripting audio, text and AI services. There are commands for recording audio, converting text-to-speech (TTS), converting speech-to-text (STT), and invoking many of the currently offered AI services.
@@ -31,6 +34,8 @@ woundify.exe accepts zero or more commands. See the chart below for an explanati
 
 Examples:
 
+> `woundify help` <br>Displays a list of commands.
+  
 > `woundify text "What's the weather in Paris?" intent speak`<br>Sends the text to Houndify and speaks the response.
   
 > `woundify listen intent speak`<br>Listens to the microphone (default timeout), calls intent service, speaks the response.
