@@ -144,6 +144,13 @@
       "commandService": "ImageEmotionService"
     },
     {
+      "key": "ImageCropHints",
+      "name": "ImageCropHints",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Suggest vertices for cropping an image.",
+      "commandService": "ImageCropHintsService"
+    },
+    {
       "key": "ImageFaceAnnotate",
       "name": "ImageFaceAnnotate",
       "classInterface": "GenericCommand.IProcessACommand",
@@ -186,6 +193,13 @@
       "commandService": "ImageLLLService"
     },
     {
+      "key": "ImageOcr",
+      "name": "ImageOcr",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Ocr to text.",
+      "commandService": "ImageOcrService"
+    },
+    {
       "key": "ImageProperties",
       "name": "ImageProperties",
       "classInterface": "GenericCommand.IProcessACommand",
@@ -221,6 +235,13 @@
       "commandService": "ImageTravelService"
     },
     {
+      "key": "ImageWeb",
+      "name": "ImageWeb",
+      "classInterface": "GenericCommand.IProcessACommand",
+      "help": "Find web references to an image.",
+      "commandService": "ImageWebService"
+    },
+    {
       "key": "ImageWedding",
       "name": "ImageWedding",
       "classInterface": "GenericCommand.IProcessACommand",
@@ -254,13 +275,6 @@
       "classInterface": "LoopCommand.IProcessACommand",
       "help": "Loop back to beginning.",
       "commandService": "LoopService"
-    },
-    {
-      "key": "Ocr",
-      "name": "Ocr",
-      "classInterface": "GenericCommand.IProcessACommand",
-      "help": "Ocr to text.",
-      "commandService": "OcrService"
     },
     {
       "key": "Paraphrase",
@@ -529,6 +543,13 @@
       ]
     },
     {
+      "key": "ImageCropHints",
+      "name": "ImageCropHintsService",
+      "preferredServices": [
+        "GoogleCloudVisionCropHintsService"
+      ]
+    },
+    {
       "key": "ImageFaceAnnotate",
       "name": "ImageFaceAnnotateService",
       "preferredServices": [
@@ -573,6 +594,15 @@
       ]
     },
     {
+      "key": "ImageOcr",
+      "name": "ImageOcrService",
+      "preferredServices": [
+        "GoogleCloudVisionImageDocumentTextDetectionService",
+        "GoogleCloudVisionImageTextDetectionService",
+        "HpeHavenOcrService"
+      ]
+    },
+    {
       "key": "ImageProperties",
       "name": "ImagePropertiesService",
       "preferredServices": [
@@ -587,13 +617,6 @@
       ]
     },
     {
-      "key": "ImageText",
-      "name": "ImageTextService",
-      "preferredServices": [
-        "GoogleCloudVisionImageTextService"
-      ]
-    },
-    {
       "key": "ImageNSFW",
       "name": "ImageNSFWService",
       "preferredServices": [
@@ -605,6 +628,13 @@
       "name": "ImageTravelService",
       "preferredServices": [
         "ClarifAiImageTravelService"
+      ]
+    },
+    {
+      "key": "ImageWeb",
+      "name": "ImageWebService",
+      "preferredServices": [
+        "GoogleCloudVisionImageWebReferencesService"
       ]
     },
     {
@@ -630,13 +660,6 @@
       ]
     },
     {
-      "key": "Ocr",
-      "name": "OcrService",
-      "preferredServices": [
-        "HpeHavenOcrService"
-      ]
-    },
-    {
       "key": "Paraphrase", // deprecated by Microsoft
       "name": "ParaphraseService",
       "preferredServices": [
@@ -647,6 +670,7 @@
       "key": "Parse",
       "name": "ParseService",
       "preferredServices": [
+        "GoogleCloudAnalyzeSyntaxService",
         "MicrosoftCognitiveParseService"
       ]
     },
@@ -720,7 +744,8 @@
       "key": "Translate",
       "name": "TranslateService",
       "preferredServices": [
-        "GoogleCloudTranslateService",
+        "GoogleCloudTranslateNmtService",
+        "GoogleCloudTranslatePbmtService",
         "IbmWatsonTranslateService",
         "MicrosoftCognitiveTranslateService"
       ]
@@ -1650,6 +1675,38 @@
       ]
     },
     {
+      "name": "GoogleCloudAnalyzeSyntaxService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "text",
+          "method": "post", // { "get" | "post" | <custom> }
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "language.googleapis.com",
+            "path": "v1/documents:analyzeSyntax",
+            "query": "key=<Insert Key Token>"
+          },
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"document\":{ \"type\":\"PLAIN_TEXT\", \"content\":\"{text}\" } }"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": ""
+          }
+        }
+      ]
+    },
+    {
       "name": "GoogleCloudAnnotateTextService",
       "classInterface": "GenericCallServices.IGenericCallServices",
       "requests": [
@@ -1746,7 +1803,36 @@
       ]
     },
     {
-      "name": "GoogleCloudTranslateService",
+      "name": "GoogleCloudTranslateNmtService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "text",
+          "method": "get", // { "get" | "post" | <custom> } // huh? documented as both get and post. has no post data, only query parameters. get limited to 2K
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "translation.googleapis.com",
+            "path": "language/translate/v2",
+            "query": "key=<Insert Key Token>&q={text}&source={source}&target={target}" // additional parameters: format, model
+          },
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          // no "data" property for GET methods
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "data.translations[0].translatedText"
+          }
+        }
+      ]
+    },
+    {
+      "name": "GoogleCloudTranslatePbmtService", // PBMT service (aka basic) will probably become deprecated
       "classInterface": "GenericCallServices.IGenericCallServices",
       "requests": [
         {
@@ -1775,12 +1861,76 @@
       ]
     },
     {
+      "name": "GoogleCloudVisionCropHintsService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post",
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "vision.googleapis.com",
+            "path": "v1/images:annotate",
+            "query": "key=<Insert Key Token>" // secret
+          },
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"requests\": [ { \"image\": { \"content\": \"{base64}\" }, \"features\": [ { \"type\": \"CROP_HINTS\" } ] } ] }"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "responses"
+          }
+        }
+      ]
+    },
+    {
+      "name": "GoogleCloudVisionImageDocumentTextDetectionService", // OCR - somewhat different than GoogleCloudVisionImageTextDetectionService
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post",
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "vision.googleapis.com",
+            "path": "v1/images:annotate",
+            "query": "key=<Insert Key Token>"
+          },
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"requests\": [ { \"image\": { \"content\": \"{base64}\" }, \"features\": [ { \"type\": \"DOCUMENT_TEXT_DETECTION\" } ] } ] }"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "responses"
+          }
+        }
+      ]
+    },
+    {
       "name": "GoogleCloudVisionFaceAnnotateService",
       "classInterface": "GenericCallServices.IGenericCallServices",
       "requests": [
         {
           "argType": "binary",
-          "method": "post", // { "get" | "post" | <custom> } // api annoyance. should be a post.
+          "method": "post",
           "preferChunkedEncodedRequests": false,
           "uri": {
             "scheme": "https",
@@ -1812,7 +1962,7 @@
       "requests": [
         {
           "argType": "binary",
-          "method": "post", // { "get" | "post" | <custom> } // api annoyance. should be a post.
+          "method": "post",
           "preferChunkedEncodedRequests": false,
           "uri": {
             "scheme": "https",
@@ -1844,7 +1994,7 @@
       "requests": [
         {
           "argType": "binary",
-          "method": "post", // { "get" | "post" | <custom> } // api annoyance. should be a post.
+          "method": "post",
           "preferChunkedEncodedRequests": false,
           "uri": {
             "scheme": "https",
@@ -1876,7 +2026,7 @@
       "requests": [
         {
           "argType": "binary",
-          "method": "post", // { "get" | "post" | <custom> } // api annoyance. should be a post.
+          "method": "post",
           "preferChunkedEncodedRequests": false,
           "uri": {
             "scheme": "https",
@@ -1903,12 +2053,12 @@
       ]
     },
     {
-      "name": "GoogleCloudVisionImageTextService",
+      "name": "GoogleCloudVisionImageTextDetectionService", // OCR - somewhat different than GoogleCloudVisionImageDocumentTextDetectionService
       "classInterface": "GenericCallServices.IGenericCallServices",
       "requests": [
         {
           "argType": "binary",
-          "method": "post", // { "get" | "post" | <custom> } // api annoyance. should be a post.
+          "method": "post",
           "preferChunkedEncodedRequests": false,
           "uri": {
             "scheme": "https",
@@ -1961,6 +2111,38 @@
             "missingResponse": "whatever",
             "type": "json",
             "jsonPath": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "GoogleCloudVisionImageWebReferencesService",
+      "classInterface": "GenericCallServices.IGenericCallServices",
+      "requests": [
+        {
+          "argType": "binary",
+          "method": "post",
+          "preferChunkedEncodedRequests": false,
+          "uri": {
+            "scheme": "https",
+            "host": "vision.googleapis.com",
+            "path": "v1/images:annotate",
+            "query": "key=<Insert Key Token>"
+          },
+          "headers": [
+            {
+              "Name": "Content-Type",
+              "Generic": "application/json" // charset=utf-8 won't work explicity. It's the implicit default.
+            }
+          ],
+          "data": {
+            "type": "json", // { ascii | base64 | binary | json | multipart | raw | string | urlencode | xml }
+            "value": "{ \"requests\": [ { \"image\": { \"content\": \"{base64}\" }, \"features\": [ { \"type\": \"WEB_DETECTION\" } ] } ] }"
+          },
+          "response": {
+            "missingResponse": "whatever",
+            "type": "json",
+            "jsonPath": "responses"
           }
         }
       ]

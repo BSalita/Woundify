@@ -116,6 +116,7 @@ Woundify first tries to load WoundifyDefaultSettings.json file, followed by Woun
 | ImageApparel | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
 | ImageCelebrity | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
 | ImageColor | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
+| ImageCropHints | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
 | ImageDescribe | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
 | ImageEmotion | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
 | ImageFaceAnnotate | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
@@ -125,12 +126,12 @@ Woundify first tries to load WoundifyDefaultSettings.json file, followed by Woun
 | ImageInsight | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
 | ImageLLL | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
 | ImageNSFW | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
+| ImageOcr | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
 | ImageProperties | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
 | ImageRecognition | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
 | ImageSafe | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
 | ImageSearch | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
 | ImageTag | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
-| ImageText | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
 | ImageThumbnail | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
 | ImageTravel | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
 | ImageThumbnail | Pops stack and sends image to image analysis service. The response is pushed onto the stack.
